@@ -30,7 +30,7 @@ CalendarScene::CalendarScene(const SettingsData & settings, QObject *parent) :
     int maxWidth = 0, width = 0;
     for(int month = 1; month <= 12; month++)
     {
-        name = QDate::longMonthName(month);
+        name =QDate(2000,month, 1).toString( "MMMM");
         width = mMetrics.width(name);
         if(width > maxWidth)
         {
@@ -42,7 +42,7 @@ CalendarScene::CalendarScene(const SettingsData & settings, QObject *parent) :
     maxWidth = 0;
     for(int day = 1; day <= 7; day++)
     {
-        name = QDate::longDayName(day);
+        name = QDate(2018, 1, day).toString( "dddd" );
         width = mMetrics.width(name);
         if(width > maxWidth)
         {

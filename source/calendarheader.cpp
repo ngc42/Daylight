@@ -97,8 +97,8 @@ HeaderMonth::HeaderMonth(const int month, QGraphicsItem* parent) :
 {
     if(month >= 1 and month <= 12)
     {
-        m_longMonthName = QDate::longMonthName(month);
-        m_shortMonthName = QDate::shortMonthName(month);
+        m_longMonthName = QDate(2018,month, 1).toString( "MMMM");
+        m_shortMonthName = QDate(2018,month, 1).toString( "MMM");
     }
     else
     {
@@ -130,8 +130,9 @@ void HeaderWeekday::setWeekday(const int weekday)
 {
     if(weekday >= 1 and weekday <= 7)
     {
-        m_longDayName  = QDate::longDayName(weekday);
-        m_shortDayName = QDate::shortDayName(weekday);
+        m_longDayName  = QDate(2018, 1, weekday).toString( "dddd" );
+        m_shortDayName = QDate(2018, 1, weekday).toString( "dddd" );
+
     }
     else
     {
