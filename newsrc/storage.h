@@ -18,9 +18,9 @@
 #define STORAGE_H
 
 #include <QSqlDatabase>
-#include "usercalendar.h"
 #include "appointmentmanager.h"
-
+#include "datetime.h"
+#include "usercalendar.h"
 
 
 /* This is the only storage class at the moment. It stores appointments and user calendars in a
@@ -36,10 +36,9 @@ class Storage : public QObject
     Q_OBJECT
 
 public:
-    explicit Storage(QObject *parent = 0);
+    explicit Storage(QObject* parent = 0);
     void createDatabase();
     void loadAppointmentData(const int year);
-    void modifyAppointment(const Appointment &ioAppointment);
     void setAppointmentsCalendar(const QString appointmentId, const int calendarId);
     void removeAppointment(const QString id);   // remove appointment from storage
     void loadUserCalendarInfo();
@@ -49,8 +48,12 @@ public:
 private:
     QSqlDatabase m_db;
 
+    DateTime string2DateTime(const QString inDateTime, const QString inTimeZoneString );
+    void dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString );
+
+
 signals:
-    void signalLoadedUserCalendarFromStorage(UserCalendarInfo* & info);
+    void signalLoadedUserCalendarFromStorage(UserCalendarInfo* &info);
     void signalLoadedAppointmentFromStorage(const Appointment &apmData);
 
 public slots:

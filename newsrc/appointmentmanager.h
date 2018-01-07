@@ -190,6 +190,17 @@ struct Event {
 
 
 struct Appointment {
+    // helper methods
+    static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
+    static void makeDaymap( const QString inElementsString, QMultiMap<AppointmentRecurrence::WeekDay, int> &outMap );
+    static void makeIntList( const QString inElementsString, QList<int> &outList );
+    static void makeStringsFromDateList( const QList<DateTime> &inList, QString &outDtString, QString &outTzString );
+    static void makeStringFromDaymap( const QMultiMap<AppointmentRecurrence::WeekDay, int> inMap, QString &outString );
+    static void makeStringFromIntList( const QList<int> inIntList, QString &outString );
+    static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
+
+
+
     AppointmentBasics*          m_appBasics;
     AppointmentRecurrence*      m_appRecurrence;
     QList<AppointmentAlarm*>    m_appAlarms;

@@ -41,4 +41,5 @@ FORMS    += ui/mainwindow.ui \
 RESOURCES += ../daylight.qrc \
 
 DISTFILES += \
-    todo.txt
+    todo.txt \
+    database.txt

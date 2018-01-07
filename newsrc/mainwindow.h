@@ -19,6 +19,7 @@
 
 #include <QMainWindow>
 #include <QToolButton>
+
 #include "appointmentmanager.h"
 #include "storage.h"
 #include "usercalendar.h"
@@ -60,7 +61,7 @@ private:
     UserCalendarPool* m_userCalendarPool;
     UserCalendarNew* m_userCalendarNewDialog;
     void resizeCalendarView();                  // collector of resize events
-    void showAppointments(const QDate & date);  // update appointments
+    void showAppointments(const QDate &date);  // update appointments
 
 protected:
     void resizeEvent(QResizeEvent* event);

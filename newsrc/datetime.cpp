@@ -140,6 +140,14 @@ QString DateTime::toString() const
 }
 
 
+QString DateTime::toDtString() const
+{
+    if( m_isDate )
+        return QDateTime::toString( "yyyyMMdd" );
+    return QDateTime::toString( "yyyyMMddThhmmss");
+}
+
+
 bool DateTime::readDate( QString inDateString )
 {
     QDate d;

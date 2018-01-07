@@ -47,6 +47,7 @@ public:
     bool isDate() const { return m_isDate; }
     bool isUtc() const { return m_isUTC; }
     QString toString() const;
+    QString toDtString() const;
 
     // === operators ===
     DateTime &operator=( const DateTime &other )

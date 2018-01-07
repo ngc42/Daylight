@@ -14,10 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <QMessageBox>
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include <QDebug>
+#include <QMessageBox>
+#include "ui_mainwindow.h"
+#include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), m_ui(new Ui::MainWindow)
@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget* parent) :
             m_userCalendarPool, SLOT(slotAddUserCalendarFromStorage(UserCalendarInfo* &)));
     connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(AppointmentData, RecurrenceData)),
             this, SLOT(slotLoadedAppointmentFromStorage(AppointmentData, RecurrenceData)));
-    m_storage->loadAppointmentData();
+    m_storage->loadAppointmentData(2018);
     disconnect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(AppointmentData, RecurrenceData)),
                this, SLOT(slotLoadedAppointmentFromStorage(AppointmentData, RecurrenceData)));
 
@@ -92,6 +92,18 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+void MainWindow::resizeEvent(QResizeEvent* )
+{
+}
+
+
+void MainWindow::moveEvent(QMoveEvent* event)
+{
+    QSize tbSize = m_toolbarDateLabel->size();
+    QPoint pos = mapToGlobal(m_ui->mainToolBar->pos()) + m_toolbarDateLabel->pos() + QPoint(10, tbSize.height());
+
+    QMainWindow::moveEvent(event);
+}
 
 void MainWindow::slotLoadedAppointmentFromStorage(const Appointment &apmData)
 {

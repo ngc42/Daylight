@@ -1,0 +1,63 @@
+== usercalendars ==
+* id INT
+* title VARCHAR
+* redcolor INT
+* greencolor INT
+* bluecolor INT
+* visible BOOL
+
+== basics ==
+* uid VARCHAR
+* sequence INT
+* start DATETIME
+* start_tz VARCHAR
+* end DATETIME
+* end_tz VARCHAR
+* summary VARCHAR
+* description VARCHAR
+* busyfree INT
+
+== alarms ==
+* uid VARCHAR
+* rel_timeout BIGINT
+* repeats INT
+* pause_between BIGINT
+
+== recurrences ==
+* uid VARCHAR
+* frequency INT
+* count INT
+* interval INT
+* until DATETIME
+* until_tz VARCHAR
+* start_wd INT
+* exdates VARCHAR
+* exdates_tz VARCHAR
+* fixeddates VARCHAR
+* fixeddates_tz VARCHAR
+* bymonthlist VARCHAR
+* byweeknumberlist VARCHAR
+* byyeardaylist VARCHAR
+* bymonthdaylist VACHAR
+* bydaymap VARCHAR
+* byhourlist VARCHAR
+* byminutelist VARCHAR
+* bysecondlist VARCHAR
+* bysetposlist VARCHAR
+
+== events ==
+* uid VARCHAR
+* text VARCHAR
+* start DATETIME
+* end DATETIME
+* timezone VARCHAR
+* is_alarm BOOL
+
+== appointments ==
+* uid VARCHAR
+* min_year INT
+* max_year INT
+* allyears VARCHAR
+* usercalendar_id INT
+* have_recurrence BOOL
+* have_alarms BOOL

@@ -11,6 +11,8 @@ GNU General Public License for more details.
 */
 #include "appointmentmanager.h"
 #include <QDebug>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 /* ***********************************************
  * ******* AppointmentBasics *********************
@@ -1243,6 +1245,169 @@ void AppointmentRecurrence::sortDaytimeList( QList<DateTime> &inoutSortList )
             index++;
             bindex++;
         }
+    }
+}
+
+
+/* ***********************************************
+ * ******* Appointment ***************************
+ * **********************************************/
+
+void Appointment::makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList )
+{
+    outList.clear();
+    for( const QString s : inElementsString.split( ',', QString::SkipEmptyParts ) )
+    {
+        DateTime dt;
+        dt.readDateTime( s );
+        if( inTimeZone.count() > 0 )
+        {
+            QTimeZone tz( inTimeZone.toUtf8() );
+            if( tz.isValid() )
+                dt.setTimeZone(tz);
+        }
+        outList.append( dt );
+    }
+}
+
+
+void Appointment::makeDaymap( const QString inElementsString, QMultiMap<AppointmentRecurrence::WeekDay, int> &outMap )
+{
+    outMap.clear();
+    bool ok = false;
+    QRegularExpression re( "([+-]?\\d*)(\\D*)" );
+    AppointmentRecurrence::WeekDay weekDay = AppointmentRecurrence::WD_MO;
+    for( const QString elem : inElementsString.split( ',', QString::SkipEmptyParts ) )
+    {
+        QRegularExpressionMatch match = re.match( elem );
+        QString vString = match.captured( 1 );
+        QString dString = match.captured( 2 );
+
+        int value = 0;
+        if( vString.size() > 0 )
+        {
+            // value is optional
+            value = vString.toInt( &ok );
+        }
+        if( dString == "MO" )       weekDay = AppointmentRecurrence::WD_MO;
+        else if( dString == "TU" )  weekDay = AppointmentRecurrence::WD_TU;
+        else if( dString == "WE" )  weekDay = AppointmentRecurrence::WD_WE;
+        else if( dString == "TH" )  weekDay = AppointmentRecurrence::WD_TH;
+        else if( dString == "FR" )  weekDay = AppointmentRecurrence::WD_FR;
+        else if( dString == "SA" )  weekDay = AppointmentRecurrence::WD_SA;
+        else                        weekDay = AppointmentRecurrence::WD_SU;
+        outMap.insert( weekDay, value );
+    }
+}
+
+
+void Appointment::makeIntList( const QString inElementsString, QList<int> &outList )
+{
+    outList.clear();
+    bool ok;
+    for( const QString s : inElementsString.split( ',', QString::SkipEmptyParts ) )
+    {
+        outList.append( s.toInt(&ok) );
+    }
+}
+
+
+void Appointment::makeStringsFromDateList( const QList<DateTime> &inList, QString &outDtString, QString &outTzString )
+{
+    int count = inList.count();
+    int num = 0;
+    bool have_tz = false;
+    outDtString = "";
+    outTzString = "";
+    for( const DateTime dt : inList )
+    {
+        QString s;
+        num++;
+        if(num != count )
+            s = QString( "%1,").arg( dt.toDtString() );
+        else
+            s = QString( "%1").arg( dt.toDtString() );
+        outDtString = outDtString.append(s);
+        if( not ( dt.isDate() or have_tz ) )
+        {
+            if( dt.isUtc() )
+                outTzString = "Z";
+            else
+            {
+                QTimeZone tz = dt.timeZone();
+                if( tz.isValid() )
+                    outTzString = QString( tz.id() );
+            }
+            have_tz = true;
+        }
+    }
+}
+
+
+void Appointment::makeStringFromDaymap( const QMultiMap<AppointmentRecurrence::WeekDay, int> inMap, QString &outString )
+{
+    outString = "";
+    int count = inMap.count();
+    int num = 0;
+    for( const AppointmentRecurrence::WeekDay wd : inMap.uniqueKeys() )
+    {
+        QString k;
+        switch( wd )
+        {
+            case AppointmentRecurrence::WD_MO:  k = "MO"; break;
+            case AppointmentRecurrence::WD_TU:  k = "TU"; break;
+            case AppointmentRecurrence::WD_WE:  k = "WE"; break;
+            case AppointmentRecurrence::WD_TH:  k = "TH"; break;
+            case AppointmentRecurrence::WD_FR:  k = "FR"; break;
+            case AppointmentRecurrence::WD_SA:  k = "SA"; break;
+            case AppointmentRecurrence::WD_SU:  k = "SU"; break;
+        }
+        for( const int v : inMap.values( wd ) )
+        {
+            num++;
+            QString s;
+            if( num != count )
+                // strings are (-1MO), (0TU) and so on.
+                s = QString( "%1%2,").arg( v ).arg( k );
+            else
+                s = QString( "%1%2").arg( v ).arg( k );
+        }
+    }
+}
+
+
+void Appointment::makeStringFromIntList( const QList<int> inIntList, QString &outString )
+{
+    outString = "";
+    int count = inIntList.count();
+    int num = 0;
+    for( const int i : inIntList )
+    {
+        QString s;
+        num++;
+        if( num != count )
+            s = QString("%1,").arg( i );
+        else
+            s = QString("%1").arg( i );
+        outString = outString.append(s);
+    }
+}
+
+
+void Appointment::makeStringFromIntSet( const QSet<int> inIntSet, QString &outString )
+{
+    outString = "";
+    int count = inIntSet.count();
+    int num = 0;
+    for( const int i : inIntSet )
+    {
+        QString s;
+        num++;
+        if( num != count )
+            s = QString("%1,").arg( i );
+        else
+            s = QString("%1").arg( i );
+        outString = outString.append(s);
     }
 }
 

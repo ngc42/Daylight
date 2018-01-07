@@ -14,11 +14,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "storage.h"
-#include <QDateTime>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QDebug>
+#include <QSqlError>
+#include <QSqlQuery>
+
+#include "datetime.h"
+#include "storage.h"
 
 
 Storage::Storage(QObject *parent) :
@@ -35,12 +36,31 @@ void Storage::createDatabase()
     bool ok = m_db.open();
     qDebug() << "OPEN DATABASE --> " << ok;
 
+    /* @fixme: test, if table version exists
+     * select count(name) from sqlite_master where name ='version';
+     * Yes: check version
+     *  - same_version: ok.
+     *  - different_version: convert.
+     * No: create and write version
+     *
+     * Maybe, QSqlDatabase::tables() works for this
+     */
+
     QSqlQuery query = m_db.exec
             ("CREATE TABLE IF NOT EXISTS usercalendars"
              "(id INT, title VARCHAR, "
              "redcolor INT, greencolor INT, bluecolor INT, visible BOOL)");
     QSqlError err = query.lastError();
     qDebug() << " CREATE TABLE usercalendars ok:" << (err.type() == QSqlError::NoError )
+             << " err-text" << err.text();
+
+    query = m_db.exec
+            ("CREATE TABLE IF NOT EXISTS basics"
+             "(uid VARCHAR, sequence INT, "
+             "start DATETIME, start_tz VARCHAR, end DATETIME, end_tz VARCHAR,"
+             "summary VARCHAR, description VARCHAR, busyfree INT)");
+    err = query.lastError();
+    qDebug() << " CREATE TABLE basics ok:" << (err.type() == QSqlError::NoError )
              << " err-text" << err.text();
 
     query = m_db.exec
@@ -63,7 +83,7 @@ void Storage::createDatabase()
              "byhourlist VARCHAR, byminutelist VARCHAR, bysecondlist VARCHAR,"
              "bysetposlist VARCHAR)");
     err = query.lastError();
-    qDebug() << " CREATE TABLE recurrence ok:" << (err.type() == QSqlError::NoError )
+    qDebug() << " CREATE TABLE recurrences ok:" << (err.type() == QSqlError::NoError )
              << " err-text" << err.text();
 
     query = m_db.exec
@@ -87,44 +107,148 @@ void Storage::createDatabase()
 
 void Storage::loadAppointmentData(const int year )
 {
+    QSqlQuery qApmSelect( m_db );
+    qApmSelect.prepare( "SELECT uid, min_year, max_year, allyears, "
+                        "usercalendar_id, have_recurrence, have_alarms "
+                        "FROM appointments WHERE min_year <= :mi and max_year >= :ma" );
+    qApmSelect.bindValue( ":mi", year );
+    qApmSelect.bindValue( ":ma", year );
 
-    QSqlQuery qApmSelect("SELECT uid, min_year, max_year, allyears VARCHAR, "
-                         "usercalendar_id INT, have_recurrence, have_alarms "
-                         "FROM appointments", m_db);
-    QSqlQuery qRecSelect(m_db);
-    qRecSelect.prepare("SELECT appointment_id, rectype, forever, lastdt FROM recurrences WHERE appointment_id=:id");
+    QSqlQuery qApmBasics( m_db );
+    qApmBasics.prepare( "SELECT uid, sequence, start, start_tz, end, end_tz,"
+                        "summary, description, busyfree "
+                        "FROM basics WHERE uid=:puid" );
+
+    QSqlQuery qApmAlarm( m_db );
+    qApmAlarm.prepare( "SELECT uid, rel_timeout, repeats, pause_between "
+                        "FROM alarms WHERE uid=:puid" );
+
+    QSqlQuery qApmRecurrence( m_db );
+    qApmRecurrence.prepare( "SELECT uid, frequency, count, interval,"
+                            "until, until_tz,"
+                            "start_wd, exdates, exdates_tz,"
+                            "fixeddates, fixeddates_tz,"
+                            "bymonthlist, byweeknumberlist, byyeardaylist,"
+                            "bymonthdaylist, bydaymap, byhourlist, "
+                            "byminutelist, bysecondlist, bysetposlist "
+                            "FROM recurrences WHERE uid=:puid");
+
+    QSqlQuery qApmEvents( m_db );
+    qApmEvents.prepare( "SELECT uid, text, start, end,"
+                        "timezone, is_alarm "
+                        "FROM events WHERE uid=:puid");
+
     if( qApmSelect.exec() )
     {
         bool ok;
         while (qApmSelect.next())
-        {            
-            AppointmentData apmData;
-            apmData.m_appointmentId = qApmSelect.value(0).toInt(&ok);
-            apmData.m_userCalendarId = qApmSelect.value(1).toInt(&ok);
-            apmData.m_allDay = qApmSelect.value(2).toBool();
-            apmData.m_title = qApmSelect.value(3).toString();
-            apmData.m_startDt = qApmSelect.value(4).toDateTime();
-            apmData.m_endDt = qApmSelect.value(5).toDateTime();
+        {
+            // read Appointment
+            Appointment apmData;
+            apmData.m_uid       = qApmSelect.value(0).toString();
+            apmData.m_minYear   = qApmSelect.value(1).toString().toInt( &ok );
+            apmData.m_maxYear   = qApmSelect.value(2).toString().toInt( &ok );
+            QString yearsString = qApmSelect.value(3).toString();
+            for( const QString s : yearsString.split( ',', QString::SkipEmptyParts) )
+                apmData.m_yearsInQuestion.insert( s.toInt(&ok) );
+            apmData.m_userCalendarId    = qApmSelect.value(4).toString().toInt(&ok);
+            apmData.m_haveRecurrence    = qApmSelect.value(5).toBool();
+            apmData.m_haveAlarm         = qApmSelect.value(6).toBool();
 
-            RecurrenceData recData;
-            recData.m_appointmentId = apmData.m_appointmentId;
-            qRecSelect.bindValue(":id", apmData.m_appointmentId);
-            if( !qRecSelect.exec() )
+            // read AppointmentBasic
+            qApmBasics.bindValue( ":puid", apmData.m_uid );
+            if( not qApmBasics.exec() )
             {
-                qDebug() << "ERR - no recurrence for id in Storage::loadAppointmentData() - create an empty one";
-                qDebug() << " - Error is:" << qRecSelect.lastError().text();
-                recData.m_type = RecurrenceType::R_NO_RECURRENCE;
-                recData.m_forever = false;
-                recData.m_lastDt = QDateTime::currentDateTime();
+                qDebug() << "ERR qApmBasics.exec()";
+                return;
             }
-            else
+            qApmBasics.first();
+            AppointmentBasics* apmBasic = new AppointmentBasics();
+            apmBasic->m_uid      = qApmBasics.value(0).toString();
+            apmBasic->m_sequence = qApmBasics.value(1).toString().toInt(&ok);
+            apmBasic->m_dtStart  = string2DateTime( qApmBasics.value(2).toString(), qApmBasics.value(3).toString() );
+            apmBasic->m_dtEnd    = string2DateTime( qApmBasics.value(4).toString(), qApmBasics.value(5).toString() );
+            apmBasic->m_summary  = qApmBasics.value(6).toString();
+            apmBasic->m_description  = qApmBasics.value(7).toString();
+            apmBasic->m_busyFree     = static_cast<AppointmentBasics::BusyFreeType>(qApmBasics.value(8).toString().toInt(&ok));
+            apmData.m_appBasics = apmBasic;
+
+            // read Alarms
+            if( apmData.m_haveAlarm )
             {
-                qRecSelect.first();
-                recData.m_type = (RecurrenceType) qRecSelect.value(1).toInt(&ok);
-                recData.m_forever = qRecSelect.value(2).toBool();
-                recData.m_lastDt = qRecSelect.value(3).toDateTime();
+                qApmAlarm.bindValue( ":puid", apmData.m_uid );
+                if( not qApmAlarm.exec() )
+                {
+                    qDebug() << "ERR qApmAlarm.exec()";
+                    return;
+                }
+                while( qApmAlarm.next() )
+                {
+                    AppointmentAlarm* alarm = new AppointmentAlarm();
+                    alarm->m_alarmSecs      = qApmAlarm.value(1).toLongLong(&ok);
+                    alarm->m_repeatNumber   = qApmAlarm.value(2).toInt(&ok);
+                    alarm->m_pauseSecs      = qApmAlarm.value(3).toLongLong(&ok);
+                    apmData.m_appAlarms.append(alarm);
+                }
             }
-            emit signalLoadedAppointmentFromStorage(apmData, recData);
+
+            // read Recurrences
+            if( apmData.m_haveRecurrence )
+            {
+                qApmRecurrence.bindValue( ":puid", apmData.m_uid );
+                if( not qApmRecurrence.exec() )
+                {
+                    qDebug() << "ERR qApmRecurrence.exec()";
+                    return;
+                }
+
+                qApmRecurrence.first();
+                AppointmentRecurrence* apmRecurrence = new AppointmentRecurrence();
+
+
+                apmRecurrence->m_frequency  = static_cast<AppointmentRecurrence::RecurrenceFrequencyType>(qApmRecurrence.value(1).toInt(&ok));
+                apmRecurrence->m_count      = qApmRecurrence.value(2).toString().toInt(&ok);
+                apmRecurrence->m_interval   = qApmRecurrence.value(3).toString().toInt(&ok);
+                apmRecurrence->m_until      = string2DateTime( qApmRecurrence.value(4).toString(), qApmRecurrence.value(5).toString());
+                apmRecurrence->m_startWeekday = static_cast<AppointmentRecurrence::WeekDay>(qApmRecurrence.value(6).toInt(&ok));
+                Appointment::makeDateList( qApmRecurrence.value(7).toString(),
+                                                     qApmRecurrence.value(8).toString(),
+                                                     apmRecurrence->m_exceptionDates );
+                Appointment::makeDateList( qApmRecurrence.value(9).toString(),
+                                                     qApmRecurrence.value(10).toString(),
+                                                     apmRecurrence->m_fixedDates );
+                Appointment::makeIntList( qApmRecurrence.value(12).toString(), apmRecurrence->m_byMonthList );
+                Appointment::makeIntList( qApmRecurrence.value(13).toString(), apmRecurrence->m_byWeekNumberList );
+                Appointment::makeIntList( qApmRecurrence.value(14).toString(), apmRecurrence->m_byYearDayList );
+                Appointment::makeIntList( qApmRecurrence.value(15).toString(), apmRecurrence->m_byMonthDayList );
+                Appointment::makeDaymap( qApmRecurrence.value(16).toString(), apmRecurrence->m_byDayMap );
+                Appointment::makeIntList( qApmRecurrence.value(17).toString(), apmRecurrence->m_byHourList );
+                Appointment::makeIntList( qApmRecurrence.value(18).toString(), apmRecurrence->m_byMinuteList );
+                Appointment::makeIntList( qApmRecurrence.value(19).toString(), apmRecurrence->m_bySecondList );
+                Appointment::makeIntList( qApmRecurrence.value(20).toString(), apmRecurrence->m_bySetPosList );
+                apmData.m_appRecurrence = apmRecurrence;
+            }
+
+            // read Events
+            qApmEvents.bindValue( ":puid", apmData.m_uid );
+            if( not qApmEvents.exec() )
+            {
+                qDebug() << "ERR qApmEvents.exec()";
+                return;
+            }
+            while (qApmEvents.next())
+            {
+                Event e;
+                e.m_uid         = qApmEvents.value(0).toBool();
+                e.m_displayText = qApmEvents.value(1).toString();
+                QString tzString    = qApmEvents.value(4).toString();
+                e.m_startDt     = string2DateTime( qApmEvents.value(2).toString(), tzString );
+                e.m_endDt       = string2DateTime( qApmEvents.value(3).toString(), tzString );
+                e.m_isAlarmEvent    = qApmEvents.value(5).toBool();
+                apmData.m_eventList.append( e );
+            }
+
+            emit signalLoadedAppointmentFromStorage(apmData);
         }
     }
     else
@@ -132,48 +256,10 @@ void Storage::loadAppointmentData(const int year )
 }
 
 
-void Storage::modifyAppointment(const Appointment& ioAppointment)
-{
-    if(ioAppointment.m_appointmentId != recData.m_appointmentId)
-    {
-        qDebug() << "ERR: Storage::slotAppointmentModify(): id mismatch";
-        return;
-    }
-
-    QSqlQuery qApm(m_db);
-    qApm.prepare("UPDATE appointments SET usercalendar_id=:ucid, allday=:allday, title=:title, startdt=:startdt, enddt=:enddt WHERE appointment_id=:id");
-    qApm.bindValue(":ucid", ioAppointment.m_userCalendarId);
-    qApm.bindValue(":allday", ioAppointment.m_allDay);
-    qApm.bindValue(":title", ioAppointment.m_title);
-    qApm.bindValue(":startdt", ioAppointment.m_startDt);
-    qApm.bindValue(":enddt", ioAppointment.m_endDt);
-    qApm.bindValue(":id", ioAppointment.m_appointmentId);
-
-    QSqlQuery qRec(m_db);
-    qRec.prepare("UPDATE recurrences SET rectype=:rectype, forever=:forever, lastdt=:lastdt WHERE appointment_id=:id");
-    qRec.bindValue(":rectype", recData.m_type);
-    qRec.bindValue(":forever", recData.m_forever);
-    qRec.bindValue(":lastdt", recData.m_lastDt);
-    qRec.bindValue(":id", recData.m_appointmentId);
-
-    if( m_db.transaction() )
-    {
-        qApm.exec();
-        qRec.exec();
-        m_db.commit();
-    }
-    else
-    {
-        qApm.exec();
-        qRec.exec();
-    }
-}
-
-
 void Storage::setAppointmentsCalendar(const QString appointmentId, const int calendarId)
 {
     QSqlQuery qUpdate(m_db);
-    qUpdate.prepare("UPDATE appointments SET usercalendar_id=:calid  WHERE appointment_id=:id");
+    qUpdate.prepare("UPDATE appointments SET usercalendar_id=:calid  WHERE uid=:id");
     qUpdate.bindValue(":calid", calendarId);
     qUpdate.bindValue(":id", appointmentId);
     if(! qUpdate.exec())
@@ -183,26 +269,40 @@ void Storage::setAppointmentsCalendar(const QString appointmentId, const int cal
 }
 
 
-void Storage::removeAppointment(const int id)
+void Storage::removeAppointment(const QString id)
 {
     QSqlQuery qApm(m_db);
-    qApm.prepare("DELETE FROM appointments WHERE appointment_id=:id");
+    qApm.prepare("DELETE FROM appointments WHERE uid=:id");
     qApm.bindValue(":id", id);
-
+    QSqlQuery qBas(m_db);
+    qBas.prepare("DELETE FROM basics WHERE uid=:id");
+    qBas.bindValue(":id", id);
+    QSqlQuery qAla(m_db);
+    qAla.prepare("DELETE FROM alarms WHERE uid=:id");
+    qAla.bindValue(":id", id);
     QSqlQuery qRec(m_db);
-    qRec.prepare("DELETE FROM recurrences WHERE appointment_id=:id");
+    qRec.prepare("DELETE FROM recurrences WHERE uid=:id");
     qRec.bindValue(":id", id);
+    QSqlQuery qEve(m_db);
+    qEve.prepare("DELETE FROM events WHERE uid=:id");
+    qEve.bindValue(":id", id);
 
     if( m_db.transaction() )
     {
         qApm.exec();
+        qBas.exec();
+        qAla.exec();
         qRec.exec();
+        qEve.exec();
         m_db.commit();
     }
     else
     {
         qApm.exec();
+        qBas.exec();
+        qAla.exec();
         qRec.exec();
+        qEve.exec();
     }
 }
 
@@ -275,82 +375,165 @@ void Storage::insertUserCalendarInfo(const UserCalendarInfo* ucinfo)
 void Storage::removeUserCalendar(const int id)
 {
     QSqlQuery qApmSelect(m_db);
-    qApmSelect.prepare("SELECT appointment_id, usercalendar_id FROM appointments WHERE usercalendar_id=:id");
-    QSqlQuery qRecDelete(m_db);
-    qRecDelete.prepare("DELETE FROM recurrences WHERE appointment_id=:appid");
-    QSqlQuery qApmDelete(m_db);
-    qApmDelete.prepare("DELETE FROM appointments WHERE usercalendar_id=:id");
-    QSqlQuery qCalDelete(m_db);
-    qCalDelete.prepare("DELETE FROM usercalendars WHERE id=:id");
+    qApmSelect.prepare("SELECT uid, usercalendar_id FROM appointments WHERE usercalendar_id=:id");
 
-    // 1. Delete recurrences based on appointments with calendar id
+    QSqlQuery qUcalDelete(m_db);
+    qUcalDelete.prepare("DELETE FROM usercalendars WHERE id=:id");
+
+    // Delete appointments
     qApmSelect.bindValue(":id", id);
     if( qApmSelect.exec() )
     {
-        bool ok;
         while (qApmSelect.next())
         {
-            int appId = qApmSelect.value(0).toInt(&ok);
-            qRecDelete.bindValue(":appid", appId);
-            if(! qRecDelete.exec() )
-            {
-                qDebug() << "ERR: Storage::removeUserCalendar(), qRecDelete, " << qRecDelete.lastError().text();
-            }
+            QString uid = qApmSelect.value(0).toString();
+            removeAppointment( uid );
         }
     }
     else
-    {
         qDebug() << "ERR: Storage::removeUserCalendar(), qApmSelect, " << qApmSelect.lastError().text();
-    }
-    // 2. delete appointments
-    qApmDelete.bindValue(":id", id);
-    if(! qApmDelete.exec() )
-    {
-        qDebug() << "ERR: Storage::removeUserCalendar(), qApmDelete, " << qApmDelete.lastError().text();
-    }
+
     // 3. delete user calendar
-    qCalDelete.bindValue(":id", id);
-    if(! qCalDelete.exec() )
+    qUcalDelete.bindValue(":id", id);
+    if(not qUcalDelete.exec() )
+        qDebug() << "ERR: Storage::removeUserCalendar(), qCalDelete, " << qUcalDelete.lastError().text();
+}
+
+
+DateTime Storage::string2DateTime(const QString inDateTime, const QString inTimeZoneString )
+{
+    DateTime d;
+    d.readDateTime( inDateTime );
+    if( inTimeZoneString == 'Z' )
     {
-        qDebug() << "ERR: Storage::removeUserCalendar(), qCalDelete, " << qCalDelete.lastError().text();
+        d.setTimeSpec( Qt::UTC );
+        return d;
+    }
+    if( inTimeZoneString.count() == 0 )
+        return d;
+    QTimeZone tz( inTimeZoneString.toUtf8() );
+    if( tz.isValid() )
+        d.setTimeZone(tz);
+    return d;
+}
+
+
+void Storage::dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString )
+{
+    if( inDateTime.isDate() )
+    {
+        dtString = inDateTime.toDtString();
+        tzString = "";
+    }
+    else
+    {
+        dtString = inDateTime.toDtString();
+        if( inDateTime.isUtc() )
+            tzString = "Z";
+        else
+        {
+            QTimeZone tz = inDateTime.timeZone();
+            if( tz.isValid() )
+                tzString = QString( tz.id() );
+            else
+                tzString = "";
+        }
     }
 }
 
 
-void Storage::slotAppointmentAdd(const Appointment& apmData)
+void Storage::slotAppointmentAdd(const Appointment &apmData)
 {
-    if(apmData.m_appointmentId != recData.m_appointmentId)
+    QSqlQuery iApm(m_db);
+    iApm.prepare("INSERT INTO appointments VALUES(:uid, :minyear, :maxyear, :allyears, :calid, :haverec, :havealarm)");
+    iApm.bindValue(":uid", apmData.m_uid);
+    iApm.bindValue(":minyear", apmData.m_minYear);
+    iApm.bindValue(":maxyear", apmData.m_maxYear);
+    QString intSetString;
+    Appointment::makeStringFromIntSet( apmData.m_yearsInQuestion, intSetString );
+    iApm.bindValue(":allyears", intSetString );
+    iApm.bindValue(":calid", apmData.m_userCalendarId );
+    iApm.bindValue(":haverec", apmData.m_haveRecurrence );
+    iApm.bindValue(":havealarm", apmData.m_haveAlarm );
+    iApm.exec();
+
+    QSqlQuery iBas(m_db);
+    iBas.prepare("INSERT INTO basics VALUES(:uid, :sequence, :start, :starttz, :end, :endtz, :summary, :description, :busyfree)");
+    iBas.bindValue(":uid", apmData.m_uid);
+    iBas.bindValue(":sequence", apmData.m_appBasics->m_sequence);
+    QString dtString;
+    QString tzString;
+    dateTime2Strings( apmData.m_appBasics->m_dtStart, dtString, tzString );
+    iBas.bindValue(":start", dtString );
+    iBas.bindValue(":starttz", tzString );
+    dateTime2Strings( apmData.m_appBasics->m_dtEnd, dtString, tzString );
+    iBas.bindValue(":end", dtString );
+    iBas.bindValue(":endtz", tzString );
+    iBas.bindValue(":summary", apmData.m_appBasics->m_summary );
+    iBas.bindValue(":description", apmData.m_appBasics->m_description );
+    iBas.bindValue(":busyfree", static_cast<int>(apmData.m_appBasics->m_busyFree) );
+    iBas.exec();
+
+    for( const AppointmentAlarm* alarm : apmData.m_appAlarms )
     {
-        qDebug() << "ERR: Storage::slotAppointmentAdd(): id mismatch";
-        return;
+        QSqlQuery iAla(m_db);
+        iAla.prepare("INSERT INTO basics VALUES(:uid, :reltmout, :repeat, :pause)");
+        iAla.bindValue(":uid", apmData.m_uid );
+        iAla.bindValue(":reltmout", alarm->m_alarmSecs );
+        iAla.bindValue(":repeat", alarm->m_repeatNumber );
+        iAla.bindValue(":pause", alarm->m_pauseSecs );
+        iAla.exec();
     }
 
-    QSqlQuery qApm(m_db);
-    qApm.prepare("INSERT INTO appointments VALUES(:id, :ucid, :allday, :title, :startdt, :enddt)");
-    qApm.bindValue(":id", apmData.m_appointmentId);
-    qApm.bindValue(":ucid", apmData.m_userCalendarId);
-    qApm.bindValue(":allday", apmData.m_allDay);
-    qApm.bindValue(":title", apmData.m_title);
-    qApm.bindValue(":startdt", apmData.m_startDt);
-    qApm.bindValue(":enddt", apmData.m_endDt);
+    QSqlQuery iRec(m_db);
+    iRec.prepare("INSERT INTO recurrences VALUES(:uid, :frequency, :count, :interval, :until, :untiltz, "
+                 ":startwd, :exdates, :exdatestz, :fixeddates, :fixeddatestz, "
+                 ":bywnlist, :byydlist, :bymdlist, :bydmap,"
+                 ":byhlist, :bymlist, :byslist)");
+    iRec.bindValue(":uid", apmData.m_uid);
+    iRec.bindValue(":frequency", static_cast<int>(apmData.m_appRecurrence->m_frequency) );
+    iRec.bindValue(":count", apmData.m_appRecurrence->m_count );
+    iRec.bindValue(":interval", apmData.m_appRecurrence->m_interval );
+    dateTime2Strings( apmData.m_appRecurrence->m_until, dtString, tzString );
+    iRec.bindValue(":until", dtString );
+    iRec.bindValue(":untiltz", tzString );
+    iRec.bindValue(":startwd", static_cast<int>(apmData.m_appRecurrence->m_startWeekday) );
+    Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_exceptionDates, dtString, tzString );
+    iRec.bindValue(":exdates", dtString );
+    iRec.bindValue(":exdatestz", tzString );
+    Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_fixedDates, dtString, tzString );
+    iRec.bindValue(":fixeddates", dtString );
+    iRec.bindValue(":fixeddatestz", tzString );
+    QString listString;
+    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byWeekNumberList, listString );
+    iRec.bindValue(":bywnlist", listString );
+    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byYearDayList, listString );
+    iRec.bindValue(":byydlist", listString );
+    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byMonthDayList, listString );
+    iRec.bindValue(":bymdlist", listString );
+    Appointment::makeStringFromDaymap( apmData.m_appRecurrence->m_byDayMap, listString );
+    iRec.bindValue(":bydmap", listString );
+    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byHourList, listString );
+    iRec.bindValue(":byhlist", listString );
+    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byMinuteList, listString );
+    iRec.bindValue(":bymlist", listString );
+    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_bySecondList, listString );
+    iRec.bindValue(":byslist", listString );
+    iRec.exec();
 
-    QSqlQuery qRec(m_db);
-    qRec.prepare("INSERT INTO recurrences VALUES(:id, :rectype, :forever, :lastdt)");
-    qRec.bindValue(":id", recData.m_appointmentId);
-    qRec.bindValue(":rectype", recData.m_type);
-    qRec.bindValue(":forever", recData.m_forever);
-    qRec.bindValue(":lastdt", recData.m_lastDt);
-
-    if( m_db.transaction() )
+    QSqlQuery iEve(m_db);
+    for( const Event e : apmData.m_eventList )
     {
-        qApm.exec();
-        qRec.exec();
-        m_db.commit();
-    }
-    else
-    {
-        qApm.exec();
-        qRec.exec();
+        iEve.prepare("INSERT INTO events VALUES(:uid, :text, :start, :end, :timezone, :is_alarm)");
+        iEve.bindValue(":uid", apmData.m_uid);
+        iEve.bindValue(":text", e.m_displayText );
+        dateTime2Strings( e.m_startDt, dtString, tzString );
+        iEve.bindValue(":start", dtString );
+        dateTime2Strings( e.m_endDt, dtString, tzString );
+        iEve.bindValue(":end", dtString );
+        iEve.bindValue(":timezone", tzString );
+        iEve.bindValue(":is_alarm", e.m_isAlarmEvent );
+        iEve.exec();
     }
 }
 
