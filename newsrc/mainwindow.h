@@ -56,10 +56,11 @@ private:
     Ui::MainWindow* m_ui;
     Storage* m_storage;                         // database of appointments, storage on disk
     QActionGroup* m_groupCalendarAppearance;    // Year, Month, ...
+    UserCalendarPool* m_userCalendarPool;       // Container for user calendars
+    UserCalendarNew* m_userCalendarNewDialog;   // Dialog to add a user calendar
+
     QToolButton* m_toolbarDateLabel;            // label/button to show current selected date and start navigationDialog
     QToolButton* m_toolbarUserCalendarMenu;     // shows user calendars, switch them on/off
-    UserCalendarPool* m_userCalendarPool;
-    UserCalendarNew* m_userCalendarNewDialog;
     void resizeCalendarView();                  // collector of resize events
     void showAppointments(const QDate &date);  // update appointments
 
@@ -68,7 +69,14 @@ protected:
     void moveEvent(QMoveEvent* event);
 
 public slots:
+    // file
+    void slotOpenIcalFile();
     void slotLoadedAppointmentFromStorage(const Appointment &inAppointment);
+
+    // User calendars
+    void slotAddUserCalendar();
+    void slotAddUserCalendarDlgFinished(int returncode);
+
 };
 
 
