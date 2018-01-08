@@ -104,43 +104,19 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
         m_ui->teMessages->insertPlainText( "Validated!\n" );
     else
         m_ui->teMessages->insertPlainText( "Has Errors\n" );
-
-}
-
-/*
-void MainWindow::parseVCalendarfile()
-{
-    AppointmentManager *manager = new AppointmentManager();
-    interpreter.readIcal( vcal, manager );
-    int num = 1;
-    for( Appointment* t : manager->m_appointmentList )
-    {
-        QString s = QString( "==== Appointment #%1 ====\n").arg( num );
-        num++;
-        m_ui->textEdit_2->insertPlainText( s );
-        if( t->m_appBasics )
-            m_ui->textEdit_2->insertPlainText( t->m_appBasics->contententToString() );
-        if( t->m_appRecurrence )
-            m_ui->textEdit_2->insertPlainText( t->m_appRecurrence->contentToString() );
-        for( const AppointmentAlarm* alarm : t->m_appAlarms )
-            m_ui->textEdit_2->insertPlainText( alarm->contentToString() );
-        s = QString( "---- Dates ----\n");
-        m_ui->textEdit_2->insertPlainText( s );
-        for( const Event e : t->m_eventList )
-        {
-            QString a = e.m_startDt.toString() + " - " + e.m_endDt.toString() + '\n';
-            m_ui->textEdit_2->insertPlainText( a );
-        }
-
+    connect( &interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
+             this, SLOT(slotReceiveAppointment( const Appointment* )) );
+    interpreter.readIcal( vcal );
+    disconnect( &interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
+               this, SLOT(slotReceiveAppointment( const Appointment* )) );
     }
-}
 
 
-void MainWindow::slotParseEditorText()
+void IcalImportDialog::slotReceiveAppointment( const Appointment* appointment )
 {
-    m_ui->listWidget->clear();
-    m_ui->textEdit_2->clear();
-    parseVCalendarfile();
+    static int num = 1;
+    QString s = QString( "==== Appointment #%1 ====\n" ).arg( num );
+    num++;
+    if( appointment->m_appBasics )
+        m_ui->teMessages->insertPlainText( appointment->m_appBasics->contententToString() );
 }
-*/
-

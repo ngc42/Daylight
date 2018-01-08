@@ -199,8 +199,6 @@ struct Appointment {
     static void makeStringFromIntList( const QList<int> inIntList, QString &outString );
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
 
-
-
     AppointmentBasics*          m_appBasics;
     AppointmentRecurrence*      m_appRecurrence;
     QList<AppointmentAlarm*>    m_appAlarms;
@@ -216,19 +214,7 @@ struct Appointment {
     // getter
     bool                        m_haveRecurrence;
     bool                        m_haveAlarm;
-
 };
 
-
-struct AppointmentManager
-{
-    AppointmentManager();
-
-    void makeAppointment( AppointmentBasics* &inAppBasics,
-                    AppointmentRecurrence* &inAppRecurrence,
-                    QList<AppointmentAlarm*> &inAppAlarmList );
-
-    QList<Appointment*>     m_appointmentList;
-};
 
 #endif // APPOINTMENTMANAGER_H

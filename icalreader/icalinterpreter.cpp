@@ -19,10 +19,10 @@ IcalInterpreter::IcalInterpreter()
 }
 
 
-void IcalInterpreter::readIcal( const ICalBody &inIcal, AppointmentManager* &outAppManager )
+void IcalInterpreter::readIcal( const ICalBody &inIcal )
 {
     if( not inIcal.m_vEventComponents.isEmpty() )
-    {      
+    {
         for( const VEventComponent* component : inIcal.m_vEventComponents )
         {
             AppointmentBasics *basic = nullptr;
@@ -31,12 +31,11 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal, AppointmentManager* &out
             if( eventHasUsableRRuleOrNone( component ) ) // usable for our appointment structure?
             {
                 readEvent( component, basic, alarmList, recurrence );
-                outAppManager->makeAppointment( basic, recurrence, alarmList );
+                makeAppointment( basic, recurrence, alarmList );
             }
         }
     }
 }
-
 
 void IcalInterpreter::readEvent( const VEventComponent* &inVEventComponent,
                 AppointmentBasics* &outAppBasics,
@@ -377,4 +376,45 @@ bool IcalInterpreter::eventHasUsableRRuleOrNone( const VEventComponent* inVEvent
         }
     }
     return ret;
+}
+
+
+void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
+                                       AppointmentRecurrence* &inAppRecurrence,
+                                       QList<AppointmentAlarm*> &inAppAlarmList )
+{
+    Appointment* t = new Appointment();
+    t->m_appBasics = inAppBasics;
+    t->m_appRecurrence = inAppRecurrence;
+    t->m_appAlarms = inAppAlarmList;
+
+    // make an event list
+    if( inAppRecurrence )
+    {
+        qint64 seconds = t->m_appBasics->m_dtStart.secsTo( t->m_appBasics->m_dtEnd );
+        QList<DateTime> list = t->m_appRecurrence->recurrenceStartDates( t->m_appBasics->m_dtStart );
+
+        for( const DateTime dt : list )
+        {
+            Event e;
+            e.m_uid = t->m_appBasics->m_uid;
+            e.m_displayText = t->m_appBasics->m_summary;
+            e.m_startDt = dt;
+            QDateTime qdt = dt.addSecs( seconds );
+            e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
+            t->m_eventList.append( e );
+            t->m_yearsInQuestion.insert( dt.date().year() );
+        }
+    }
+    else
+    {
+        Event e;
+        e.m_uid = t->m_appBasics->m_uid;
+        e.m_displayText = t->m_appBasics->m_summary;
+        e.m_startDt = t->m_appBasics->m_dtStart;
+        e.m_endDt = t->m_appBasics->m_dtEnd;
+        t->m_eventList.append( e );
+        t->m_yearsInQuestion.insert( e.m_startDt.date().year() );
+    }
+    emit sigAppointmentReady( t );
 }

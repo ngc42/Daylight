@@ -17,13 +17,19 @@ GNU General Public License for more details.
 #include "property.h"
 #include "datetime.h"
 
+#include <QObject>
 
-struct IcalInterpreter
+
+class IcalInterpreter : public QObject
 {
+    Q_OBJECT
+
+public:
     IcalInterpreter();
 
-    void readIcal( const ICalBody &inIcal, AppointmentManager* &outAppManager );
+    void readIcal( const ICalBody &inIcal );
 
+private:
     void readEvent( const VEventComponent* &inVEventComponent,
                     AppointmentBasics* &outAppBasics,
                     QList<AppointmentAlarm*> &outAppAlarmList,
@@ -42,6 +48,15 @@ struct IcalInterpreter
      */
     bool eventHasUsableRRuleOrNone( const VEventComponent* inVEventComponent );
 
+    /* make an appointment and signal it to the outside world */
+    void makeAppointment( AppointmentBasics* &inAppBasics,
+                          AppointmentRecurrence* &inAppRecurrence,
+                          QList<AppointmentAlarm*> &inAppAlarmList );
+
+signals:
+    void sigAppointmentReady( const Appointment* appointment );
+
+public slots:
 };
 
 #endif // ICALINTERPRETER_H
