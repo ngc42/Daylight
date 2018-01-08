@@ -1,0 +1,19 @@
+* https://tools.ietf.org/html/rfc5545
+
+
+== Aktuell ==
+* Eventliste erzeugen
+* Eventliste unter Berücksichtigung von Alarm erzeugen
+* "Daily"-Eventliste erzeugen ist sooooooo langsam!
+
+== ZUKUNFT ==
+* Es fehlt IANA-Component (bleibt auch so?)
+
+* Propertys stärker validieren?
+
+* RDATE in icalinterpreter noch nicht eingebunden. Es fehlen Beispiele.
+
+== TESTEN ==
+* Property RDATE nirgends eingebunden
+
+

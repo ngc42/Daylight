@@ -1,0 +1,6 @@
+BEGIN:VCALENDAR
+CALSCALE:GREGORIAN
+VERSION:2.0
+ATTENDEE;MEMBER="mailto:DEV-GROUP@example.com":mailto:joecool@example.com
+ATTENDEE;SENT-BY=mailto:jan_doe@example.com;CN=John Smith:mailto:jsmith@example.com
+END:VCALENDAR
