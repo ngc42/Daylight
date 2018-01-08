@@ -26,7 +26,6 @@ SOURCES += main.cpp\
     appointmentmanager.cpp \
     ../icalreader/icalbody.cpp \
     ../icalreader/icalinterpreter.cpp \
-    ../icalreader/mainwindow.cpp \
     ../icalreader/parameter.cpp \
     ../icalreader/property.cpp \
     ../icalreader/standarddaylightcomponent.cpp \

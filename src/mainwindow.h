@@ -21,6 +21,7 @@
 #include <QToolButton>
 
 #include "appointmentmanager.h"
+#include "icalimportdialog.h"
 #include "storage.h"
 #include "usercalendar.h"
 #include "usercalendarnew.h"
@@ -29,7 +30,6 @@
 namespace Ui {
     class MainWindow;
 }
-
 
 
 /* Representing the main window and same time controller of storage, appointment-pool,
@@ -56,6 +56,7 @@ private:
     Ui::MainWindow* m_ui;
     Storage* m_storage;                         // database of appointments, storage on disk
     QActionGroup* m_groupCalendarAppearance;    // Year, Month, ...
+    IcalImportDialog*   m_icalImportDialog;     // Dialog to read Ical files
     UserCalendarPool* m_userCalendarPool;       // Container for user calendars
     UserCalendarNew* m_userCalendarNewDialog;   // Dialog to add a user calendar
 

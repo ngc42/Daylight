@@ -58,6 +58,10 @@ MainWindow::MainWindow(QWidget* parent) :
     m_userCalendarNewDialog = new UserCalendarNew(this);
     m_userCalendarNewDialog->hide();
 
+    // ical import dialog
+    m_icalImportDialog = new IcalImportDialog( this );
+    m_icalImportDialog->hide();
+
     // connect main signals
     connect(m_ui->actionOpenICalFile, SIGNAL(triggered()), this, SLOT(slotOpenIcalFile()));
     connect(m_ui->actionExit, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -117,24 +121,9 @@ void MainWindow::slotOpenIcalFile()
     if( dlg->exec() == QDialog::Accepted )
     {
         QStringList fileNames = dlg->selectedFiles();
-        if( fileNames.count() == 1 )
-        {
-            QFile file( fileNames.at( 0 ) );
-            if( file.open( QIODevice::ReadOnly | QIODevice::Text ) )
-            {
-                /*
-                m_ui->textEdit->clear();
-                m_ui->textEdit_2->clear();
-                while( ! file.atEnd() )
-                {
-                    QString s = file.readLine();
-                    m_ui->textEdit->insertPlainText( s );
-                    m_ui->listWidget->clear();
-                }
-                */
-                file.close();
-            }
-        }
+        m_icalImportDialog->show();
+        m_icalImportDialog->setFilenames( fileNames );
+
     }
 }
 
