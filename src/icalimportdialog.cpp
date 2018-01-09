@@ -67,7 +67,7 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
 {
     m_ui->pBarEvents->reset();
     ICalBody vcal;
-    IcalInterpreter interpreter;
+    IcalInterpreter* interpreter = new IcalInterpreter( this );
 
     QString dbg = QString( "<strong>parse: %1</strong>\n").arg( inFilename );
     m_ui->teMessages->insertHtml( dbg );
@@ -104,10 +104,11 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
         m_ui->teMessages->insertPlainText( "Validated!\n" );
     else
         m_ui->teMessages->insertPlainText( "Has Errors\n" );
-    connect( &interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
+    connect( interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
              this, SLOT(slotReceiveAppointment( const Appointment* )) );
-    interpreter.readIcal( vcal );
-    disconnect( &interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
+    interpreter->setBody( vcal );
+    interpreter->start();
+    disconnect( interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
                this, SLOT(slotReceiveAppointment( const Appointment* )) );
     }
 

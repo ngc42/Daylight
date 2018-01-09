@@ -62,8 +62,12 @@ struct AppointmentAlarm
 };
 
 
-struct AppointmentRecurrence
+struct AppointmentRecurrence : QObject
 {
+
+    Q_OBJECT
+
+public:
     // === Types ===
     enum WeekDay {
         WD_MO = 1,  WD_TU = 2,  WD_WE = 3,  WD_TH = 4,
@@ -156,6 +160,9 @@ struct AppointmentRecurrence
     QList<int>                  m_byMinuteList;
     QList<int>                  m_bySecondList;
     QList<int>                  m_bySetPosList;
+
+signals:
+
 };
 
 

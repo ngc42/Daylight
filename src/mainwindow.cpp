@@ -128,7 +128,7 @@ void MainWindow::slotOpenIcalFile()
 }
 
 
-void MainWindow::slotLoadedAppointmentFromStorage(const Appointment &apmData)
+void MainWindow::slotLoadedAppointmentFromStorage(const Appointment /*&apmData*/ )
 {
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
 }

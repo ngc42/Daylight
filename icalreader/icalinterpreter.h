@@ -17,15 +17,23 @@ GNU General Public License for more details.
 #include "property.h"
 #include "datetime.h"
 
-#include <QObject>
+#include <QThread>
 
 
-class IcalInterpreter : public QObject
+class IcalInterpreter : public QThread
 {
     Q_OBJECT
 
 public:
-    IcalInterpreter();
+    IcalInterpreter( QObject* parent = Q_NULLPTR  );
+
+    void run() override
+    {
+        readIcal( m_inIcal );
+    }
+
+    void setBody( const ICalBody &inIcal ) { m_inIcal = inIcal; }
+    ICalBody m_inIcal;
 
     void readIcal( const ICalBody &inIcal );
 

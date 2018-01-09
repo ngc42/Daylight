@@ -14,7 +14,9 @@ GNU General Public License for more details.
 
 #include <QDebug>
 
-IcalInterpreter::IcalInterpreter()
+IcalInterpreter::IcalInterpreter( QObject *parent )
+    :
+      QThread( parent )
 {
 }
 
