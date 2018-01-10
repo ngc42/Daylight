@@ -2,6 +2,8 @@
 #define ICALIMPORTDIALOG_H
 
 #include "appointmentmanager.h"
+#include "../icalreader/icalinterpreter.h"
+
 
 #include <QDebug>
 #include <QDialog>
@@ -23,7 +25,8 @@ public:
     void setFilenames( QStringList &inList );
 
 private:
-    Ui::IcalImportDialog *m_ui;
+    Ui::IcalImportDialog*   m_ui;
+    IcalInterpreter*        m_icalInterpreter;
     void parseIcalFile( const QString inFilename, QStringList &inContentLines );
 
 signals:
@@ -31,6 +34,7 @@ signals:
 
 private slots:
     void slotReceiveAppointment( const Appointment* appointment );
+    void slotTick( int first, int current, int last );
 };
 
 #endif // ICALIMPORTDIALOG_H

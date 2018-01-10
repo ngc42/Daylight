@@ -2,7 +2,6 @@
 #include "ui_icalimportdialog.h"
 #include "icalimportdialog.h"
 #include "../icalreader/icalbody.h"
-#include "../icalreader/icalinterpreter.h"
 
 
 IcalImportDialog::IcalImportDialog( QWidget *parent ) :
@@ -51,7 +50,7 @@ void IcalImportDialog::setFilenames( QStringList &inList )
                     continue;
                 }
                 lineList.append( s );
-                m_ui->teContent->insertPlainText( s );
+                m_ui->teContent->insertPlainText( s.append( '\n' ) );
             }
             file.close();
             if( lineList.count() > 0 )
@@ -67,7 +66,7 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
 {
     m_ui->pBarEvents->reset();
     ICalBody vcal;
-    IcalInterpreter* interpreter = new IcalInterpreter( this );
+    m_icalInterpreter= new IcalInterpreter( this );
 
     QString dbg = QString( "<strong>parse: %1</strong>\n").arg( inFilename );
     m_ui->teMessages->insertHtml( dbg );
@@ -97,20 +96,22 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
         }
         else
         {
-            m_ui->teMessages->insertPlainText( contentLine.append( '\n') );
+            m_ui->teMessages->insertPlainText( contentLine.prepend( "WARN: " ).append( '\n' ) );
         }
     }
     if( vcal.validateIcal() )
         m_ui->teMessages->insertPlainText( "Validated!\n" );
     else
         m_ui->teMessages->insertPlainText( "Has Errors\n" );
-    connect( interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
+    connect( m_icalInterpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
              this, SLOT(slotReceiveAppointment( const Appointment* )) );
-    interpreter->setBody( vcal );
-    interpreter->start();
-    disconnect( interpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
-               this, SLOT(slotReceiveAppointment( const Appointment* )) );
-    }
+    connect( m_icalInterpreter, SIGNAL(sigTick(int,int,int)),
+             this, SLOT(slotTick(int,int,int)), Qt::DirectConnection );
+    connect( m_icalInterpreter, SIGNAL( finished() ),
+             m_icalInterpreter, SLOT( deleteLater() ) );
+    m_icalInterpreter->setBody( vcal );
+    m_icalInterpreter->start();
+}
 
 
 void IcalImportDialog::slotReceiveAppointment( const Appointment* appointment )
@@ -119,5 +120,14 @@ void IcalImportDialog::slotReceiveAppointment( const Appointment* appointment )
     QString s = QString( "==== Appointment #%1 ====\n" ).arg( num );
     num++;
     if( appointment->m_appBasics )
-        m_ui->teMessages->insertPlainText( appointment->m_appBasics->contententToString() );
+        m_ui->teMessages->insertPlainText( s.append( appointment->m_appBasics->contententToString() ) );
+}
+
+
+void IcalImportDialog::slotTick( int first, int current, int last )
+{
+    qDebug() << " TICK-X: " << first << " " << current << " " << last;
+    m_icalInterpreter->msleep( 1 );
+    m_ui->pBarEvents->setRange( first, last );
+    m_ui->pBarEvents->setValue( current );
 }

@@ -62,7 +62,7 @@ struct AppointmentAlarm
 };
 
 
-struct AppointmentRecurrence : QObject
+class AppointmentRecurrence : public QObject
 {
 
     Q_OBJECT
@@ -87,7 +87,7 @@ public:
 
     // === Methods ===
 
-    AppointmentRecurrence();
+    AppointmentRecurrence( QObject *parent = Q_NULLPTR );
 
     // for debugging
     QString     contentToString() const;
@@ -162,7 +162,7 @@ public:
     QList<int>                  m_bySetPosList;
 
 signals:
-
+    void signalTick( int first, int current, int last );
 };
 
 

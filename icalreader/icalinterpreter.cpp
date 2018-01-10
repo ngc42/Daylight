@@ -25,6 +25,8 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
 {
     if( not inIcal.m_vEventComponents.isEmpty() )
     {
+        int count = inIcal.m_vEventComponents.count() * 2;
+        int num = 0;
         for( const VEventComponent* component : inIcal.m_vEventComponents )
         {
             AppointmentBasics *basic = nullptr;
@@ -32,10 +34,13 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
             AppointmentRecurrence *recurrence = nullptr;
             if( eventHasUsableRRuleOrNone( component ) ) // usable for our appointment structure?
             {
+                emit sigTick(0, num++, count);
                 readEvent( component, basic, alarmList, recurrence );
                 makeAppointment( basic, recurrence, alarmList );
+                emit sigTick(0, num++, count);
             }
         }
+        emit sigTick(0, num, count);
     }
 }
 
@@ -420,3 +425,5 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
     }
     emit sigAppointmentReady( t );
 }
+
+

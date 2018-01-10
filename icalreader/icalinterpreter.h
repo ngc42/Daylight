@@ -63,6 +63,9 @@ private:
 
 signals:
     void sigAppointmentReady( const Appointment* appointment );
+    void sigTick( int first, int current, int last );
+
+
 
 public slots:
 };

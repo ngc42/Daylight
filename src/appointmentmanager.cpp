@@ -63,8 +63,9 @@ QString AppointmentAlarm::contentToString() const
  * ******* AppointmentRecurrence *****************
  * **********************************************/
 
-AppointmentRecurrence::AppointmentRecurrence()
+AppointmentRecurrence::AppointmentRecurrence( QObject* parent )
     :
+      QObject( parent ),
       m_frequency(RFT_SIMPLE_YEARLY),
       m_count(0),
       m_interval(1),
@@ -301,6 +302,8 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleDaily( const Da
     DateTime runner = inDtStart;
     while( runner <= inDtLast )
     {
+        //emit signalTick( inDtStart.date().year(), runner.date().year(), inDtLast.date().year() );
+        //qDebug() << "SEND: " << inDtStart.date().year() << " " << runner.date().year() << " " << inDtLast.date().year();
         if( validateDateTime( runner ) )
             targetList.append( runner );
         runner = runner.addDays( m_interval );
@@ -948,6 +951,8 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime
 
     while( runner <= inDtLast )
     {
+        //emit signalTick( inDtStart.date().year(), runner.date().year(), inDtLast.date().year() );
+
         if( have_byMonth )          // limit BYMONTH
         {
             bool validMonth = m_byMonthList.contains( runner.date().month() );
