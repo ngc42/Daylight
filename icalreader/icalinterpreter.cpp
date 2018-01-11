@@ -14,6 +14,7 @@ GNU General Public License for more details.
 
 #include <QDebug>
 
+
 IcalInterpreter::IcalInterpreter( QObject *parent )
     :
       QThread( parent )
@@ -25,8 +26,8 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
 {
     if( not inIcal.m_vEventComponents.isEmpty() )
     {
-        int count = inIcal.m_vEventComponents.count() * 2;
-        int num = 0;
+        int count = inIcal.m_vEventComponents.count();
+        int num = 1;
         for( const VEventComponent* component : inIcal.m_vEventComponents )
         {
             AppointmentBasics *basic = nullptr;
@@ -34,13 +35,12 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
             AppointmentRecurrence *recurrence = nullptr;
             if( eventHasUsableRRuleOrNone( component ) ) // usable for our appointment structure?
             {
-                emit sigTick(0, num++, count);
+                emit sigTick(1, num++, count);
                 readEvent( component, basic, alarmList, recurrence );
                 makeAppointment( basic, recurrence, alarmList );
-                emit sigTick(0, num++, count);
             }
         }
-        emit sigTick(0, num, count);
+        //emit sigTick(0, num, count);
     }
 }
 
@@ -396,20 +396,25 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
     t->m_appAlarms = inAppAlarmList;
 
     // make an event list
+    connect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
+             this, SIGNAL(sigTick(int,int,int)) );
     if( inAppRecurrence )
     {
-        qint64 seconds = t->m_appBasics->m_dtStart.secsTo( t->m_appBasics->m_dtEnd );
-        QList<DateTime> list = t->m_appRecurrence->recurrenceStartDates( t->m_appBasics->m_dtStart );
 
+        qint64 seconds = t->m_appBasics->m_dtStart.secsTo( t->m_appBasics->m_dtEnd );
+        QVector<DateTime> list = t->m_appRecurrence->recurrenceStartDates( t->m_appBasics->m_dtStart );
+
+        int tick = list.count();
         for( const DateTime dt : list )
         {
+            emit sigTick( 0, tick--, list.count() );
             Event e;
             e.m_uid = t->m_appBasics->m_uid;
             e.m_displayText = t->m_appBasics->m_summary;
             e.m_startDt = dt;
             QDateTime qdt = dt.addSecs( seconds );
             e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
-            t->m_eventList.append( e );
+            t->m_eventVector.append( e );
             t->m_yearsInQuestion.insert( dt.date().year() );
         }
     }
@@ -420,9 +425,12 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
         e.m_displayText = t->m_appBasics->m_summary;
         e.m_startDt = t->m_appBasics->m_dtStart;
         e.m_endDt = t->m_appBasics->m_dtEnd;
-        t->m_eventList.append( e );
+        t->m_eventVector.append( e );
         t->m_yearsInQuestion.insert( e.m_startDt.date().year() );
     }
+    qDebug() << "begin emit ... ";
+    disconnect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
+             this, SIGNAL(sigTick(int,int,int)) );
     emit sigAppointmentReady( t );
 }
 

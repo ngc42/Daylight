@@ -66,7 +66,7 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
 {
     m_ui->pBarEvents->reset();
     ICalBody vcal;
-    m_icalInterpreter= new IcalInterpreter( this );
+    m_icalInterpreter = new IcalInterpreter( this );
 
     QString dbg = QString( "<strong>parse: %1</strong>\n").arg( inFilename );
     m_ui->teMessages->insertHtml( dbg );
@@ -103,31 +103,40 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
         m_ui->teMessages->insertPlainText( "Validated!\n" );
     else
         m_ui->teMessages->insertPlainText( "Has Errors\n" );
-    connect( m_icalInterpreter, SIGNAL(sigAppointmentReady( const Appointment* )),
-             this, SLOT(slotReceiveAppointment( const Appointment* )) );
+    connect( m_icalInterpreter, SIGNAL(sigAppointmentReady( Appointment* const&)),
+             this, SLOT(slotReceiveAppointment( Appointment* const & )) );
     connect( m_icalInterpreter, SIGNAL(sigTick(int,int,int)),
-             this, SLOT(slotTick(int,int,int)), Qt::DirectConnection );
+             this, SLOT(slotTick(int,int,int)) );
     connect( m_icalInterpreter, SIGNAL( finished() ),
-             m_icalInterpreter, SLOT( deleteLater() ) );
+             this, SLOT( slotInterpreterFinished() ) );
     m_icalInterpreter->setBody( vcal );
     m_icalInterpreter->start();
 }
 
 
-void IcalImportDialog::slotReceiveAppointment( const Appointment* appointment )
+void IcalImportDialog::slotReceiveAppointment( Appointment* const &appointment )
 {
     static int num = 1;
     QString s = QString( "==== Appointment #%1 ====\n" ).arg( num );
     num++;
     if( appointment->m_appBasics )
         m_ui->teMessages->insertPlainText( s.append( appointment->m_appBasics->contententToString() ) );
+    qDebug() << "...received";
 }
 
 
 void IcalImportDialog::slotTick( int first, int current, int last )
 {
-    qDebug() << " TICK-X: " << first << " " << current << " " << last;
-    m_icalInterpreter->msleep( 1 );
+    QString s = QString( "%1  - %2 - %3 - %4\n").arg( QDateTime::currentDateTime().time().msec() )
+            .arg( first ).arg( current ).arg( last );
+    if( first == 1 )
+        m_ui->teMessages->insertPlainText( s );
     m_ui->pBarEvents->setRange( first, last );
     m_ui->pBarEvents->setValue( current );
+}
+
+void IcalImportDialog::slotInterpreterFinished()
+{
+    qDebug() << "I delete ";
+    delete m_icalInterpreter;
 }

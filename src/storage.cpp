@@ -245,7 +245,7 @@ void Storage::loadAppointmentData(const int year )
                 e.m_startDt     = string2DateTime( qApmEvents.value(2).toString(), tzString );
                 e.m_endDt       = string2DateTime( qApmEvents.value(3).toString(), tzString );
                 e.m_isAlarmEvent    = qApmEvents.value(5).toBool();
-                apmData.m_eventList.append( e );
+                apmData.m_eventVector.append( e );
             }
 
             emit signalLoadedAppointmentFromStorage(apmData);
@@ -522,7 +522,7 @@ void Storage::slotAppointmentAdd(const Appointment &apmData)
     iRec.exec();
 
     QSqlQuery iEve(m_db);
-    for( const Event e : apmData.m_eventList )
+    for( const Event e : apmData.m_eventVector )
     {
         iEve.prepare("INSERT INTO events VALUES(:uid, :text, :start, :end, :timezone, :is_alarm)");
         iEve.bindValue(":uid", apmData.m_uid);

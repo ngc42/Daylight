@@ -6,6 +6,7 @@
 #include <QSet>
 #include <QString>
 #include <QTimeZone>
+#include <QVector>
 
 #include "datetime.h"
 
@@ -95,15 +96,15 @@ public:
     // a list of dates, where the recurrence occurs
     // inDtStart is simply DTSTART,
     //  inDtLast is UNTIL - if UNTIL is valid - or a future date
-    QList<DateTime> recurrenceStartDates( const DateTime inDtStart );
-    QList<DateTime> recurrenceStartDatesSimpleYearly( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesSimpleMonthly( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesSimpleWeekly( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesSimpleDaily( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesYearly( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesMonthly( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesWeekly( const DateTime inDtStart, const DateTime inDtLast );
-    QList<DateTime> recurrenceStartDatesDaily( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDates( const DateTime inDtStart );
+    QVector<DateTime> recurrenceStartDatesSimpleYearly( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesSimpleMonthly( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesSimpleWeekly( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesSimpleDaily( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesYearly( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesMonthly( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesWeekly( const DateTime inDtStart, const DateTime inDtLast );
+    QVector<DateTime> recurrenceStartDatesDaily( const DateTime inDtStart, const DateTime inDtLast );
 
 
     /* weekExpand()
@@ -112,14 +113,14 @@ public:
      * the days are inside of DTSTART and Recurrence-UNTIL.
      * Every day in OutDaylist has time and timezone set by inRefDateTime
      */
-    void        weekExpand( const DateTime inRefDateTime, const int inWeekNo, QList<DateTime> &outDayList );
+    void        weekExpand( const DateTime inRefDateTime, const int inWeekNo, QVector<DateTime> &outDayList );
 
     /* timeExpand()
      * creates a list of times from hour, minutes and seconds list. Every missing value is
      *  filled up by inRefDateTime.
      */
     void        timeExpand(const DateTime inRefDateTime, const QList<int> inHourList, const QList<int> inMinList,
-                           const QList<int> inSecList, QList<QTime> &outTimeList);
+                           const QList<int> inSecList, QVector<QTime> &outTimeList);
 
     /* firstDayOfWeek()
      * Tries to calculate the first day in the first week and then adds the number of
@@ -140,7 +141,7 @@ public:
     bool        validateDateTime( const DateTime inRefTime ) const ;
 
     // sorts the list in place.
-    void        sortDaytimeList( QList<DateTime> &inoutSortList );
+    void        sortDaytimeList( QVector<DateTime> &inoutSortList );
 
     // === Data ===
 
@@ -197,6 +198,7 @@ struct Event {
 
 
 struct Appointment {
+
     // helper methods
     static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
     static void makeDaymap( const QString inElementsString, QMultiMap<AppointmentRecurrence::WeekDay, int> &outMap );
@@ -214,7 +216,7 @@ struct Appointment {
     int                         m_minYear;          // start of first event
     int                         m_maxYear;          // end of last event
     // events
-    QList<Event>                m_eventList;
+    QVector<Event>                m_eventVector;
     // calendar id
     int                         m_userCalendarId;
     QString                     m_uid;
@@ -222,6 +224,7 @@ struct Appointment {
     bool                        m_haveRecurrence;
     bool                        m_haveAlarm;
 };
+Q_DECLARE_TYPEINFO(Appointment, Q_MOVABLE_TYPE);
 
 
 #endif // APPOINTMENTMANAGER_H

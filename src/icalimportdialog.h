@@ -9,7 +9,6 @@
 #include <QDialog>
 #include <QStringList>
 
-
 namespace Ui {
     class IcalImportDialog;
 }
@@ -33,8 +32,9 @@ signals:
     void sigFinishReadingFiles();
 
 private slots:
-    void slotReceiveAppointment( const Appointment* appointment );
+    void slotReceiveAppointment( Appointment* const &appointment );
     void slotTick( int first, int current, int last );
+    void slotInterpreterFinished();
 };
 
 #endif // ICALIMPORTDIALOG_H

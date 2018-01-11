@@ -211,13 +211,14 @@ QString AppointmentRecurrence::contentToString() const
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDates( const DateTime inDtStart )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDates( const DateTime inDtStart )
 {
     DateTime lastDt;
     if( m_until.isValid() )
         lastDt = m_until;
     else
         lastDt.readDateTime( "21001231", true );
+
     if( m_frequency == RFT_SIMPLE_YEARLY )
         return recurrenceStartDatesSimpleYearly( inDtStart, lastDt );
     if( m_frequency == RFT_SIMPLE_MONTHLY )
@@ -235,13 +236,13 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDates( const DateTime inDt
     if( m_frequency == RFT_DAILY )
         return recurrenceStartDatesDaily( inDtStart, lastDt );
 
-    return QList<DateTime>();
+    return QVector<DateTime>();
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleYearly( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleYearly( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
+    QVector<DateTime> targetList;
     DateTime runner = inDtStart;
     while( runner <= inDtLast )
     {
@@ -258,9 +259,9 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleYearly( const D
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleMonthly( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleMonthly( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
+    QVector<DateTime> targetList;
     DateTime runner = inDtStart;
     while( runner <= inDtLast )
     {
@@ -277,9 +278,9 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleMonthly( const 
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleWeekly( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleWeekly( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
+    QVector<DateTime> targetList;
     DateTime runner = inDtStart;
     while( runner <= inDtLast )
     {
@@ -296,13 +297,14 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleWeekly( const D
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleDaily( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleDaily( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
+    emit signalTick( inDtStart.date().year(), inDtStart.date().year(), inDtLast.date().year() );
+    QVector<DateTime> targetList;
     DateTime runner = inDtStart;
     while( runner <= inDtLast )
     {
-        //emit signalTick( inDtStart.date().year(), runner.date().year(), inDtLast.date().year() );
+        emit signalTick( inDtStart.date().year(), runner.date().year(), inDtLast.date().year() );
         //qDebug() << "SEND: " << inDtStart.date().year() << " " << runner.date().year() << " " << inDtLast.date().year();
         if( validateDateTime( runner ) )
             targetList.append( runner );
@@ -317,10 +319,10 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesSimpleDaily( const Da
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
-    QList<DateTime> yearTargetList;
+    QVector<DateTime> targetList;
+    QVector<DateTime> yearTargetList;
     DateTime runner = inDtStart;
 
     bool have_byMonth =     not m_byMonthList.isEmpty();
@@ -426,7 +428,7 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateTim
         }
         else if( have_byWeekNo )            // Expand BYWEEKNO
         {
-            QList<DateTime> tempList;
+            QVector<DateTime> tempList;
             for( const int week : m_byWeekNumberList )
                 weekExpand( runner, week, tempList );
             if( have_byDay )                // BYWEEKNO + BYDAY
@@ -557,8 +559,8 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateTim
         // Expand BYHOUR, BYMINUTE and BYSECOND
         if( have_byTime )
         {
-            QList<QTime> timeList;
-            QList<DateTime> targetAndTimeMerged;
+            QVector<QTime> timeList;
+            QVector<DateTime> targetAndTimeMerged;
             timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
             for( DateTime dt : yearTargetList )
             {
@@ -579,7 +581,7 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateTim
         // Limit BYSETPOS
         if( have_bySetPos )
         {
-            QList<DateTime> setPosList;
+            QVector<DateTime> setPosList;
             for( const int pos : m_bySetPosList )
             {
                 if( pos > 0 and yearTargetList.count() >= pos )
@@ -619,10 +621,10 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateTim
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
-    QList<DateTime> monthTargetList;
+    QVector<DateTime> targetList;
+    QVector<DateTime> monthTargetList;
     DateTime runner = inDtStart;
     bool have_byMonth =     not m_byMonthList.isEmpty();
     bool have_byMonthDay =  not m_byMonthDayList.isEmpty();
@@ -742,8 +744,8 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const DateTi
         // Expand BYHOUR, BYMINUTE and BYSECOND
         if( have_byTime )
         {
-            QList<QTime> timeList;
-            QList<DateTime> targetAndTimeMerged;
+            QVector<QTime> timeList;
+            QVector<DateTime> targetAndTimeMerged;
             timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
             for( DateTime dt : monthTargetList )
             {
@@ -764,7 +766,7 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const DateTi
         // Limit BYSETPOS
         if( have_bySetPos )
         {
-            QList<DateTime> setPosList;
+            QVector<DateTime> setPosList;
             for( const int pos : m_bySetPosList )
             {
                 if( pos > 0 and monthTargetList.count() >= pos )
@@ -804,10 +806,10 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const DateTi
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
-    QList<DateTime> weekTargetList;
+    QVector<DateTime> targetList;
+    QVector<DateTime> weekTargetList;
     DateTime runner = inDtStart;
 
     bool have_byMonth =     not m_byMonthList.isEmpty();
@@ -874,8 +876,8 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateTim
         // Expand BYHOUR, BYMINUTE and BYSECOND
         if( have_byTime )
         {
-            QList<QTime> timeList;
-            QList<DateTime> targetAndTimeMerged;
+            QVector<QTime> timeList;
+            QVector<DateTime> targetAndTimeMerged;
             timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
             for( DateTime dt : weekTargetList )
             {
@@ -896,7 +898,7 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateTim
         // Limit BYSETPOS
         if( have_bySetPos )
         {
-            QList<DateTime> setPosList;
+            QVector<DateTime> setPosList;
             for( const int pos : m_bySetPosList )
             {
                 if( pos > 0 and weekTargetList.count() >= pos )
@@ -936,10 +938,10 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateTim
 }
 
 
-QList<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime inDtStart, const DateTime inDtLast )
+QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime inDtStart, const DateTime inDtLast )
 {
-    QList<DateTime> targetList;
-    QList<DateTime> dayTargetList;
+    QVector<DateTime> targetList;
+    QVector<DateTime> dayTargetList;
     DateTime runner = inDtStart;
     bool have_byMonth =     not m_byMonthList.isEmpty();
     bool have_byMonthDay =  not m_byMonthDayList.isEmpty();
@@ -949,9 +951,11 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime
                                  m_bySecondList.isEmpty() );
     bool have_bySetPos =    not m_bySetPosList.isEmpty();
 
+    emit signalTick( inDtStart.date().year(), inDtStart.date().year(), inDtLast.date().year() );
+
     while( runner <= inDtLast )
     {
-        //emit signalTick( inDtStart.date().year(), runner.date().year(), inDtLast.date().year() );
+        emit signalTick( inDtStart.date().year(), runner.date().year(), inDtLast.date().year() );
 
         if( have_byMonth )          // limit BYMONTH
         {
@@ -1020,8 +1024,8 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime
         // Expand BYHOUR, BYMINUTE and BYSECOND
         if( have_byTime )
         {
-            QList<QTime> timeList;
-            QList<DateTime> targetAndTimeMerged;
+            QVector<QTime> timeList;
+            QVector<DateTime> targetAndTimeMerged;
             timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
             for( DateTime dt : dayTargetList )
             {
@@ -1042,7 +1046,7 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime
         // Limit BYSETPOS
         if( have_bySetPos )
         {
-            QList<DateTime> setPosList;
+            QVector<DateTime> setPosList;
             for( const int pos : m_bySetPosList )
             {
                 if( pos > 0 and dayTargetList.count() >= pos )
@@ -1082,7 +1086,7 @@ QList<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTime
 }
 
 
-void AppointmentRecurrence::weekExpand( const DateTime inRefDateTime, const int inWeekNo, QList<DateTime> &outDayList )
+void AppointmentRecurrence::weekExpand( const DateTime inRefDateTime, const int inWeekNo, QVector<DateTime> &outDayList )
 {
     if( inWeekNo > 0 )
     {
@@ -1109,12 +1113,12 @@ void AppointmentRecurrence::weekExpand( const DateTime inRefDateTime, const int 
 
 
 void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QList<int> inHourList, const QList<int> inMinList,
-                           const QList<int> inSecList, QList<QTime> &outTimeList)
+                           const QList<int> inSecList, QVector<QTime> &outTimeList)
 {
     QTime refTime = inRefDateTime.time();
 
     // append hours, if available. Else append a default hour
-    QList<QTime> t_hour;
+    QVector<QTime> t_hour;
     if( inHourList.isEmpty() )
         t_hour.append( QTime( refTime.hour(), refTime.minute(), refTime.second() ) );
     else
@@ -1125,7 +1129,7 @@ void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QList
         }
 
     // cross with minutes, if available. Else set minutes by default minute
-    QList<QTime> t_min;
+    QVector<QTime> t_min;
     if( inMinList.isEmpty())
     {
         for( const QTime t : t_hour )
@@ -1198,7 +1202,7 @@ bool AppointmentRecurrence::validateDateTime( const DateTime inRefTime ) const
 }
 
 
-void AppointmentRecurrence::sortDaytimeList( QList<DateTime> &inoutSortList )
+void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
 {
     int count = inoutSortList.count();
     if( count < 2 )

@@ -62,7 +62,7 @@ private:
                           QList<AppointmentAlarm*> &inAppAlarmList );
 
 signals:
-    void sigAppointmentReady( const Appointment* appointment );
+    void sigAppointmentReady(  Appointment* const &appointment );
     void sigTick( int first, int current, int last );
 
 
