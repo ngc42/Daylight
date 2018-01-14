@@ -17,24 +17,14 @@ GNU General Public License for more details.
 #include "property.h"
 #include "datetime.h"
 
-#include <QThread>
+#include <QVector>
 
-
-class IcalInterpreter : public QThread
+class IcalInterpreter : public QObject
 {
     Q_OBJECT
 
 public:
     IcalInterpreter( QObject* parent = Q_NULLPTR  );
-
-    void run() override
-    {
-        readIcal( m_inIcal );
-    }
-
-    void setBody( const ICalBody &inIcal ) { m_inIcal = inIcal; }
-    ICalBody m_inIcal;
-
     void readIcal( const ICalBody &inIcal );
 
 private:
@@ -62,10 +52,9 @@ private:
                           QList<AppointmentAlarm*> &inAppAlarmList );
 
 signals:
-    void sigAppointmentReady(  Appointment* const &appointment );
-    void sigTick( int first, int current, int last );
-
-
+    void sigTickEvent( const int min, const int current, const int max );
+    void sigTickVEvents( const int min, const int current, const int max );
+    void sigAppointmentReady( Appointment* app );
 
 public slots:
 };

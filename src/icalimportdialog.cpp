@@ -1,7 +1,6 @@
 #include <QFile>
 #include "ui_icalimportdialog.h"
 #include "icalimportdialog.h"
-#include "../icalreader/icalbody.h"
 
 
 IcalImportDialog::IcalImportDialog( QWidget *parent ) :
@@ -20,11 +19,11 @@ IcalImportDialog::~IcalImportDialog()
 
 void IcalImportDialog::setFilenames( QStringList &inList )
 {
-    m_ui->pBarFiles->reset();
+    m_ui->pBarVEvents->reset();
     m_ui->pBarEvents->reset();
-    m_ui->pBarFiles->setMaximum( inList.count() );
     m_ui->teContent->clear();
     m_ui->teMessages->clear();
+    m_threads.clear();
     int currentNum = 0;
     for( const QString fn : inList )
     {
@@ -33,7 +32,6 @@ void IcalImportDialog::setFilenames( QStringList &inList )
         {
 
             currentNum++;
-            m_ui->pBarFiles->setValue( currentNum );
             QStringList lineList;
             while( not file.atEnd() )
             {
@@ -57,86 +55,118 @@ void IcalImportDialog::setFilenames( QStringList &inList )
                 parseIcalFile( fn, lineList );
         }
     }
-
-    emit sigFinishReadingFiles();
 }
 
 
 void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inContentLines )
 {
     m_ui->pBarEvents->reset();
-    ICalBody vcal;
-    m_icalInterpreter = new IcalInterpreter( this );
 
-    QString dbg = QString( "<strong>parse: %1</strong>\n").arg( inFilename );
-    m_ui->teMessages->insertHtml( dbg );
+    ThreadInfo t;
+    t.thread = new IcalImportThread( m_threads.count(), inContentLines, this );
+    t.filename = inFilename;
+    t.v_min = 0, t.v_current = 0, t.v_max = 0;
+    t.e_min = 0, t.e_current = 0, t.e_max = 0;
+    t.ended = false;
+    t.successful = true;
+    m_threads.append( t );
 
-    bool startOfReadingCalfile = false;
-    while( not inContentLines.isEmpty() )
+    connect( t.thread, SIGNAL(sigTickEvent(int,int,int,int)),
+             this, SLOT(slotTickEvent(int,int,int,int)) );
+    connect( t.thread, SIGNAL(sigTickVEvents(int,int,int,int)),
+             this, SLOT(slotTickVEvents(int,int,int,int)) );
+    connect( t.thread, SIGNAL(sigThreadFinished(int)),
+             this, SLOT(slotThreadFinished(int)) );
+    connect( t.thread, SIGNAL(sigWeDislikeIcalFile(int,IcalImportThread::IcalDislikeReasonType)),
+             this, SLOT(slotWeDislikeIcalFile(int,IcalImportThread::IcalDislikeReasonType)) );
+    t.thread->start();
+}
+
+
+void IcalImportDialog::displayContentToMessage()
+{
+    for( const ThreadInfo mi : m_threads )
     {
-        QString contentLine = inContentLines.first();
-        inContentLines.removeFirst();
-
-
-        if( contentLine.compare( "BEGIN:VCALENDAR", Qt::CaseInsensitive ) == 0 )
+        if( mi.successful )
         {
-            startOfReadingCalfile = true;
-            continue;
-        }
+            m_ui->teMessages->insertPlainText( QString( "=== %1 ===\n" ).arg(mi.filename) );
 
-        if( contentLine.compare( "END:VCALENDAR", Qt::CaseInsensitive ) == 0 )
-        {
-            startOfReadingCalfile = false;
-            continue;
-        }
-
-        if( startOfReadingCalfile )
-        {
-            vcal.readContentLine( contentLine );
-        }
-        else
-        {
-            m_ui->teMessages->insertPlainText( contentLine.prepend( "WARN: " ).append( '\n' ) );
+            for( const Appointment* app : mi.thread->m_appointments )
+            {
+                m_ui->teMessages->insertPlainText(
+                            app->m_appBasics->contententToString() );
+            }
         }
     }
-    if( vcal.validateIcal() )
-        m_ui->teMessages->insertPlainText( "Validated!\n" );
-    else
-        m_ui->teMessages->insertPlainText( "Has Errors\n" );
-    connect( m_icalInterpreter, SIGNAL(sigAppointmentReady( Appointment* const&)),
-             this, SLOT(slotReceiveAppointment( Appointment* const & )) );
-    connect( m_icalInterpreter, SIGNAL(sigTick(int,int,int)),
-             this, SLOT(slotTick(int,int,int)) );
-    connect( m_icalInterpreter, SIGNAL( finished() ),
-             this, SLOT( slotInterpreterFinished() ) );
-    m_icalInterpreter->setBody( vcal );
-    m_icalInterpreter->start();
 }
 
 
-void IcalImportDialog::slotReceiveAppointment( Appointment* const &appointment )
+void IcalImportDialog::slotTickEvent( const int threadId, int min, int current, int max )
 {
-    static int num = 1;
-    QString s = QString( "==== Appointment #%1 ====\n" ).arg( num );
-    num++;
-    if( appointment->m_appBasics )
-        m_ui->teMessages->insertPlainText( s.append( appointment->m_appBasics->contententToString() ) );
-    qDebug() << "...received";
+    m_threads[threadId].e_min = min;
+    m_threads[threadId].e_current = current;
+    m_threads[threadId].e_max = max;
+    int smin = 0, scurrent = 0, smax = 0;
+    for( const ThreadInfo ti : m_threads )
+    {
+        smin += ti.e_min;
+        scurrent += ti.e_current;
+        smax += ti.e_max;
+    }
+    m_ui->pBarEvents->setRange( smin, smax );
+    m_ui->pBarEvents->setValue( scurrent );
 }
 
 
-void IcalImportDialog::slotTick( int first, int current, int last )
+void IcalImportDialog::slotTickVEvents( const int threadId, int min, int current, int max )
 {
-    QString s = QString( "%1  - %2 - %3 - %4\n").arg( QDateTime::currentDateTime().time().msec() )
-            .arg( first ).arg( current ).arg( last );
-    if( first == 1 )
-        m_ui->teMessages->insertPlainText( s );
-    m_ui->pBarEvents->setRange( first, last );
-    m_ui->pBarEvents->setValue( current );
+    m_threads[threadId].v_min = min;
+    m_threads[threadId].v_current = current;
+    m_threads[threadId].v_max = max;
+
+    int smin = 0, scurrent = 0, smax = 0;
+    for( const ThreadInfo ti : m_threads )
+    {
+        smin += ti.v_min;
+        scurrent += ti.v_current;
+        smax += ti.v_max;
+    }
+    m_ui->pBarVEvents->setRange( smin, smax );
+    m_ui->pBarVEvents->setValue( scurrent );
 }
 
-void IcalImportDialog::slotInterpreterFinished()
+
+void IcalImportDialog::slotThreadFinished( const int threadId )
 {
-    qDebug() << "I delete ";
-    delete m_icalInterpreter;
+    qDebug() << "I should delete " << threadId ;
+    m_threads[threadId].ended = true;
+    if( m_threads[threadId].successful )
+        m_ui->teMessages->insertPlainText(
+                    QString( "* OK: %1 finished\n" )
+                    .arg( m_threads[threadId].filename ) );
+    bool allThreadsAreFinished = true;
+    for( const ThreadInfo ti : m_threads )
+    {
+        if( not ti.ended )
+        {
+            allThreadsAreFinished = false;
+            break;
+        }
+    }
+    if( allThreadsAreFinished )
+    {
+        emit sigFinishReadingFiles();
+        qDebug() << "Threads are finished";
+        displayContentToMessage();
+    }
+}
+
+
+void IcalImportDialog::slotWeDislikeIcalFile( const int threadId, const IcalImportThread::IcalDislikeReasonType reason )
+{
+    m_threads[threadId].successful = false;
+    if( reason == IcalImportThread::DOES_NOT_VALIDATE )
+        m_ui->teMessages->insertPlainText(
+                    QString( "* ERR: %1 does not validate\n" )
+                    .arg( m_threads[threadId].filename ) );
 }

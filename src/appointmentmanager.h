@@ -224,7 +224,6 @@ struct Appointment {
     bool                        m_haveRecurrence;
     bool                        m_haveAlarm;
 };
-Q_DECLARE_TYPEINFO(Appointment, Q_MOVABLE_TYPE);
 
 
 #endif // APPOINTMENTMANAGER_H

@@ -17,7 +17,7 @@ GNU General Public License for more details.
 
 IcalInterpreter::IcalInterpreter( QObject *parent )
     :
-      QThread( parent )
+      QObject( parent )
 {
 }
 
@@ -35,14 +35,14 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
             AppointmentRecurrence *recurrence = nullptr;
             if( eventHasUsableRRuleOrNone( component ) ) // usable for our appointment structure?
             {
-                emit sigTick(1, num++, count);
                 readEvent( component, basic, alarmList, recurrence );
                 makeAppointment( basic, recurrence, alarmList );
             }
+            emit sigTickVEvents( 0, num++, count );
         }
-        //emit sigTick(0, num, count);
     }
 }
+
 
 void IcalInterpreter::readEvent( const VEventComponent* &inVEventComponent,
                 AppointmentBasics* &outAppBasics,
@@ -396,18 +396,17 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
     t->m_appAlarms = inAppAlarmList;
 
     // make an event list
-    connect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
-             this, SIGNAL(sigTick(int,int,int)) );
+
     if( inAppRecurrence )
     {
+        connect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
+              this, SIGNAL(sigTickEvent(int,int,int)) );
 
         qint64 seconds = t->m_appBasics->m_dtStart.secsTo( t->m_appBasics->m_dtEnd );
         QVector<DateTime> list = t->m_appRecurrence->recurrenceStartDates( t->m_appBasics->m_dtStart );
 
-        int tick = list.count();
         for( const DateTime dt : list )
         {
-            emit sigTick( 0, tick--, list.count() );
             Event e;
             e.m_uid = t->m_appBasics->m_uid;
             e.m_displayText = t->m_appBasics->m_summary;
@@ -417,6 +416,8 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
             t->m_eventVector.append( e );
             t->m_yearsInQuestion.insert( dt.date().year() );
         }
+        disconnect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
+                 this, SIGNAL(sigTickEvent(int,int,int)) );
     }
     else
     {
@@ -428,9 +429,8 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
         t->m_eventVector.append( e );
         t->m_yearsInQuestion.insert( e.m_startDt.date().year() );
     }
-    qDebug() << "begin emit ... ";
-    disconnect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
-             this, SIGNAL(sigTick(int,int,int)) );
+
+    emit sigTickEvent( 0, 1, 1 );
     emit sigAppointmentReady( t );
 }
 

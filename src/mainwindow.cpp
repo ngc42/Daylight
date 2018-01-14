@@ -112,18 +112,16 @@ void MainWindow::moveEvent(QMoveEvent* event)
 
 void MainWindow::slotOpenIcalFile()
 {
-    qDebug() << "open ical file";
     QFileDialog *dlg = new QFileDialog( this, "open ical file",
                                         "../testfiles/",
                                         "ical-dateien (*.ics)" );
-    dlg->setFileMode( QFileDialog::ExistingFile );
+    dlg->setFileMode( QFileDialog::ExistingFiles );
     dlg->setAcceptMode( QFileDialog::AcceptOpen );
     if( dlg->exec() == QDialog::Accepted )
     {
         QStringList fileNames = dlg->selectedFiles();
         m_icalImportDialog->show();
         m_icalImportDialog->setFilenames( fileNames );
-
     }
 }
 

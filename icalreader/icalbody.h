@@ -49,8 +49,6 @@ struct ICalBody
     bool validateIcal();
     bool validateIcalBody();
 
-
-
     QList<Property*>            m_properties;
     ReadComponent               m_activeComponent;
     QString                     m_currentComponentName;

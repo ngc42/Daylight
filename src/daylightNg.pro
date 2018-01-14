@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     ../icalreader/vjournalcomponent.cpp \
     ../icalreader/vtimezonecomponent.cpp \
     ../icalreader/vtodocomponent.cpp \
-    icalimportdialog.cpp
+    icalimportdialog.cpp \
+    icalimportthread.cpp
 
 HEADERS  += mainwindow.h \
     storage.h \
@@ -54,7 +55,8 @@ HEADERS  += mainwindow.h \
     ../icalreader/vjournalcomponent.h \
     ../icalreader/vtimezonecomponent.h \
     ../icalreader/vtodocomponent.h \
-    icalimportdialog.h
+    icalimportdialog.h \
+    icalimportthread.h
 
 FORMS    += ui/mainwindow.ui \
     ui/appointmentdialog.ui \
