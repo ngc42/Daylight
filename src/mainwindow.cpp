@@ -78,16 +78,18 @@ MainWindow::MainWindow(QWidget* parent) :
             m_userCalendarPool, SLOT(slotAddUserCalendarFromStorage(UserCalendarInfo* &)));
     connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment)),
             this, SLOT(slotLoadedAppointmentFromStorage(Appointment)));
-    m_storage->loadAppointmentData(2018);
+    m_storage->loadAppointmentByYear( QDateTime::currentDateTime().date().year() );
     disconnect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment)),
                this, SLOT(slotLoadedAppointmentFromStorage(Appointment)));
-
     QMenu* tmp = m_userCalendarPool->calendarMenu();
     m_toolbarUserCalendarMenu->setMenu(tmp);
     connect(m_userCalendarPool, SIGNAL(signalUserCalendarDataModified(int,QColor,QString,bool)),
             m_storage, SLOT(slotUserCalendarDataModified(int,QColor,QString,bool)));
     // - end storage
 
+    // ical import dialog
+    connect(m_icalImportDialog, SIGNAL(sigFinishReadingFiles()),
+            this, SLOT(slotImportFromFileFinished()) );
 }
 
 
@@ -126,6 +128,24 @@ void MainWindow::slotOpenIcalFile()
 }
 
 
+void MainWindow::slotImportFromFileFinished()
+{
+    m_icalImportDialog->hide();
+
+    // generated data is in the buffer of thread
+    for( const ThreadInfo ti : m_icalImportDialog->m_threads )
+    {
+        for( const Appointment* app : ti.thread->m_appointments )
+        {
+            // @fixme: appointments have an invalid? calendar id.
+            m_storage->updateAppointment( (*app) );
+        }
+    }
+    // delete threads
+    m_icalImportDialog->deleteThreadsAndData();
+}
+
+
 void MainWindow::slotLoadedAppointmentFromStorage(const Appointment /*&apmData*/ )
 {
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
@@ -142,7 +162,7 @@ void MainWindow::slotAddUserCalendar()
 
 void MainWindow::slotAddUserCalendarDlgFinished(int returncode)
 {
-    if(QDialog::Accepted == returncode)
+    if( returncode == QDialog::Accepted )
     {
         // fixme: title should not be empty
         const UserCalendarInfo* uci = m_userCalendarPool->addUserCalendar(

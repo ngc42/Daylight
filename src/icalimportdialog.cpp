@@ -23,7 +23,7 @@ void IcalImportDialog::setFilenames( QStringList &inList )
     m_ui->pBarEvents->reset();
     m_ui->teContent->clear();
     m_ui->teMessages->clear();
-    m_threads.clear();
+    deleteThreadsAndData();
     int currentNum = 0;
     for( const QString fn : inList )
     {
@@ -55,6 +55,15 @@ void IcalImportDialog::setFilenames( QStringList &inList )
                 parseIcalFile( fn, lineList );
         }
     }
+}
+
+void IcalImportDialog::deleteThreadsAndData()
+{
+    for( const ThreadInfo ti : m_threads )
+    {
+        ti.thread->deleteLater();
+    }
+    m_threads.clear();
 }
 
 

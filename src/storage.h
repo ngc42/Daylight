@@ -18,6 +18,7 @@
 #define STORAGE_H
 
 #include <QSqlDatabase>
+
 #include "appointmentmanager.h"
 #include "datetime.h"
 #include "usercalendar.h"
@@ -25,22 +26,24 @@
 
 /* This is the only storage class at the moment. It stores appointments and user calendars in a
  *  SQLITE database.
- * Reading from the database takes place ONLY at program start, while the data is written each
- *  time something is modified. Reading is done using the signals signalLoadedXXXFromStorage().
- * as this calendar program evolves, more and more sources of storage may be added.
- * There is a short circuit created in MainWindow:
- *  UserCalendarPoolsignalUserCalendarDataModified()  --> Storage::slotUserCalendarDataModified()
-*/
+ */
 class Storage : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Storage(QObject* parent = 0);
+    explicit Storage( QObject* parent = 0 );
     void createDatabase();
-    void loadAppointmentData(const int year);
-    void setAppointmentsCalendar(const QString appointmentId, const int calendarId);
+
+    // === appointments ===
+    void storeAppointment( const Appointment &apmData );
+    // @fixme: this algorithm does not care for userCalendarId:
+    void updateAppointment( const Appointment &apmData );
+    void loadAppointmentByYear( const int year );
     void removeAppointment(const QString id);   // remove appointment from storage
+
+    void setAppointmentsCalendar(const QString appointmentId, const int calendarId);
+
     void loadUserCalendarInfo();
     void insertUserCalendarInfo(const UserCalendarInfo* ucinfo);
     void removeUserCalendar(const int id);  // delete calendar and associated appointments
@@ -57,7 +60,6 @@ signals:
     void signalLoadedAppointmentFromStorage(const Appointment &apmData);
 
 public slots:
-    void slotAppointmentAdd(const Appointment &apmData);
     void slotUserCalendarDataModified(const int id, const QColor & color, const QString & title, const bool visible);
 };
 

@@ -72,11 +72,15 @@ protected:
 public slots:
     // file
     void slotOpenIcalFile();
+    void slotImportFromFileFinished();
+
     void slotLoadedAppointmentFromStorage(const Appointment);
 
     // User calendars
     void slotAddUserCalendar();
     void slotAddUserCalendarDlgFinished(int returncode);
+
+
 
 };
 

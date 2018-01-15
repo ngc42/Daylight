@@ -105,7 +105,116 @@ void Storage::createDatabase()
 }
 
 
-void Storage::loadAppointmentData(const int year )
+void Storage::storeAppointment( const Appointment &apmData )
+{
+    QSqlQuery iApm(m_db);
+    iApm.prepare("INSERT INTO appointments VALUES(:uid, :minyear, :maxyear, :allyears, :calid, :haverec, :havealarm)");
+    iApm.bindValue(":uid", apmData.m_uid);
+    iApm.bindValue(":minyear", apmData.m_minYear);
+    iApm.bindValue(":maxyear", apmData.m_maxYear);
+    QString intSetString;
+    Appointment::makeStringFromIntSet( apmData.m_yearsInQuestion, intSetString );
+    iApm.bindValue(":allyears", intSetString );
+    iApm.bindValue(":calid", apmData.m_userCalendarId );
+    iApm.bindValue(":haverec", apmData.m_haveRecurrence );
+    iApm.bindValue(":havealarm", apmData.m_haveAlarm );
+    iApm.exec();
+
+    QSqlQuery iBas(m_db);
+    iBas.prepare("INSERT INTO basics VALUES(:uid, :sequence, :start, :starttz, :end, :endtz, :summary, :description, :busyfree)");
+    iBas.bindValue(":uid", apmData.m_uid);
+    iBas.bindValue(":sequence", apmData.m_appBasics->m_sequence);
+    QString dtString;
+    QString tzString;
+    dateTime2Strings( apmData.m_appBasics->m_dtStart, dtString, tzString );
+    iBas.bindValue(":start", dtString );
+    iBas.bindValue(":starttz", tzString );
+    dateTime2Strings( apmData.m_appBasics->m_dtEnd, dtString, tzString );
+    iBas.bindValue(":end", dtString );
+    iBas.bindValue(":endtz", tzString );
+    iBas.bindValue(":summary", apmData.m_appBasics->m_summary );
+    iBas.bindValue(":description", apmData.m_appBasics->m_description );
+    iBas.bindValue(":busyfree", static_cast<int>(apmData.m_appBasics->m_busyFree) );
+    iBas.exec();
+
+    for( const AppointmentAlarm* alarm : apmData.m_appAlarms )
+    {
+        QSqlQuery iAla(m_db);
+        iAla.prepare("INSERT INTO alarms VALUES(:uid, :reltmout, :repeat, :pause)");
+        iAla.bindValue(":uid", apmData.m_uid );
+        iAla.bindValue(":reltmout", alarm->m_alarmSecs );
+        iAla.bindValue(":repeat", alarm->m_repeatNumber );
+        iAla.bindValue(":pause", alarm->m_pauseSecs );
+        iAla.exec();
+    }
+
+    if( apmData.m_haveRecurrence )
+    {
+        QSqlQuery iRec(m_db);
+        iRec.prepare("INSERT INTO recurrences VALUES(:uid, :frequency, :count, :interval, :until, :untiltz, "
+                     ":startwd, :exdates, :exdatestz, :fixeddates, :fixeddatestz, "
+                     ":bywnlist, :byydlist, :bymdlist, :bydmap,"
+                     ":byhlist, :bymlist, :byslist)");
+        iRec.bindValue(":uid", apmData.m_uid);
+        iRec.bindValue(":frequency", static_cast<int>(apmData.m_appRecurrence->m_frequency) );
+        iRec.bindValue(":count", apmData.m_appRecurrence->m_count );
+        iRec.bindValue(":interval", apmData.m_appRecurrence->m_interval );
+        dateTime2Strings( apmData.m_appRecurrence->m_until, dtString, tzString );
+        iRec.bindValue(":until", dtString );
+        iRec.bindValue(":untiltz", tzString );
+        iRec.bindValue(":startwd", static_cast<int>(apmData.m_appRecurrence->m_startWeekday) );
+        Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_exceptionDates, dtString, tzString );
+        iRec.bindValue(":exdates", dtString );
+        iRec.bindValue(":exdatestz", tzString );
+        Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_fixedDates, dtString, tzString );
+        iRec.bindValue(":fixeddates", dtString );
+        iRec.bindValue(":fixeddatestz", tzString );
+        QString listString;
+        Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byWeekNumberList, listString );
+        iRec.bindValue(":bywnlist", listString );
+        Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byYearDayList, listString );
+        iRec.bindValue(":byydlist", listString );
+        Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byMonthDayList, listString );
+        iRec.bindValue(":bymdlist", listString );
+        Appointment::makeStringFromDaymap( apmData.m_appRecurrence->m_byDayMap, listString );
+        iRec.bindValue(":bydmap", listString );
+        Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byHourList, listString );
+        iRec.bindValue(":byhlist", listString );
+        Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byMinuteList, listString );
+        iRec.bindValue(":bymlist", listString );
+        Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_bySecondList, listString );
+        iRec.bindValue(":byslist", listString );
+        iRec.exec();
+    }
+
+    QSqlQuery iEve(m_db);
+    for( const Event e : apmData.m_eventVector )
+    {
+        iEve.prepare("INSERT INTO events VALUES(:uid, :text, :start, :end, :timezone, :is_alarm)");
+        iEve.bindValue(":uid", apmData.m_uid);
+        iEve.bindValue(":text", e.m_displayText );
+        dateTime2Strings( e.m_startDt, dtString, tzString );
+        iEve.bindValue(":start", dtString );
+        dateTime2Strings( e.m_endDt, dtString, tzString );
+        iEve.bindValue(":end", dtString );
+        iEve.bindValue(":timezone", tzString );
+        iEve.bindValue(":is_alarm", e.m_isAlarmEvent );
+        iEve.exec();
+    }
+}
+
+
+void Storage::updateAppointment( const Appointment &apmData )
+{
+    if( not apmData.m_uid.isEmpty() )
+    {
+        removeAppointment( apmData.m_uid );
+        storeAppointment( apmData );
+    }
+}
+
+
+void Storage::loadAppointmentByYear( const int year )
 {
     QSqlQuery qApmSelect( m_db );
     qApmSelect.prepare( "SELECT uid, min_year, max_year, allyears, "
@@ -256,20 +365,7 @@ void Storage::loadAppointmentData(const int year )
 }
 
 
-void Storage::setAppointmentsCalendar(const QString appointmentId, const int calendarId)
-{
-    QSqlQuery qUpdate(m_db);
-    qUpdate.prepare("UPDATE appointments SET usercalendar_id=:calid  WHERE uid=:id");
-    qUpdate.bindValue(":calid", calendarId);
-    qUpdate.bindValue(":id", appointmentId);
-    if(! qUpdate.exec())
-    {
-        qDebug() << "ERR: Storage::setAppointmentsCalendar():" << qUpdate.lastError().text();
-    }
-}
-
-
-void Storage::removeAppointment(const QString id)
+void Storage::removeAppointment( const QString id )
 {
     QSqlQuery qApm(m_db);
     qApm.prepare("DELETE FROM appointments WHERE uid=:id");
@@ -303,6 +399,19 @@ void Storage::removeAppointment(const QString id)
         qAla.exec();
         qRec.exec();
         qEve.exec();
+    }
+}
+
+
+void Storage::setAppointmentsCalendar(const QString appointmentId, const int calendarId)
+{
+    QSqlQuery qUpdate(m_db);
+    qUpdate.prepare("UPDATE appointments SET usercalendar_id=:calid  WHERE uid=:id");
+    qUpdate.bindValue(":calid", calendarId);
+    qUpdate.bindValue(":id", appointmentId);
+    if(! qUpdate.exec())
+    {
+        qDebug() << "ERR: Storage::setAppointmentsCalendar():" << qUpdate.lastError().text();
     }
 }
 
@@ -438,102 +547,6 @@ void Storage::dateTime2Strings( const DateTime inDateTime, QString &dtString, QS
             else
                 tzString = "";
         }
-    }
-}
-
-
-void Storage::slotAppointmentAdd(const Appointment &apmData)
-{
-    QSqlQuery iApm(m_db);
-    iApm.prepare("INSERT INTO appointments VALUES(:uid, :minyear, :maxyear, :allyears, :calid, :haverec, :havealarm)");
-    iApm.bindValue(":uid", apmData.m_uid);
-    iApm.bindValue(":minyear", apmData.m_minYear);
-    iApm.bindValue(":maxyear", apmData.m_maxYear);
-    QString intSetString;
-    Appointment::makeStringFromIntSet( apmData.m_yearsInQuestion, intSetString );
-    iApm.bindValue(":allyears", intSetString );
-    iApm.bindValue(":calid", apmData.m_userCalendarId );
-    iApm.bindValue(":haverec", apmData.m_haveRecurrence );
-    iApm.bindValue(":havealarm", apmData.m_haveAlarm );
-    iApm.exec();
-
-    QSqlQuery iBas(m_db);
-    iBas.prepare("INSERT INTO basics VALUES(:uid, :sequence, :start, :starttz, :end, :endtz, :summary, :description, :busyfree)");
-    iBas.bindValue(":uid", apmData.m_uid);
-    iBas.bindValue(":sequence", apmData.m_appBasics->m_sequence);
-    QString dtString;
-    QString tzString;
-    dateTime2Strings( apmData.m_appBasics->m_dtStart, dtString, tzString );
-    iBas.bindValue(":start", dtString );
-    iBas.bindValue(":starttz", tzString );
-    dateTime2Strings( apmData.m_appBasics->m_dtEnd, dtString, tzString );
-    iBas.bindValue(":end", dtString );
-    iBas.bindValue(":endtz", tzString );
-    iBas.bindValue(":summary", apmData.m_appBasics->m_summary );
-    iBas.bindValue(":description", apmData.m_appBasics->m_description );
-    iBas.bindValue(":busyfree", static_cast<int>(apmData.m_appBasics->m_busyFree) );
-    iBas.exec();
-
-    for( const AppointmentAlarm* alarm : apmData.m_appAlarms )
-    {
-        QSqlQuery iAla(m_db);
-        iAla.prepare("INSERT INTO basics VALUES(:uid, :reltmout, :repeat, :pause)");
-        iAla.bindValue(":uid", apmData.m_uid );
-        iAla.bindValue(":reltmout", alarm->m_alarmSecs );
-        iAla.bindValue(":repeat", alarm->m_repeatNumber );
-        iAla.bindValue(":pause", alarm->m_pauseSecs );
-        iAla.exec();
-    }
-
-    QSqlQuery iRec(m_db);
-    iRec.prepare("INSERT INTO recurrences VALUES(:uid, :frequency, :count, :interval, :until, :untiltz, "
-                 ":startwd, :exdates, :exdatestz, :fixeddates, :fixeddatestz, "
-                 ":bywnlist, :byydlist, :bymdlist, :bydmap,"
-                 ":byhlist, :bymlist, :byslist)");
-    iRec.bindValue(":uid", apmData.m_uid);
-    iRec.bindValue(":frequency", static_cast<int>(apmData.m_appRecurrence->m_frequency) );
-    iRec.bindValue(":count", apmData.m_appRecurrence->m_count );
-    iRec.bindValue(":interval", apmData.m_appRecurrence->m_interval );
-    dateTime2Strings( apmData.m_appRecurrence->m_until, dtString, tzString );
-    iRec.bindValue(":until", dtString );
-    iRec.bindValue(":untiltz", tzString );
-    iRec.bindValue(":startwd", static_cast<int>(apmData.m_appRecurrence->m_startWeekday) );
-    Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_exceptionDates, dtString, tzString );
-    iRec.bindValue(":exdates", dtString );
-    iRec.bindValue(":exdatestz", tzString );
-    Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_fixedDates, dtString, tzString );
-    iRec.bindValue(":fixeddates", dtString );
-    iRec.bindValue(":fixeddatestz", tzString );
-    QString listString;
-    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byWeekNumberList, listString );
-    iRec.bindValue(":bywnlist", listString );
-    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byYearDayList, listString );
-    iRec.bindValue(":byydlist", listString );
-    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byMonthDayList, listString );
-    iRec.bindValue(":bymdlist", listString );
-    Appointment::makeStringFromDaymap( apmData.m_appRecurrence->m_byDayMap, listString );
-    iRec.bindValue(":bydmap", listString );
-    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byHourList, listString );
-    iRec.bindValue(":byhlist", listString );
-    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_byMinuteList, listString );
-    iRec.bindValue(":bymlist", listString );
-    Appointment::makeStringFromIntList( apmData.m_appRecurrence->m_bySecondList, listString );
-    iRec.bindValue(":byslist", listString );
-    iRec.exec();
-
-    QSqlQuery iEve(m_db);
-    for( const Event e : apmData.m_eventVector )
-    {
-        iEve.prepare("INSERT INTO events VALUES(:uid, :text, :start, :end, :timezone, :is_alarm)");
-        iEve.bindValue(":uid", apmData.m_uid);
-        iEve.bindValue(":text", e.m_displayText );
-        dateTime2Strings( e.m_startDt, dtString, tzString );
-        iEve.bindValue(":start", dtString );
-        dateTime2Strings( e.m_endDt, dtString, tzString );
-        iEve.bindValue(":end", dtString );
-        iEve.bindValue(":timezone", tzString );
-        iEve.bindValue(":is_alarm", e.m_isAlarmEvent );
-        iEve.exec();
     }
 }
 

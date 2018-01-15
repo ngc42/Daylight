@@ -392,13 +392,21 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
 {
     Appointment* t = new Appointment();
     t->m_appBasics = inAppBasics;
+    qDebug() << " IcalInterpreter::makeAppointment num alarm " << inAppAlarmList.count();
     t->m_appRecurrence = inAppRecurrence;
     t->m_appAlarms = inAppAlarmList;
 
-    // make an event list
+    // fill up appointment
+    t->m_minYear = 1000000;             // just a big number
+    t->m_maxYear = 0;                   // just a small number
+    t->m_userCalendarId = 0;            // here, we don't know
+    t->m_uid = t->m_appBasics->m_uid;   // just forwarded
+    t->m_haveAlarm = not inAppAlarmList.isEmpty();
 
+    // make an event list
     if( inAppRecurrence )
     {
+        t->m_haveRecurrence = true;
         connect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
               this, SIGNAL(sigTickEvent(int,int,int)) );
 
@@ -413,23 +421,32 @@ void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
             e.m_startDt = dt;
             QDateTime qdt = dt.addSecs( seconds );
             e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
+            e.m_isAlarmEvent = false;
             t->m_eventVector.append( e );
             t->m_yearsInQuestion.insert( dt.date().year() );
+            t->m_yearsInQuestion.insert( qdt.date().year() );
+            t->m_minYear = dt.date().year() < t->m_minYear ? dt.date().year() : t->m_minYear;
+            t->m_maxYear = qdt.date().year() > t->m_maxYear ? qdt.date().year() : t->m_maxYear;
+
         }
         disconnect( t->m_appRecurrence, SIGNAL(signalTick(int,int,int)),
                  this, SIGNAL(sigTickEvent(int,int,int)) );
     }
     else
     {
+        t->m_haveRecurrence = false;
         Event e;
         e.m_uid = t->m_appBasics->m_uid;
         e.m_displayText = t->m_appBasics->m_summary;
         e.m_startDt = t->m_appBasics->m_dtStart;
         e.m_endDt = t->m_appBasics->m_dtEnd;
+        e.m_isAlarmEvent = false;
         t->m_eventVector.append( e );
         t->m_yearsInQuestion.insert( e.m_startDt.date().year() );
+        t->m_yearsInQuestion.insert( e.m_endDt.date().year() );
+        t->m_minYear = e.m_startDt.date().year();
+        t->m_maxYear = e.m_endDt.date().year();
     }
-
     emit sigTickEvent( 0, 1, 1 );
     emit sigAppointmentReady( t );
 }

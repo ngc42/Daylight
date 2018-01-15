@@ -35,13 +35,15 @@ public:
     explicit IcalImportDialog(QWidget *parent = 0);
     ~IcalImportDialog();
     void setFilenames( QStringList &inList );
+    void deleteThreadsAndData();
+
+    QVector<ThreadInfo>     m_threads;
+
 
 private:
     Ui::IcalImportDialog*   m_ui;
-    QVector<ThreadInfo>     m_threads;
     void parseIcalFile( const QString inFilename, QStringList &inContentLines );
     void displayContentToMessage();
-
 
 signals:
     void sigFinishReadingFiles();
