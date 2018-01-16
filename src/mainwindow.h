@@ -22,6 +22,7 @@
 
 #include "appointmentmanager.h"
 #include "icalimportdialog.h"
+#include "settingsdialog.h"
 #include "storage.h"
 #include "usercalendar.h"
 #include "usercalendarnew.h"
@@ -57,6 +58,7 @@ private:
     Storage* m_storage;                         // database of appointments, storage on disk
     QActionGroup* m_groupCalendarAppearance;    // Year, Month, ...
     IcalImportDialog*   m_icalImportDialog;     // Dialog to read Ical files
+    SettingsManager* m_settingsManager;
     UserCalendarPool* m_userCalendarPool;       // Container for user calendars
     UserCalendarNew* m_userCalendarNewDialog;   // Dialog to add a user calendar
 
@@ -74,7 +76,11 @@ public slots:
     void slotOpenIcalFile();
     void slotImportFromFileFinished();
 
+    // storage
     void slotLoadedAppointmentFromStorage( Appointment* );
+
+    // settings
+    void slotSettingsDialog();
 
     // User calendars
     void slotAddUserCalendar();

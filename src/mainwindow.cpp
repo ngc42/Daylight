@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), m_ui(new Ui::MainWindow)
 {
     m_ui->setupUi(this);
+    m_settingsManager = new SettingsManager();
     m_storage = new Storage(this);
     m_ui->statusBar->hide();
 
@@ -63,6 +64,7 @@ MainWindow::MainWindow(QWidget* parent) :
     m_icalImportDialog->hide();
 
     // connect main signals
+    connect(m_ui->actionPreferences, SIGNAL(triggered()), this, SLOT(slotSettingsDialog()));
     connect(m_ui->actionOpenICalFile, SIGNAL(triggered()), this, SLOT(slotOpenIcalFile()));
     connect(m_ui->actionExit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
@@ -90,6 +92,32 @@ MainWindow::MainWindow(QWidget* parent) :
     // ical import dialog
     connect(m_icalImportDialog, SIGNAL(sigFinishReadingFiles()),
             this, SLOT(slotImportFromFileFinished()) );
+
+
+    // what to show depends on config
+    switch( m_settingsManager->startView() )
+    {
+        case SettingStartWithView::START_YEAR:
+            emit m_ui->actionShowYear->trigger();
+            break;
+        case SettingStartWithView::START_MONTH:
+            emit m_ui->actionShowMonth->trigger();
+            break;
+        case SettingStartWithView::START_3WEEKS:
+            emit m_ui->actionShow3Weeks->trigger();
+            break;
+        case SettingStartWithView::START_WEEK:
+            emit m_ui->actionShowWeek->trigger();
+            break;
+        case SettingStartWithView::START_DAY:
+            emit m_ui->actionShowDay->trigger();
+            break;
+        default:
+            emit m_ui->actionShowYear->trigger();
+            break;
+    }
+    //slotSetDate( m_settingsManager->startDate() );
+
 }
 
 
@@ -151,6 +179,21 @@ void MainWindow::slotLoadedAppointmentFromStorage(Appointment * /*apmData*/ )
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
 }
 
+/* Start Settingsdialog and wait till finished */
+void MainWindow::slotSettingsDialog()
+{
+    SettingsData settings = m_settingsManager->currentSettings();
+    SettingsDialog* dlg = new SettingsDialog(settings, this);
+    if( dlg->exec() == QDialog::Accepted )
+    {
+        if(dlg->dataModified())
+        {
+            m_settingsManager->setSettings(dlg->settings());
+            //m_scene->setSettings(m_settingsManager->currentSettings());
+            //slotSetDate(m_scene->date());  // update appointments and toolbar view, needed if SettingsData::m_weekStartDay was modified
+        }
+    }
+}
 
 void MainWindow::slotAddUserCalendar()
 {
