@@ -357,7 +357,7 @@ void Storage::loadAppointmentByYear( const int year )
                 apmData.m_eventVector.append( e );
             }
 
-            emit signalLoadedAppointmentFromStorage(apmData);
+            emit signalLoadedAppointmentFromStorage( &apmData );
         }
     }
     else

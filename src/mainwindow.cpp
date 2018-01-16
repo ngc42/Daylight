@@ -76,11 +76,11 @@ MainWindow::MainWindow(QWidget* parent) :
     m_storage->loadUserCalendarInfo();
     disconnect(m_storage, SIGNAL(signalLoadedUserCalendarFromStorage(UserCalendarInfo* &)),
             m_userCalendarPool, SLOT(slotAddUserCalendarFromStorage(UserCalendarInfo* &)));
-    connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment)),
-            this, SLOT(slotLoadedAppointmentFromStorage(Appointment)));
+    connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
+            this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
     m_storage->loadAppointmentByYear( QDateTime::currentDateTime().date().year() );
-    disconnect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment)),
-               this, SLOT(slotLoadedAppointmentFromStorage(Appointment)));
+    disconnect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
+               this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
     QMenu* tmp = m_userCalendarPool->calendarMenu();
     m_toolbarUserCalendarMenu->setMenu(tmp);
     connect(m_userCalendarPool, SIGNAL(signalUserCalendarDataModified(int,QColor,QString,bool)),
@@ -130,7 +130,7 @@ void MainWindow::slotOpenIcalFile()
 
 void MainWindow::slotImportFromFileFinished()
 {
-    m_icalImportDialog->hide();
+    //m_icalImportDialog->hide();
 
     // generated data is in the buffer of thread
     for( const ThreadInfo ti : m_icalImportDialog->m_threads )
@@ -146,7 +146,7 @@ void MainWindow::slotImportFromFileFinished()
 }
 
 
-void MainWindow::slotLoadedAppointmentFromStorage(const Appointment /*&apmData*/ )
+void MainWindow::slotLoadedAppointmentFromStorage(Appointment * /*apmData*/ )
 {
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
 }

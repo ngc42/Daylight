@@ -197,7 +197,14 @@ struct Event {
 };
 
 
-struct Appointment {
+class Appointment : public QObject
+{
+
+    Q_OBJECT
+
+public:
+
+    Appointment( QObject *parent = Q_NULLPTR );
 
     // helper methods
     static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
@@ -208,6 +215,8 @@ struct Appointment {
     static void makeStringFromIntList( const QList<int> inIntList, QString &outString );
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
 
+    void makeEvents();
+
     AppointmentBasics*          m_appBasics;
     AppointmentRecurrence*      m_appRecurrence;
     QList<AppointmentAlarm*>    m_appAlarms;
@@ -216,13 +225,20 @@ struct Appointment {
     int                         m_minYear;          // start of first event
     int                         m_maxYear;          // end of last event
     // events
-    QVector<Event>                m_eventVector;
+    QVector<Event>              m_eventVector;
     // calendar id
     int                         m_userCalendarId;
     QString                     m_uid;
     // getter
     bool                        m_haveRecurrence;
     bool                        m_haveAlarm;
+
+private:
+    Appointment( const Appointment & );
+
+
+signals:
+    void sigTickEvent( const int min, const int current, const int max );
 };
 
 

@@ -74,14 +74,11 @@ public slots:
     void slotOpenIcalFile();
     void slotImportFromFileFinished();
 
-    void slotLoadedAppointmentFromStorage(const Appointment);
+    void slotLoadedAppointmentFromStorage( Appointment* );
 
     // User calendars
     void slotAddUserCalendar();
     void slotAddUserCalendarDlgFinished(int returncode);
-
-
-
 };
 
 

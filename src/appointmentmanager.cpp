@@ -1262,6 +1262,15 @@ void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
  * ******* Appointment ***************************
  * **********************************************/
 
+Appointment::Appointment( QObject *parent )
+    :
+      QObject(parent),
+      m_haveRecurrence( false ),
+      m_haveAlarm( false )
+{
+}
+
+
 void Appointment::makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList )
 {
     outList.clear();
@@ -1418,4 +1427,51 @@ void Appointment::makeStringFromIntSet( const QSet<int> inIntSet, QString &outSt
             s = QString("%1").arg( i );
         outString = outString.append(s);
     }
+}
+
+void Appointment::makeEvents()
+{
+    // make an event list
+    if( m_haveRecurrence )
+    {
+        connect( m_appRecurrence, SIGNAL(signalTick(int,int,int)),
+              this, SIGNAL(sigTickEvent(int,int,int)) );
+
+        qint64 seconds = m_appBasics->m_dtStart.secsTo( m_appBasics->m_dtEnd );
+        QVector<DateTime> list = m_appRecurrence->recurrenceStartDates( m_appBasics->m_dtStart );
+
+        for( const DateTime dt : list )
+        {
+            Event e;
+            e.m_uid = m_appBasics->m_uid;
+            e.m_displayText = m_appBasics->m_summary;
+            e.m_startDt = dt;
+            QDateTime qdt = dt.addSecs( seconds );
+            e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
+            e.m_isAlarmEvent = false;
+            m_eventVector.append( e );
+            m_yearsInQuestion.insert( dt.date().year() );
+            m_yearsInQuestion.insert( qdt.date().year() );
+            m_minYear = dt.date().year() < m_minYear ? dt.date().year() : m_minYear;
+            m_maxYear = qdt.date().year() > m_maxYear ? qdt.date().year() : m_maxYear;
+
+        }
+        disconnect( m_appRecurrence, SIGNAL(signalTick(int,int,int)),
+                 this, SIGNAL(sigTickEvent(int,int,int)) );
+    }
+    else
+    {
+        Event e;
+        e.m_uid = m_appBasics->m_uid;
+        e.m_displayText = m_appBasics->m_summary;
+        e.m_startDt = m_appBasics->m_dtStart;
+        e.m_endDt = m_appBasics->m_dtEnd;
+        e.m_isAlarmEvent = false;
+        m_eventVector.append( e );
+        m_yearsInQuestion.insert( e.m_startDt.date().year() );
+        m_yearsInQuestion.insert( e.m_endDt.date().year() );
+        m_minYear = e.m_startDt.date().year();
+        m_maxYear = e.m_endDt.date().year();
+    }
+    emit sigTickEvent( 0, 1, 1 );
 }

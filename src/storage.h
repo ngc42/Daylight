@@ -57,7 +57,7 @@ private:
 
 signals:
     void signalLoadedUserCalendarFromStorage(UserCalendarInfo* &info);
-    void signalLoadedAppointmentFromStorage(const Appointment &apmData);
+    void signalLoadedAppointmentFromStorage( Appointment* apmData);
 
 public slots:
     void slotUserCalendarDataModified(const int id, const QColor & color, const QString & title, const bool visible);
