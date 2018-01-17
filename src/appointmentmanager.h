@@ -173,6 +173,16 @@ struct Event {
     DateTime    m_startDt;
     DateTime    m_endDt;
     bool        m_isAlarmEvent;     // true, if this is an alarm event
+
+    bool operator==(const Event other) const
+    {
+        return m_uid == other.m_uid and
+                m_displayText == other.m_displayText and
+                m_startDt == other.m_startDt and
+                m_endDt == other.m_endDt and
+                m_isAlarmEvent == other.m_isAlarmEvent;
+    }
+
     bool operator<(const Event other) const
     {
         if( m_startDt.date() < other.m_startDt.date() )
