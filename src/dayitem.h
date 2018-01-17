@@ -34,7 +34,7 @@
 class TooManyEventsItem : public QGraphicsItem
 {
 public:
-    explicit TooManyAppointmentsItem(QGraphicsItem* parent = 0);
+    explicit TooManyEventsItem(QGraphicsItem* parent = 0);
     QRectF boundingRect() const { return QRectF({0, 0}, m_size); }
     void resize(const qreal width, const qreal height);
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
@@ -98,7 +98,7 @@ protected:
 
 signals:
     void signalReconfigureAppointment(QString apointmentId);
-    void signalDeleteAppointment(const QSTring appointmentId);
+    void signalDeleteAppointment(const QString appointmentId);
 
 private slots:
     void slotPrepareReconfigureAppointment();
@@ -168,15 +168,15 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
     virtual void setDate(const QDate date);
 
-    void setAppointmentDaySlots(const QList<Event> &list);
-    void setAppointmentRangeSlot(const int slot, const QList<Event> &list);
+    void setAppointmentDaySlots(const QVector<Event> &list);
+    void setAppointmentRangeSlot(const int slot, const QVector<Event> &list);
     void clearAppointments();
 
 private:
     QGraphicsSimpleTextItem*    m_weekNumberLabel;
     TooManyEventsItem*          m_tooManyItems;
-    QList<EventItem*>           m_appointmentSlotsDay;
-    QList<EventItem*>           m_appointmentSlotsRange;
+    QVector<EventItem*>           m_appointmentSlotsDay;
+    QVector<EventItem*>           m_appointmentSlotsRange;
 
 signals:
 public slots:
@@ -198,13 +198,13 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
     virtual void setDate(const QDate date);
 
-    void setAppointmentRangeSlot(const int slot, const QList<Event> &list, int weekStart);
-    void setAppointments(const QList<Event> &list);
+    void setAppointmentRangeSlot(const int slot, const QVector<Event> &list, int weekStart);
+    void setAppointments(const QVector<Event> &list);
     void clearAppointments();
 
 private:
     TooManyEventsItem*  m_tooManyItems;
-    QList<EventItem*>   m_appointmentSlots;
+    QVector<EventItem*>   m_appointmentSlots;
 
 signals:
 
@@ -228,13 +228,13 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
     virtual void setDate(const QDate date);
 
-    void setAppointmentRangeSlot(const int slot, const QList<Event> &list, int weekStart);
-    void setAppointments(const QList<Event> &list);
+    void setAppointmentRangeSlot(const int slot, const QVector<Event> &list, int weekStart);
+    void setAppointments(const QVector<Event> &list);
     void clearAppointments();
 
 private:
     TooManyEventsItem*      m_tooManyItems;
-    QList<EventItem*>       m_appointmentSlots;
+    QVector<EventItem*>       m_appointmentSlots;
 
 signals:
 public slots:
@@ -272,18 +272,18 @@ public:
     virtual void setDate(const QDate date);
     void setActiveDaytime(int hourBegin, int hourEnd);
 
-    void setAppointmentsFullDay(const QList<Event> &list);
-    void setAppointmentsPartDay(const QList<Event> &list);
+    void setAppointmentsFullDay(const QVector<Event> &list);
+    void setAppointmentsPartDay(const QVector<Event> &list);
     void clearAppointments();
 
 private:
     int                 m_activeHourStart;      // time to display
     int                 m_activeHourEnd;
     TooManyEventsItem*  m_tooManyItems;
-    QList<EventItem*>   m_appointmentFullDay;
-    QList<EventItem*>   m_appointmentPartDay;
+    QVector<EventItem*>   m_appointmentFullDay;
+    QVector<EventItem*>   m_appointmentPartDay;
     int                 m_numberOfAppointmentOverlaps;
-    QList<Marker>       m_markerList;
+    QVector<Marker>       m_markerList;
     void createMarkerList();
 
 signals:

@@ -194,6 +194,10 @@ struct Event {
             return false;
         return false;
     }
+    bool containsDay( const QDate inDate ) const
+    {
+        return m_startDt.date() <= inDate and m_endDt.date() >= inDate;
+    }
 };
 
 

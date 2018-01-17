@@ -21,6 +21,7 @@
 #include <QToolButton>
 
 #include "appointmentmanager.h"
+#include "eventpool.h"
 #include "icalimportdialog.h"
 #include "settingsdialog.h"
 #include "storage.h"
@@ -54,18 +55,19 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow* m_ui;
-    Storage* m_storage;                         // database of appointments, storage on disk
-    QActionGroup* m_groupCalendarAppearance;    // Year, Month, ...
+    Ui::MainWindow*     m_ui;
+    Storage*            m_storage;              // database of appointments, storage on disk
+    QActionGroup*       m_groupCalendarAppearance;  // Year, Month, ...
+    EventPool*          m_eventPool;            // database of events during runtime
     IcalImportDialog*   m_icalImportDialog;     // Dialog to read Ical files
-    SettingsManager* m_settingsManager;
-    UserCalendarPool* m_userCalendarPool;       // Container for user calendars
-    UserCalendarNew* m_userCalendarNewDialog;   // Dialog to add a user calendar
+    SettingsManager*    m_settingsManager;
+    UserCalendarPool*   m_userCalendarPool;     // Container for user calendars
+    UserCalendarNew*    m_userCalendarNewDialog;    // Dialog to add a user calendar
 
-    QToolButton* m_toolbarDateLabel;            // label/button to show current selected date and start navigationDialog
-    QToolButton* m_toolbarUserCalendarMenu;     // shows user calendars, switch them on/off
+    QToolButton*        m_toolbarDateLabel;     // label/button to show current selected date and start navigationDialog
+    QToolButton*        m_toolbarUserCalendarMenu;  // shows user calendars, switch them on/off
     void resizeCalendarView();                  // collector of resize events
-    void showAppointments(const QDate &date);  // update appointments
+    void showAppointments(const QDate &date);   // update appointments
 
 protected:
     void resizeEvent(QResizeEvent* event);
@@ -77,7 +79,7 @@ public slots:
     void slotImportFromFileFinished();
 
     // storage
-    void slotLoadedAppointmentFromStorage( Appointment* );
+    void slotLoadedAppointmentFromStorage(Appointment* apmData);
 
     // settings
     void slotSettingsDialog();

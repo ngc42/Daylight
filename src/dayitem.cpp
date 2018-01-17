@@ -18,13 +18,13 @@
 #include <QDebug>
 
 /***********************************************************
-********** TooManyAppointmentsItem *************************
+********** TooManyEventsItem *************************
 ***********************************************************/
 
 TooManyEventsItem::TooManyEventsItem(QGraphicsItem* parent) :
     QGraphicsItem(parent), m_size(5, 5)
 {
-    setToolTip("Too many appointments. I am sorry but we cannot show them all.");
+    setToolTip("Too many events. I am sorry but we cannot show them all.");
     hide();
 }
 
@@ -46,7 +46,7 @@ void TooManyEventsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
 
 /***********************************************************
-********** AppointmentItem *********************************
+********** EventItem ***************************************
 ***********************************************************/
 
 EventItem::EventItem(QGraphicsItem *parent) :
@@ -60,9 +60,11 @@ EventItem::EventItem(QGraphicsItem *parent) :
 
 EventItem::EventItem(Event event, QGraphicsItem *parent) :
     QGraphicsObject(parent), m_dummy(false), m_size(3, 3), m_sizeTooSmall(false),
-    m_color(appointment->m_color), m_title(appointment->m_appointmentData.m_title), m_showTitle(false), m_fontPixelSize(1),
-    m_userCalendarId(appointment->m_appointmentData.m_userCalendarId), m_appointmentId(appointment->m_appointmentData.m_appointmentId),
-    m_startDt(appointment->startDateTime()), m_endDt(appointment->endDateTime()), m_allDay(appointment->m_appointmentData.m_allDay)
+    m_color(Qt::red), m_title(event.m_displayText), m_showTitle(false), m_fontPixelSize(1),
+    m_userCalendarId(0),
+    m_appointmentId(event.m_uid),
+    m_startDt(event.m_startDt),
+    m_endDt(event.m_endDt), m_allDay(false)
 {
     QString toolTipText = QString("%1 (cal-id = %2, app-id = %3) - %4 to %5")
             .arg(m_title)
@@ -162,7 +164,7 @@ void EventItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 void EventItem::slotPrepareReconfigureAppointment()
 {
-    if(m_appointmentId == 0 or m_dummy)
+    if(m_appointmentId == "" or m_dummy)
         return;
     emit signalReconfigureAppointment(m_appointmentId);
 }
@@ -170,12 +172,12 @@ void EventItem::slotPrepareReconfigureAppointment()
 
 void EventItem::slotPrepareDeleteAppointment()
 {
-    if(m_appointmentId == 0 or m_dummy)
+    if(m_appointmentId == "" or m_dummy)
         return;
     disconnect(m_actionReconfigureAppointment, SIGNAL(triggered()), this, SLOT(slotPrepareReconfigureAppointment()));
     disconnect(m_deleteThisAppointment, SIGNAL(triggered()), this, SLOT(slotPrepareDeleteAppointment()));
     // this is fragile, as this causes the deletion of "this" during execution. Qt::QueuedConnection is fine.
-    QMetaObject::invokeMethod(this, "signalDeleteAppointment", Qt::QueuedConnection, Q_ARG(int, m_appointmentId) );
+    QMetaObject::invokeMethod(this, "signalDeleteAppointment", Qt::QueuedConnection, Q_ARG(QString, m_appointmentId) );
 }
 
 
@@ -291,7 +293,7 @@ DayInYearItem::DayInYearItem(const QDate date, QGraphicsItem *parent) :
 {
     m_weekNumberLabel = new QGraphicsSimpleTextItem("00", this);
     m_weekNumberLabel->setBrush(Qt::lightGray);
-    m_tooManyItems = new TooManyAppointmentsItem(this);
+    m_tooManyItems = new TooManyEventsItem(this);
     m_tooManyItems->show();
     setDate(date);
     adjustSubitemPositions();
@@ -335,7 +337,7 @@ void DayInYearItem::adjustSubitemPositions()
     qreal x = width / 3.0f;
     qreal apiHeight = height - 2.0f;
 
-    for(AppointmentItem* itm : m_appointmentSlotsRange)
+    for(EventItem* itm : m_appointmentSlotsRange)
     {
         itm->resize(apiWidth, apiHeight);
         itm->setPos(x, 1.0f);
@@ -349,7 +351,7 @@ void DayInYearItem::adjustSubitemPositions()
         x = x + 2.0f * apiWidth;
     }
 
-    for(AppointmentItem* itm : m_appointmentSlotsDay)
+    for(EventItem* itm : m_appointmentSlotsDay)
     {
         itm->resize(apiWidth, apiHeight);
         itm->setPos(x, 1.0f);
@@ -423,14 +425,14 @@ void DayInYearItem::setDate(const QDate date)
 }
 
 
-void DayInYearItem::setAppointmentDaySlots(const QList<Event> &list)
+void DayInYearItem::setAppointmentDaySlots(const QVector<Event> &list)
 {
     if( ! date().isValid() ) return;
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        if(apm->containsDay(date()))
+        if( e.containsDay(date()) )
         {
-            AppointmentItem* itm = new AppointmentItem(apm, this);
+            EventItem* itm = new EventItem(e, this);
             connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
             connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             itm->setShowTitle(false);
@@ -441,19 +443,19 @@ void DayInYearItem::setAppointmentDaySlots(const QList<Event> &list)
 }
 
 
-void DayInYearItem::setAppointmentRangeSlot(const int slot, const QList<Event> &list)
+void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event> &list)
 {
     if( ! date().isValid() ) return;
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        if(apm->containsDay(date()))
+        if( e.containsDay(date()) )
         {
             while(slot > m_appointmentSlotsRange.count())
             {
-                AppointmentItem* itm = new AppointmentItem(this);
+                EventItem* itm = new EventItem(this);
                 m_appointmentSlotsRange.append(itm);
             }
-            AppointmentItem* itm = new AppointmentItem(apm, this);
+            EventItem* itm = new EventItem(e, this);
             connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
             connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             itm->setShowTitle(false);
@@ -466,9 +468,9 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QList<Event> &
 
 void DayInYearItem::clearAppointments()
 {
-    for(AppointmentItem* itm : m_appointmentSlotsDay)
+    for(EventItem* itm : m_appointmentSlotsDay)
         delete itm;
-    for(AppointmentItem* itm : m_appointmentSlotsRange)
+    for(EventItem* itm : m_appointmentSlotsRange)
         delete itm;
     m_appointmentSlotsDay.clear();
     m_appointmentSlotsRange.clear();
@@ -484,7 +486,7 @@ void DayInYearItem::clearAppointments()
 DayInMonthItem::DayInMonthItem(const QDate date, QGraphicsItem* parent) :
     DayItem(parent)
 {
-    m_tooManyItems = new TooManyAppointmentsItem(this);
+    m_tooManyItems = new TooManyEventsItem(this);
     setDate(date);
     adjustSubitemPositions();
 }
@@ -515,7 +517,7 @@ void DayInMonthItem::adjustSubitemPositions()
     qreal apiHeight= 15.0f;
     qreal y = apiHeight;
 
-    for(AppointmentItem* itm : m_appointmentSlots)
+    for(EventItem* itm : m_appointmentSlots)
     {
         itm->resize(apiWidth, apiHeight);
         itm->setFontPixelSize(10);
@@ -553,26 +555,26 @@ void DayInMonthItem::setDate(const QDate date)
 }
 
 
-void DayInMonthItem::setAppointmentRangeSlot(const int slot, const QList<Event> &list, int weekStart)
+void DayInMonthItem::setAppointmentRangeSlot(const int slot, const QVector<Event> &list, int weekStart)
 {
     if( (! date().isValid()) or list.isEmpty() ) return;
 
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        if(apm->containsDay(date()))
+        if( e.containsDay(date()) )
         {
             while(slot > m_appointmentSlots.count())
             {
-                AppointmentItem* dummyItem = new AppointmentItem(this);
+                EventItem* dummyItem = new EventItem(this);
                 m_appointmentSlots.append(dummyItem);
             }
 
-            AppointmentItem* itm = new AppointmentItem(apm, this);
+            EventItem* itm = new EventItem(e, this);
             connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
             connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             bool showTitle = (date().dayOfWeek() == weekStart) or
-                    (apm->startDateTime().date().day() == date().day() and
-                     apm->startDateTime().date().month() == date().month());
+                    (e.m_startDt.date().day() == date().day() and
+                     e.m_startDt.date().month() == date().month());
             itm->setShowTitle(showTitle);
             m_appointmentSlots.append(itm);
         }
@@ -581,16 +583,16 @@ void DayInMonthItem::setAppointmentRangeSlot(const int slot, const QList<Event> 
 }
 
 
-void DayInMonthItem::setAppointments(const QList<Event> &list)
+void DayInMonthItem::setAppointments(const QVector<Event> &list)
 {
     if( (! date().isValid()) or list.isEmpty() ) return;
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        if(apm->containsDay(date()))
+        if( e.containsDay(date()) )
         {
             bool replaced = false;
 
-            AppointmentItem* itm = new AppointmentItem(apm, this);
+            EventItem* itm = new EventItem(e, this);
             connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
             connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             itm->setShowTitle(true);
@@ -616,7 +618,7 @@ void DayInMonthItem::setAppointments(const QList<Event> &list)
 
 void DayInMonthItem::clearAppointments()
 {
-    for(AppointmentItem* itm : m_appointmentSlots)
+    for(EventItem* itm : m_appointmentSlots)
         delete itm;
     m_appointmentSlots.clear();
 }
@@ -630,7 +632,7 @@ void DayInMonthItem::clearAppointments()
 DayInWeekItem::DayInWeekItem(const QDate date, QGraphicsItem* parent) :
     DayItem(parent)
 {
-    m_tooManyItems = new TooManyAppointmentsItem(this);
+    m_tooManyItems = new TooManyEventsItem(this);
     setDate(date);
     adjustSubitemPositions();
 }
@@ -661,7 +663,7 @@ void DayInWeekItem::adjustSubitemPositions()
     qreal apiHeight= 15.0f;
     qreal y = apiHeight;
 
-    for(AppointmentItem* itm : m_appointmentSlots)
+    for(EventItem* itm : m_appointmentSlots)
     {
         itm->resize(apiWidth, apiHeight);
         itm->setFontPixelSize(10);
@@ -699,26 +701,26 @@ void DayInWeekItem::setDate(const QDate date)
 }
 
 
-void DayInWeekItem::setAppointmentRangeSlot(const int slot, const QList<EventItem> &list, int weekStart)
+void DayInWeekItem::setAppointmentRangeSlot(const int slot, const QVector<Event> &list, int weekStart)
 {
     if( (! date().isValid()) or list.isEmpty() ) return;
 
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        if(apm->containsDay(date()))
+        if( e.containsDay(date()) )
         {
             while(slot > m_appointmentSlots.count())
             {
-                AppointmentItem* dummyItem = new AppointmentItem(this);
+                EventItem* dummyItem = new EventItem(this);
                 m_appointmentSlots.append(dummyItem);
             }
 
-            AppointmentItem* itm = new AppointmentItem(apm, this);
+            EventItem* itm = new EventItem(e, this);
             connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
             connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             bool showTitle = (date().dayOfWeek() == weekStart) or
-                    (apm->startDateTime().date().day() == date().day() and
-                     apm->startDateTime().date().month() == date().month());
+                    (e.m_startDt.date().day() == date().day() and
+                     e.m_startDt.date().month() == date().month());
             itm->setShowTitle(showTitle);
             m_appointmentSlots.append(itm);
         }
@@ -727,16 +729,16 @@ void DayInWeekItem::setAppointmentRangeSlot(const int slot, const QList<EventIte
 }
 
 
-void DayInWeekItem::setAppointments(const QList<Appointment*> & list)
+void DayInWeekItem::setAppointments(const QVector<Event> &list)
 {
     if( (! date().isValid()) or list.isEmpty() ) return;
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        if(apm->containsDay(date()))
+        if( e.containsDay(date()) )
         {
             bool replaced = false;
 
-            AppointmentItem* itm = new AppointmentItem(apm, this);
+            EventItem* itm = new EventItem(e, this);
             connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
             connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             itm->setShowTitle(true);
@@ -762,7 +764,7 @@ void DayInWeekItem::setAppointments(const QList<Appointment*> & list)
 
 void DayInWeekItem::clearAppointments()
 {
-    for(AppointmentItem* itm : m_appointmentSlots)
+    for(EventItem* itm : m_appointmentSlots)
         delete itm;
     m_appointmentSlots.clear();
 }
@@ -776,7 +778,7 @@ void DayInWeekItem::clearAppointments()
 DayInDayItem::DayInDayItem(const QDate date, QGraphicsItem* parent) :
     DayItem(parent), m_activeHourStart(8), m_activeHourEnd(20), m_numberOfAppointmentOverlaps(0)
 {
-    m_tooManyItems = new TooManyAppointmentsItem(this);
+    m_tooManyItems = new TooManyEventsItem(this);
     setDate(date);
 }
 
@@ -808,7 +810,7 @@ void DayInDayItem::adjustSubitemPositions()
 
     int apmfdHeight = m_markerList[0].ypos;     // height of the area, where the full-day items live
 
-    for(AppointmentItem* itm : m_appointmentFullDay)
+    for(EventItem* itm : m_appointmentFullDay)
     {
         itm->resize(apiWidth, apiHeight);
         itm->setFontPixelSize(10);
@@ -832,7 +834,7 @@ void DayInDayItem::adjustSubitemPositions()
     int timeSlotBookkeeper[26];
     for(int i = 0; i < 26; i++) timeSlotBookkeeper[i] = 0;
 
-    for(AppointmentItem* itm : m_appointmentPartDay)
+    for(EventItem* itm : m_appointmentPartDay)
     {
         int startH = (itm->startDt().date() < date()) ? (m_activeHourStart > 0 ? m_activeHourStart - 1 : 0) : itm->startDt().time().hour();
         int endH = (itm->endDt().date() > date()) ? (m_activeHourEnd < 24 ? m_activeHourEnd + 1 : 24) : itm->endDt().time().hour();
@@ -913,12 +915,12 @@ void DayInDayItem::setActiveDaytime(int hourBegin, int hourEnd)
 }
 
 
-void DayInDayItem::setAppointmentsFullDay(const QList<Event> &list)
+void DayInDayItem::setAppointmentsFullDay(const QVector<Event> &list)
 {
     if(list.isEmpty() or (!date().isValid())) return;
-    for(Appointment* apm : list)
+    for(Event e : list)
     {
-        AppointmentItem* itm = new AppointmentItem(apm, this);
+        EventItem* itm = new EventItem(e, this);
         connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
         connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
         itm->setShowTitle(true);
@@ -928,13 +930,13 @@ void DayInDayItem::setAppointmentsFullDay(const QList<Event> &list)
 }
 
 
-void DayInDayItem::setAppointmentsPartDay(const QList<Event> &list)
+void DayInDayItem::setAppointmentsPartDay(const QVector<Event> &list)
 {
     m_numberOfAppointmentOverlaps = 0;    // calculate appointment overlaps to display correct width in DayInDayItem::adjustSubitemPositions()
 
     if(list.isEmpty() or (!date().isValid())) return;
 
-    QList<Appointment*> sortedList = list;
+    QVector<Event> sortedList = list;
     if(list.count() > 1)
     {
         int count = list.count();
@@ -945,9 +947,9 @@ void DayInDayItem::setAppointmentsPartDay(const QList<Event> &list)
             swapped = false;
             for(int i = 0; i < count - 1; i++)
             {
-                if(sortedList[i]->startDateTime().time() > sortedList[i+1]->startDateTime().time())
+                if(sortedList[i].m_startDt.time() > sortedList[i+1].m_startDt.time())
                 {
-                    sortedList.swap(i, i+1);
+                    sortedList.move(i, i+1);
                     swapped = true;
                 }
             }
@@ -959,8 +961,8 @@ void DayInDayItem::setAppointmentsPartDay(const QList<Event> &list)
         for(int i = 0; i < 26; i++) overlapArray[i] = 0;
         for(int i = 0; i < count - 1; i++)
         {
-            int iStartH = (sortedList[i]->startDateTime().date() < date()) ? 0 : sortedList[i]->startDateTime().time().hour();
-            int iEndH = (sortedList[i]->endDateTime().date() > date()) ? 24 : sortedList[i]->endDateTime().time().hour();
+            int iStartH = (sortedList[i].m_startDt.date() < date()) ? 0 : sortedList[i].m_startDt.time().hour();
+            int iEndH = (sortedList[i].m_startDt.date() > date()) ? 24 : sortedList[i].m_startDt.time().hour();
 
             for(int h = iStartH; h <= iEndH; h++)
             {
@@ -978,10 +980,10 @@ void DayInDayItem::setAppointmentsPartDay(const QList<Event> &list)
         // ... finished
     }
 
-    // create appointment items
-    for(Appointment* apm : sortedList)
+    // create event items
+    for(Event e : sortedList)
     {
-        AppointmentItem* itm = new AppointmentItem(apm, this);
+        EventItem* itm = new EventItem(e, this);
         connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
         connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
         itm->setShowTitle(true);
@@ -993,10 +995,10 @@ void DayInDayItem::setAppointmentsPartDay(const QList<Event> &list)
 
 void DayInDayItem::clearAppointments()
 {
-    for(AppointmentItem* itm : m_appointmentFullDay)
+    for(EventItem* itm : m_appointmentFullDay)
         delete itm;
     m_appointmentFullDay.clear();
-    for(AppointmentItem* itm : m_appointmentPartDay)
+    for(EventItem* itm : m_appointmentPartDay)
         delete itm;
     m_appointmentPartDay.clear();
 }

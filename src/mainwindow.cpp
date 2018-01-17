@@ -52,6 +52,9 @@ MainWindow::MainWindow(QWidget* parent) :
     m_groupCalendarAppearance->addAction(m_ui->actionShowDay);
     m_groupCalendarAppearance->setExclusive(true);
 
+    // in-app database
+    m_eventPool = new EventPool();
+
     // user calendar pool
     m_userCalendarPool = new UserCalendarPool(this);
 
@@ -81,6 +84,7 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
             this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
     m_storage->loadAppointmentByYear( QDateTime::currentDateTime().date().year() );
+    m_eventPool->addMarker( QDateTime::currentDateTime().date().year() );
     disconnect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
                this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
     QMenu* tmp = m_userCalendarPool->calendarMenu();
@@ -174,10 +178,13 @@ void MainWindow::slotImportFromFileFinished()
 }
 
 
-void MainWindow::slotLoadedAppointmentFromStorage(Appointment * /*apmData*/ )
+void MainWindow::slotLoadedAppointmentFromStorage( Appointment* apmData )
 {
+    m_eventPool->addAppointment( apmData );
+    qDebug() << " loadAppointment " << apmData->m_uid;
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
 }
+
 
 /* Start Settingsdialog and wait till finished */
 void MainWindow::slotSettingsDialog()
