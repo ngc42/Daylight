@@ -41,7 +41,8 @@ SOURCES += main.cpp\
     settingsdialog.cpp \
     eventpool.cpp \
     dayitem.cpp \
-    calendarscene.cpp
+    calendarscene.cpp \
+    navigationdialog.cpp
 
 HEADERS  += mainwindow.h \
     storage.h \
@@ -66,7 +67,8 @@ HEADERS  += mainwindow.h \
     settingsdialog.h \
     eventpool.h \
     dayitem.h \
-    calendarscene.h
+    calendarscene.h \
+    navigationdialog.h
 
 FORMS    += ui/mainwindow.ui \
     ui/appointmentdialog.ui \

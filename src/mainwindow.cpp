@@ -52,8 +52,16 @@ MainWindow::MainWindow(QWidget* parent) :
     m_groupCalendarAppearance->addAction(m_ui->actionShowDay);
     m_groupCalendarAppearance->setExclusive(true);
 
+    // this is where the calendars are shown
+    m_scene = new CalendarScene(m_settingsManager->currentSettings(), this);
+    m_ui->graphicsView->setScene(m_scene);
+
     // in-app database
     m_eventPool = new EventPool();
+
+    // Navigation dialog
+    m_navigationDialog = new NavigationDialog(this);
+    m_navigationDialog->hide();
 
     // user calendar pool
     m_userCalendarPool = new UserCalendarPool(this);
@@ -70,6 +78,21 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_ui->actionPreferences, SIGNAL(triggered()), this, SLOT(slotSettingsDialog()));
     connect(m_ui->actionOpenICalFile, SIGNAL(triggered()), this, SLOT(slotOpenIcalFile()));
     connect(m_ui->actionExit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+    // connect view signals
+    connect(m_ui->actionShowYear, SIGNAL(triggered()), this, SLOT(slotShowYear()));
+    connect(m_ui->actionShowMonth, SIGNAL(triggered()), this, SLOT(slotShowMonth()));
+    connect(m_ui->actionShow3Weeks, SIGNAL(triggered()), this, SLOT(slotShow3Weeks()));
+    connect(m_ui->actionShowWeek, SIGNAL(triggered()), this, SLOT(slotShowWeek()));
+    connect(m_ui->actionShowDay, SIGNAL(triggered()), this, SLOT(slotShowDay()));
+
+    // connect calendar navigation
+    connect(m_ui->actionShowHideNavigationDlg, SIGNAL(triggered()), this, SLOT(slotShowHideNavigationDlg()));
+    connect(m_navigationDialog, SIGNAL(signalCurrentPageChanged(int,int)), this, SLOT(slotSetDate(int, int)));
+    connect(m_navigationDialog, SIGNAL(signalClicked(QDate)), this, SLOT(slotSetDate(QDate)));
+    connect(m_ui->actionGotoToday, SIGNAL(triggered()), this, SLOT(slotSetToday()));
+    connect(m_ui->actionPrevDate, SIGNAL(triggered()), this, SLOT(slotSetPreviousDate()));
+    connect(m_ui->actionNextDate, SIGNAL(triggered()), this, SLOT(slotSetNextDate()));
 
     // user calendars
     connect(m_ui->actionAddUserCalendar, SIGNAL(triggered()), this, SLOT(slotAddUserCalendar()));
@@ -130,16 +153,38 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+
+/* collects all resizes which affect CalendarScene and sends them to
+   m_scene. CalendarScene cares for their own geometry.
+   fixme: if user wants to resize, there are MANY! resize events and every
+   geometry update takes a lot of time.
+*/
+void MainWindow::resizeCalendarView()
+{
+    m_scene->updateSize(m_ui->graphicsView->size());
+}
+
+
+void MainWindow::showAppointments(const QDate &date)
+{
+
+}
+
+
 void MainWindow::resizeEvent(QResizeEvent* )
 {
+    resizeCalendarView();
 }
 
 
 void MainWindow::moveEvent(QMoveEvent* event)
 {
-    //QSize tbSize = m_toolbarDateLabel->size();
-    //QPoint pos = mapToGlobal(m_ui->mainToolBar->pos()) + m_toolbarDateLabel->pos() + QPoint(10, tbSize.height());
-
+    if(m_navigationDialog->isVisible())
+    {
+        QSize tbSize = m_toolbarDateLabel->size();
+        QPoint pos = mapToGlobal(m_ui->mainToolBar->pos()) + m_toolbarDateLabel->pos() + QPoint(10, tbSize.height());
+        m_navigationDialog->move(pos);
+    }
     QMainWindow::moveEvent(event);
 }
 
@@ -183,6 +228,214 @@ void MainWindow::slotLoadedAppointmentFromStorage( Appointment* apmData )
     m_eventPool->addAppointment( apmData );
     qDebug() << " loadAppointment " << apmData->m_uid;
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
+}
+
+
+void MainWindow::slotShowHideNavigationDlg()
+{
+    if(m_navigationDialog->isHidden())
+    {
+        QSize tbSize = m_toolbarDateLabel->size();
+        QPoint pos = mapToGlobal(m_ui->mainToolBar->pos()) + m_toolbarDateLabel->pos() + QPoint(10, tbSize.height());
+        m_navigationDialog->move(pos);
+        m_navigationDialog->show();
+    }
+    else
+        m_navigationDialog->hide();
+}
+
+
+/* user clicks on the page buttons of the small calendar
+ * check, if the date is valid and forward the date to slotSetDate(QDate).
+ * An invalid date is most often just the 29. february in non-leap-years.
+*/
+void MainWindow::slotSetDate(int year, int month)
+{
+    QDate d(year, month, m_scene->date().day());
+    if(!d.isValid())
+    {
+        d.setDate(year, month, 1);
+        d.setDate(year, month, d.daysInMonth());
+    }
+    slotSetDate(d);
+}
+
+
+/* User clicks on a date in the small calendar or we receive a forward from
+ * slotSetDate(int, int) from above.
+ * in case of an invalid date, set the QDate::currentDate() for the calendar. */
+void MainWindow::slotSetDate(const QDate & date)
+{
+    QDate dateTmp(date);
+
+    if(! dateTmp.isValid())
+    {
+        dateTmp = QDate::currentDate();
+    }
+    m_scene->setDate(dateTmp);
+    m_navigationDialog->slotSetSelectedDate(dateTmp);
+    showAppointments(dateTmp);
+
+    switch(m_scene->showView())
+    {
+        case CalendarShow::SHOW_UNKNOWN:
+            break;
+        case CalendarShow::SHOW_YEAR:
+            m_toolbarDateLabel->setText(m_scene->date().toString("yyyy"));
+            break;
+        case CalendarShow::SHOW_MONTH:
+            m_toolbarDateLabel->setText(m_scene->date().toString("MMMM yyyy"));
+            break;
+        case CalendarShow::SHOW_3WEEKS:
+        {
+            QDate start(date);
+            int dayDelta = m_settingsManager->weekStartDay() - date.dayOfWeek();
+            if (dayDelta > 0)
+                dayDelta = dayDelta - 7;
+            start = start.addDays( dayDelta ).addDays(-7);
+            QDate end = start.addDays(20);
+            QString s = QString("%1 - %2").arg(start.toString("dd.MM")).arg(end.toString("dd.MM.yyyy"));
+            m_toolbarDateLabel->setText(s);
+        }
+            break;
+        case CalendarShow::SHOW_WEEK:
+        {
+            QDate start(date);
+            int dayDelta = m_settingsManager->weekStartDay() - date.dayOfWeek();
+            if (dayDelta > 0)
+                dayDelta = dayDelta - 7;
+            start = start.addDays( dayDelta );
+            QDate end = start.addDays(6);
+            QString s = QString("Week %1, %2 - %3").arg(start.weekNumber()).arg(start.toString("dd.MM")).arg(end.toString("dd.MM.yyyy"));
+            m_toolbarDateLabel->setText(s);
+        }
+            break;
+        case CalendarShow::SHOW_DAY:
+            m_toolbarDateLabel->setText(m_scene->date().toString("dd.MM.yyyy"));
+            break;
+    }
+    m_settingsManager->setSelectedDate(dateTmp);
+}
+
+
+
+/* sets the date to current date.
+ * menu action */
+void MainWindow::slotSetToday()
+{
+    slotSetDate(QDate::currentDate());
+}
+
+
+/* sets the previous year, month, ... .
+ * there is a setting controlling this action: "m_settingsManager->week3AddDays()"
+ * toolbar action */
+void MainWindow::slotSetPreviousDate()
+{
+    QDate actualDate = m_scene->date();
+    QDate newDate;
+    switch(m_scene->showView())
+    {
+        case CalendarShow::SHOW_UNKNOWN:
+            newDate = actualDate;
+            break;
+        case CalendarShow::SHOW_YEAR:
+            newDate = actualDate.addYears(-1);
+            break;
+        case CalendarShow::SHOW_MONTH:
+            newDate = actualDate.addMonths(-1);
+            break;
+        case CalendarShow::SHOW_3WEEKS:
+            newDate = actualDate.addDays(-m_settingsManager->week3AddDays());
+            break;
+        case CalendarShow::SHOW_WEEK:
+            newDate = actualDate.addDays(-7);
+            break;
+        case CalendarShow::SHOW_DAY:
+            newDate = actualDate.addDays(-1);
+            break;
+    }
+    slotSetDate(newDate);
+}
+
+
+/* sets the next year, month, ... .
+ * there is a setting controlling this action: "m_settingsManager->week3AddDays()"
+ * toolbar action */
+void MainWindow::slotSetNextDate()
+{
+    QDate actualDate = m_scene->date();
+    QDate newDate;
+    switch(m_scene->showView())
+    {
+        case CalendarShow::SHOW_UNKNOWN:
+            newDate = actualDate;
+            break;
+        case CalendarShow::SHOW_YEAR:
+            newDate = actualDate.addYears(1);
+            break;
+        case CalendarShow::SHOW_MONTH:
+            newDate = actualDate.addMonths(1);
+            break;
+        case CalendarShow::SHOW_3WEEKS:
+            newDate = actualDate.addDays(m_settingsManager->week3AddDays());
+            break;
+        case CalendarShow::SHOW_WEEK:
+            newDate = actualDate.addDays(7);
+            break;
+        case CalendarShow::SHOW_DAY:
+            newDate = actualDate.addDays(1);
+            break;
+    }
+    slotSetDate(newDate);
+}
+
+
+void MainWindow::slotShowYear()
+{
+    m_scene->slotShowYear();
+    m_toolbarDateLabel->setText(m_scene->date().toString("yyyy"));
+    m_settingsManager->setSelectedView(SettingStartWithView::START_YEAR);
+}
+
+
+void MainWindow::slotShowMonth()
+{
+    m_scene->slotShowMonth();
+    m_toolbarDateLabel->setText(m_scene->date().toString("MMMM yyyy"));
+    m_settingsManager->setSelectedView(SettingStartWithView::START_MONTH);
+}
+
+
+void MainWindow::slotShow3Weeks()
+{
+    m_scene->slotShow3Weeks();
+    QDate start(m_scene->date());
+    start = start.addDays( m_settingsManager->weekStartDay() - start.dayOfWeek() ).addDays(-7);
+    QDate end = start.addDays(20);
+    QString s = QString("%1 - %2").arg(start.toString("dd.MM")).arg(end.toString("dd.MM.yyyy"));
+    m_toolbarDateLabel->setText(s);
+    m_settingsManager->setSelectedView(SettingStartWithView::START_3WEEKS);
+}
+
+
+void MainWindow::slotShowWeek()
+{
+    m_scene->slotShowWeek();
+    QDate start(m_scene->date());
+    start = start.addDays( m_settingsManager->weekStartDay() - start.dayOfWeek() );
+    QDate end = start.addDays(6);
+    QString s = QString("Week %1, %2 - %3").arg(start.weekNumber()).arg(start.toString("dd.MM")).arg(end.toString("dd.MM.yyyy"));
+    m_toolbarDateLabel->setText(s);
+    m_settingsManager->setSelectedView(SettingStartWithView::START_WEEK);
+}
+
+
+void MainWindow::slotShowDay()
+{
+    m_scene->slotShowDay();
+    m_toolbarDateLabel->setText(m_scene->date().toString("dd.MM.yyyy"));
+    m_settingsManager->setSelectedView(SettingStartWithView::START_DAY);
 }
 
 

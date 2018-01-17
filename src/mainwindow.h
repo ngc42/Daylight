@@ -21,8 +21,10 @@
 #include <QToolButton>
 
 #include "appointmentmanager.h"
+#include "calendarscene.h"
 #include "eventpool.h"
 #include "icalimportdialog.h"
+#include "navigationdialog.h"
 #include "settingsdialog.h"
 #include "storage.h"
 #include "usercalendar.h"
@@ -59,7 +61,9 @@ private:
     Storage*            m_storage;              // database of appointments, storage on disk
     QActionGroup*       m_groupCalendarAppearance;  // Year, Month, ...
     EventPool*          m_eventPool;            // database of events during runtime
+    CalendarScene*      m_scene;                // where we paint calendar in
     IcalImportDialog*   m_icalImportDialog;     // Dialog to read Ical files
+    NavigationDialog* m_navigationDialog;       // navigation dialog, shown in slotShowHideNavigationDlg()
     SettingsManager*    m_settingsManager;
     UserCalendarPool*   m_userCalendarPool;     // Container for user calendars
     UserCalendarNew*    m_userCalendarNewDialog;    // Dialog to add a user calendar
@@ -80,6 +84,21 @@ public slots:
 
     // storage
     void slotLoadedAppointmentFromStorage(Appointment* apmData);
+
+    // set date
+    void slotShowHideNavigationDlg();
+    void slotSetDate(int year, int month);      // need to set a new Date
+    void slotSetDate(const QDate & date);       // need to set a new Date
+    void slotSetToday();
+    void slotSetPreviousDate();
+    void slotSetNextDate();
+
+    // diferent ways of showing a calendar
+    void slotShowYear();
+    void slotShowMonth();
+    void slotShow3Weeks();
+    void slotShowWeek();
+    void slotShowDay();
 
     // settings
     void slotSettingsDialog();
