@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     icalimportthread.cpp \
     calendarheader.cpp \
     settingsdialog.cpp \
-    eventpool.cpp
+    eventpool.cpp \
+    dayitem.cpp
 
 HEADERS  += mainwindow.h \
     storage.h \
@@ -62,7 +63,8 @@ HEADERS  += mainwindow.h \
     icalimportthread.h \
     calendarheader.h \
     settingsdialog.h \
-    eventpool.h
+    eventpool.h \
+    dayitem.h
 
 FORMS    += ui/mainwindow.ui \
     ui/appointmentdialog.ui \

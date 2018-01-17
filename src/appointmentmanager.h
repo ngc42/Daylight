@@ -234,7 +234,7 @@ public:
     bool                        m_haveAlarm;
 
 private:
-    Appointment( const Appointment & );
+    //Appointment( const Appointment & );
 
 
 signals:
