@@ -20,6 +20,7 @@
 #include <QMainWindow>
 #include <QToolButton>
 
+#include "appointmentdialog.h"
 #include "appointmentmanager.h"
 #include "calendarscene.h"
 #include "eventpool.h"
@@ -62,8 +63,9 @@ private:
     QActionGroup*       m_groupCalendarAppearance;  // Year, Month, ...
     EventPool*          m_eventPool;            // database of events during runtime
     CalendarScene*      m_scene;                // where we paint calendar in
+    AppointmentDialog*  m_appointmentDialog;    // non modal dlg to set up appointments
     IcalImportDialog*   m_icalImportDialog;     // Dialog to read Ical files
-    NavigationDialog* m_navigationDialog;       // navigation dialog, shown in slotShowHideNavigationDlg()
+    NavigationDialog*   m_navigationDialog;     // navigation dialog, shown in slotShowHideNavigationDlg()
     SettingsManager*    m_settingsManager;
     UserCalendarPool*   m_userCalendarPool;     // Container for user calendars
     UserCalendarNew*    m_userCalendarNewDialog;    // Dialog to add a user calendar

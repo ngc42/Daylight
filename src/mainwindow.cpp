@@ -66,6 +66,10 @@ MainWindow::MainWindow(QWidget* parent) :
     // user calendar pool
     m_userCalendarPool = new UserCalendarPool(this);
 
+    // dialog to set up the appointments, non-modal
+    m_appointmentDialog = new AppointmentDialog();
+    m_appointmentDialog->hide();
+
     // new user calendar
     m_userCalendarNewDialog = new UserCalendarNew(this);
     m_userCalendarNewDialog->hide();
@@ -94,9 +98,21 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_ui->actionPrevDate, SIGNAL(triggered()), this, SLOT(slotSetPreviousDate()));
     connect(m_ui->actionNextDate, SIGNAL(triggered()), this, SLOT(slotSetNextDate()));
 
+    // appointments
+#ifdef XXX
+    connect(m_navigationDialog, SIGNAL(signalActivated(QDate)), this, SLOT(slotAppointmentDlgStart(QDate)));
+    connect(m_scene, SIGNAL(signalDateClicked(QDate)), this, SLOT(slotAppointmentDlgStart(QDate)));
+    connect(m_appointmentDialog, SIGNAL(finished(int)), this, SLOT(slotAppointmentDlgFinished(int)));
+    connect(m_ui->actionAddAppointment, SIGNAL(triggered()), this, SLOT(slotAppointmentDlgStart()));
+    connect(m_scene, SIGNAL(signalReconfigureAppointment(int)), this, SLOT(slotReconfigureAppointment(int)));
+    connect(m_scene, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)), Qt::QueuedConnection);
+#endif
+
     // user calendars
     connect(m_ui->actionAddUserCalendar, SIGNAL(triggered()), this, SLOT(slotAddUserCalendar()));
+    connect(m_userCalendarPool, SIGNAL(signalUserCalendarInUseModified()), this, SLOT(slotUserCalendarInUseModified()));
     connect(m_userCalendarNewDialog, SIGNAL(finished(int)), this, SLOT(slotAddUserCalendarDlgFinished(int)));
+    connect(m_ui->actionCalendarManager, SIGNAL(triggered()), this, SLOT(slotCalendarManagerDialog()));
 
     // storage load data
     connect(m_storage, SIGNAL(signalLoadedUserCalendarFromStorage(UserCalendarInfo* &)),
@@ -143,8 +159,7 @@ MainWindow::MainWindow(QWidget* parent) :
             emit m_ui->actionShowYear->trigger();
             break;
     }
-    //slotSetDate( m_settingsManager->startDate() );
-
+    slotSetDate( m_settingsManager->startDate() );
 }
 
 
