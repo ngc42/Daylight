@@ -17,6 +17,8 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
+
+#include "calendarmanagerdialog.h"
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
 
@@ -189,6 +191,7 @@ void MainWindow::showAppointments(const QDate &date)
 void MainWindow::resizeEvent(QResizeEvent* )
 {
     resizeCalendarView();
+    qDebug() << "res";
 }
 
 
@@ -496,3 +499,35 @@ void MainWindow::slotAddUserCalendarDlgFinished(int returncode)
 }
 
 
+void MainWindow::slotCalendarManagerDialog()
+{
+    CalendarManagerDialog* dlg =
+            new CalendarManagerDialog(m_userCalendarPool->calendarInfos(), this);
+    connect(dlg, SIGNAL(signalModifyCalendar(int,QString,QColor)), this, SLOT(slotModifyCalendar(int,QString,QColor)));
+    connect(dlg, SIGNAL(signalDeleteCalendar(int)), this, SLOT(slotDeleteCalendar(int)));
+    dlg->exec();
+}
+
+
+/* User changes title and color, but not visibility.
+ * connected in MainWindow::slotCalendarManagerDialog() */
+void MainWindow::slotModifyCalendar(const int calendarId, const QString & title, const QColor & color)
+{
+    qDebug() << "MW:: slotmodifycalendar";
+    //m_appointmentPool->setColorForId(calendarId, color);
+    bool visible = m_userCalendarPool->isVisible(calendarId);
+    m_userCalendarPool->setData(calendarId, color, title, visible);
+    m_storage->slotUserCalendarDataModified(calendarId, color, title, visible);
+    showAppointments(m_scene->date());
+}
+
+
+/* User wants to delete a calendar. Delete it in m_userCalendarPool and m_storage.
+ * connected in MainWindow::slotCalendarManagerDialog() */
+void MainWindow::slotDeleteCalendar(const int calendarId)
+{
+    //m_appointmentPool->removeByCalendarId(calendarId);
+    m_userCalendarPool->removeUserCalendar(calendarId);
+    m_storage->removeUserCalendar(calendarId);
+    showAppointments(m_scene->date());
+}

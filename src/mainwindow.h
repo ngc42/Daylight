@@ -58,25 +58,30 @@ public:
     ~MainWindow();
 
 private:
+    // Part UI:
     Ui::MainWindow*     m_ui;
-    Storage*            m_storage;              // database of appointments, storage on disk
     QActionGroup*       m_groupCalendarAppearance;  // Year, Month, ...
-    EventPool*          m_eventPool;            // database of events during runtime
+    QToolButton*        m_toolbarDateLabel;     // label/button to show current selected date and start navigationDialog
+    QToolButton*        m_toolbarUserCalendarMenu;  // shows user calendars, switch them on/off
     CalendarScene*      m_scene;                // where we paint calendar in
+
+    // Part Storage:
+    Storage*            m_storage;              // database of appointments, storage on disk
+    EventPool*          m_eventPool;            // database of events during runtime
+    UserCalendarPool*   m_userCalendarPool;     // Container for user calendars
+
+    // Part Dialogues:
     AppointmentDialog*  m_appointmentDialog;    // non modal dlg to set up appointments
     IcalImportDialog*   m_icalImportDialog;     // Dialog to read Ical files
     NavigationDialog*   m_navigationDialog;     // navigation dialog, shown in slotShowHideNavigationDlg()
     SettingsManager*    m_settingsManager;
-    UserCalendarPool*   m_userCalendarPool;     // Container for user calendars
     UserCalendarNew*    m_userCalendarNewDialog;    // Dialog to add a user calendar
 
-    QToolButton*        m_toolbarDateLabel;     // label/button to show current selected date and start navigationDialog
-    QToolButton*        m_toolbarUserCalendarMenu;  // shows user calendars, switch them on/off
     void resizeCalendarView();                  // collector of resize events
     void showAppointments(const QDate &date);   // update appointments
 
 protected:
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent*);
     void moveEvent(QMoveEvent* event);
 
 public slots:
@@ -108,6 +113,11 @@ public slots:
     // User calendars
     void slotAddUserCalendar();
     void slotAddUserCalendarDlgFinished(int returncode);
+    void slotCalendarManagerDialog();
+    void slotModifyCalendar(const int calendarId, const QString & title, const QColor & color);
+    void slotDeleteCalendar(const int calendarId);
+
+
 };
 
 

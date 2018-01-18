@@ -16,6 +16,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
      </property>
@@ -154,6 +157,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabMoveAppointments">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <attribute name="title">
        <string>Move Appointments</string>
       </attribute>
@@ -222,7 +228,7 @@
              <string>Move Right</string>
             </property>
             <property name="icon">
-             <iconset resource="../daylight.qrc">
+             <iconset resource="../../daylight.qrc">
               <normaloff>:/icons/toright.png</normaloff>:/icons/toright.png</iconset>
             </property>
            </widget>
@@ -233,7 +239,7 @@
              <string>Move Left</string>
             </property>
             <property name="icon">
-             <iconset resource="../daylight.qrc">
+             <iconset resource="../../daylight.qrc">
               <normaloff>:/icons/toleft.png</normaloff>:/icons/toleft.png</iconset>
             </property>
            </widget>
@@ -295,7 +301,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../daylight.qrc"/>
+  <include location="../../daylight.qrc"/>
  </resources>
  <connections>
   <connection>
