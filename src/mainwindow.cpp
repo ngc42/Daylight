@@ -120,14 +120,10 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_storage, SIGNAL(signalLoadedUserCalendarFromStorage(UserCalendarInfo* &)),
             m_userCalendarPool, SLOT(slotAddUserCalendarFromStorage(UserCalendarInfo* &)));
     m_storage->loadUserCalendarInfo();
-    disconnect(m_storage, SIGNAL(signalLoadedUserCalendarFromStorage(UserCalendarInfo* &)),
-            m_userCalendarPool, SLOT(slotAddUserCalendarFromStorage(UserCalendarInfo* &)));
     connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
             this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
     m_storage->loadAppointmentByYear( QDateTime::currentDateTime().date().year() );
     m_eventPool->addMarker( QDateTime::currentDateTime().date().year() );
-    disconnect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
-               this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
     QMenu* tmp = m_userCalendarPool->calendarMenu();
     m_toolbarUserCalendarMenu->setMenu(tmp);
     connect(m_userCalendarPool, SIGNAL(signalUserCalendarDataModified(int,QColor,QString,bool)),
@@ -184,14 +180,69 @@ void MainWindow::resizeCalendarView()
 
 void MainWindow::showAppointments(const QDate &date)
 {
+    if( not m_eventPool->queryMarker( date.year()) )
+    {
+        m_storage->loadAppointmentByYear( date.year() );
+        m_eventPool->addMarker( date.year() );
+    }
+    int weekStartDay = m_settingsManager->weekStartDay();
+    QList<UserCalendarInfo*> showHideItems = m_userCalendarPool->calendarInfos();
+    QVector<Event> listYear = m_eventPool->eventsByYear( date.year() );
 
+#if XXX
+    QList<Appointment*> listYear = m_appointmentPool->appointmentForYear(date);
+    QList<Appointment*> listMonth = m_appointmentPool->appointmentForMonth(date, weekStartDay);
+    QList<Appointment*> list3Weeks = m_appointmentPool->appointmentFor3Weeks(date, weekStartDay);
+    QList<Appointment*> listWeek = m_appointmentPool->appointmentForWeek(date, weekStartDay);
+    QList<Appointment*> listDay = m_appointmentPool->appointmentForDay(date);
+
+    // remove all items from listYear, listMonth, ... for which the calendar is disabled
+    for(const UserCalendarInfo* uci : showHideItems)
+    {
+        if(! uci->m_isVisible)
+        {
+            for(Appointment* apm : listYear)
+            {
+                if(apm->m_appointmentData.m_userCalendarId == uci->m_id)
+                    listYear.removeOne(apm);
+            }
+            for(Appointment* apm : listMonth)
+            {
+                if(apm->m_appointmentData.m_userCalendarId == uci->m_id)
+                    listMonth.removeOne(apm);
+            }
+            for(Appointment* apm : list3Weeks)
+            {
+                if(apm->m_appointmentData.m_userCalendarId == uci->m_id)
+                    list3Weeks.removeOne(apm);
+            }
+            for(Appointment* apm : listWeek)
+            {
+                if(apm->m_appointmentData.m_userCalendarId == uci->m_id)
+                    listWeek.removeOne(apm);
+            }
+            for(Appointment* apm : listDay)
+            {
+                if(apm->m_appointmentData.m_userCalendarId == uci->m_id)
+                    listDay.removeOne(apm);
+            }
+        }
+    }
+#endif
+    // show the rest
+    m_scene->setAppointmentsForYear(listYear );
+#ifdef xxx
+    m_scene->setAppointmentsForMonth(listMonth);
+    m_scene->setAppointmentsFor3Weeks(list3Weeks);
+    m_scene->setAppointmentsForWeek(listWeek);
+    m_scene->setAppointmentsForDay(listDay);
+#endif
 }
 
 
 void MainWindow::resizeEvent(QResizeEvent* )
 {
     resizeCalendarView();
-    qDebug() << "res";
 }
 
 
@@ -245,6 +296,11 @@ void MainWindow::slotLoadedAppointmentFromStorage( Appointment* apmData )
 {
     m_eventPool->addAppointment( apmData );
     qDebug() << " loadAppointment " << apmData->m_uid;
+
+    for( Event e : apmData->m_eventVector )
+    {
+        qDebug() << "   load: " << e.m_uid;
+    }
     //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
 }
 

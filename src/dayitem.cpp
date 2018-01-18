@@ -66,6 +66,7 @@ EventItem::EventItem(Event event, QGraphicsItem *parent) :
     m_startDt(event.m_startDt),
     m_endDt(event.m_endDt), m_allDay(false)
 {
+    qDebug() << m_appointmentId << event.m_uid;
     QString toolTipText = QString("%1 (cal-id = %2, app-id = %3) - %4 to %5")
             .arg(m_title)
             .arg(m_userCalendarId).arg(m_appointmentId)
