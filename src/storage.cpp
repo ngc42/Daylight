@@ -51,8 +51,20 @@ void Storage::createDatabase()
              "(id INT, title VARCHAR, "
              "redcolor INT, greencolor INT, bluecolor INT, visible BOOL)");
     QSqlError err = query.lastError();
-    qDebug() << " CREATE TABLE usercalendars ok:" << (err.type() == QSqlError::NoError )
-             << " err-text" << err.text();
+    if( err.type() != QSqlError::NoError )
+        qDebug() << " ERROR: Storage::createDatabase(): CREATE TABLE usercalendars : " << err.text();
+
+    QSqlQuery test_if_exists = m_db.exec( "select count(id) from usercalendars where id=0");
+    if( test_if_exists.first() )
+    {
+        bool ok;
+        int numDefaultIds = test_if_exists.value(0).toInt(&ok);
+        if( numDefaultIds < 1 )
+            m_db.exec( "INSERT INTO usercalendars VALUES(0, 'DEFAULT', 200, 50, 50, 1)");
+    }
+    else
+        qDebug() << "ERROR: Storage::createDatabase(): Cannot determine number of usercalendars with default id";
+
 
     query = m_db.exec
             ("CREATE TABLE IF NOT EXISTS basics"
@@ -60,16 +72,16 @@ void Storage::createDatabase()
              "start DATETIME, start_tz VARCHAR, end DATETIME, end_tz VARCHAR,"
              "summary VARCHAR, description VARCHAR, busyfree INT)");
     err = query.lastError();
-    qDebug() << " CREATE TABLE basics ok:" << (err.type() == QSqlError::NoError )
-             << " err-text" << err.text();
+    if( err.type() != QSqlError::NoError )
+        qDebug() << " ERROR: Storage::createDatabase(): CREATE TABLE basics : " << err.text();
 
     query = m_db.exec
             ("CREATE TABLE IF NOT EXISTS alarms"
              "(uid VARCHAR, rel_timeout BIGINT, "
              "repeats INT, pause_between BIGINT)");
     err = query.lastError();
-    qDebug() << " CREATE TABLE alarms ok:" << (err.type() == QSqlError::NoError )
-             << " err-text" << err.text();
+    if( err.type() != QSqlError::NoError )
+        qDebug() << " ERROR: Storage::createDatabase(): CREATE TABLE alarms : " << err.text();
 
     query = m_db.exec
             ("CREATE TABLE IF NOT EXISTS recurrences"
@@ -83,16 +95,16 @@ void Storage::createDatabase()
              "byhourlist VARCHAR, byminutelist VARCHAR, bysecondlist VARCHAR,"
              "bysetposlist VARCHAR)");
     err = query.lastError();
-    qDebug() << " CREATE TABLE recurrences ok:" << (err.type() == QSqlError::NoError )
-             << " err-text" << err.text();
+    if( err.type() != QSqlError::NoError )
+        qDebug() << " ERROR: Storage::createDatabase(): CREATE TABLE recurrences : " << err.text();
 
     query = m_db.exec
             ("CREATE TABLE IF NOT EXISTS events"
              "(uid VARCHAR, text VARCHAR, start DATETIME, end DATETIME,"
              "timezone VARCHAR, is_alarm BOOL)");
     err = query.lastError();
-    qDebug() << " CREATE TABLE events ok:" << (err.type() == QSqlError::NoError )
-             << " err-text" << err.text();
+    if( err.type() != QSqlError::NoError )
+        qDebug() << " ERROR: Storage::createDatabase(): CREATE TABLE events : " << err.text();
 
     query = m_db.exec
             ("CREATE TABLE IF NOT EXISTS appointments"
@@ -100,8 +112,8 @@ void Storage::createDatabase()
              "usercalendar_id INT,"
              "have_recurrence BOOL, have_alarms BOOL)");
     err = query.lastError();
-    qDebug() << " CREATE TABLE appointments ok:" << (err.type() == QSqlError::NoError )
-             << " err-text" << err.text();
+    if( err.type() != QSqlError::NoError )
+        qDebug() << " ERROR: Storage::createDatabase(): CREATE TABLE appointments : " << err.text();
 }
 
 
@@ -348,7 +360,7 @@ void Storage::loadAppointmentByYear( const int year )
             while (qApmEvents.next())
             {
                 Event e;
-                e.m_uid         = qApmEvents.value(0).toBool();
+                e.m_uid         = qApmEvents.value(0).toString();
                 e.m_displayText = qApmEvents.value(1).toString();
                 QString tzString    = qApmEvents.value(4).toString();
                 e.m_startDt     = string2DateTime( qApmEvents.value(2).toString(), tzString );
