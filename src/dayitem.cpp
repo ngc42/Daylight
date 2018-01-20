@@ -112,7 +112,6 @@ void EventItem::setFontPixelSize(int size)
 
 void EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-    qDebug() << "yyy" << m_color.name();
     if(!m_sizeTooSmall)
     {
         painter->fillRect(boundingRect(), m_color);
@@ -489,7 +488,6 @@ void DayInYearItem::eventsHaveNewColor(const int inUsercalendarID, const QColor 
     {
         if( itm->m_userCalendarId == inUsercalendarID )
         {
-            qDebug() << "1 - old -> new";
             itm->m_color = inCalendarColor;
             itm->update();
         }
@@ -498,8 +496,6 @@ void DayInYearItem::eventsHaveNewColor(const int inUsercalendarID, const QColor 
     {
         if( itm->m_userCalendarId == inUsercalendarID )
         {
-            qDebug() << "2 - old -> new" << itm->m_color.name() << inCalendarColor.name();
-
             itm->m_color = inCalendarColor;
             itm->update();
         }
@@ -658,7 +654,6 @@ void DayInMonthItem::eventsHaveNewColor(const int inUsercalendarID, const QColor
     {
         if( itm->m_userCalendarId == inUsercalendarID )
         {
-            qDebug() << "1 - old -> new";
             itm->m_color = inCalendarColor;
             itm->update();
         }
@@ -817,7 +812,6 @@ void DayInWeekItem::eventsHaveNewColor(const int inUsercalendarID, const QColor 
     {
         if( itm->m_userCalendarId == inUsercalendarID )
         {
-            qDebug() << "1 - old -> new";
             itm->m_color = inCalendarColor;
             itm->update();
         }

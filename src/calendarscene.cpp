@@ -538,7 +538,6 @@ void CalendarScene::eventsHaveNewColor(const int inUsercalendarID, const QColor 
 {
     for( DayInYearItem* itm : m_daysInYearItems )
         itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
-#ifdef coming_soon
     for( DayInMonthItem* itm : m_daysInMonthItems )
         itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
     for( DayInMonthItem* itm : m_daysIn3WeeksItems )
@@ -546,7 +545,7 @@ void CalendarScene::eventsHaveNewColor(const int inUsercalendarID, const QColor 
     for( DayInWeekItem* itm : m_daysInWeekItems )
         itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
     m_dayInDayItem->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
-#endif
+
 }
 
 

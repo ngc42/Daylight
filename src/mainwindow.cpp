@@ -557,19 +557,14 @@ void MainWindow::slotCalendarManagerDialog()
  * connected in MainWindow::slotCalendarManagerDialog() */
 void MainWindow::slotModifyCalendar(const int calendarId, const QString & title, const QColor & color)
 {
-    qDebug() << "MainWindow::slotModifyCalendar(" << calendarId << title << color.name() << ")";
     QColor oldcolor = m_userCalendarPool->color( calendarId );
-    qDebug() << " oldcolor was " << oldcolor.name() << "  changed: " << (oldcolor != color);
-
     if(oldcolor != color)
     {
         m_eventPool->changeColor( calendarId, color );
         m_scene->eventsHaveNewColor( calendarId, color );
     }
     bool visible = m_userCalendarPool->isVisible(calendarId);
-    //m_userCalendarPool->setData(calendarId, color, title, visible);
     m_storage->userCalendarDataModified(calendarId, color, title, visible);
-    //showAppointments(m_scene->date());
 }
 
 
@@ -577,7 +572,6 @@ void MainWindow::slotModifyCalendar(const int calendarId, const QString & title,
  * connected in MainWindow::slotCalendarManagerDialog() */
 void MainWindow::slotDeleteCalendar(const int calendarId)
 {
-    //m_appointmentPool->removeByCalendarId(calendarId);
     m_userCalendarPool->removeUserCalendar(calendarId);
     m_storage->removeUserCalendar(calendarId);
     showAppointments(m_scene->date());
