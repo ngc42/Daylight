@@ -23,7 +23,6 @@
 #include "calendarheader.h"
 #include "dayitem.h"
 #include "settingsdialog.h"
-#include "usercalendar.h"
 
 
 /* An enum to describe, what is actually shown in CalendarScene */
@@ -42,6 +41,7 @@ enum class CalendarShow {SHOW_UNKNOWN, SHOW_YEAR, SHOW_MONTH, SHOW_3WEEKS, SHOW_
 class CalendarScene : public QGraphicsScene
 {
     Q_OBJECT
+
 public:
     explicit CalendarScene(const SettingsData & settings, QObject* parent = 0);
     void setDate(const QDate & date, bool update = false);
@@ -54,6 +54,8 @@ public:
     void setAppointmentsForWeek(const QVector<Event> &list);
     void setAppointmentsForDay(const QVector<Event> &list);
     void setSettings(const SettingsData & settings);
+
+    void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
 
 private:
     // date

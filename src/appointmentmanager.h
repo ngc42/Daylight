@@ -175,6 +175,7 @@ struct Event {
     DateTime    m_startDt;
     DateTime    m_endDt;
     bool        m_isAlarmEvent;     // true, if this is an alarm event
+    int         m_userCalendarId;   // set by appointment
     QColor      m_eventColor;       // is set by appointment
 
     bool operator==(const Event other) const

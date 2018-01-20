@@ -28,7 +28,6 @@ namespace Ui {
 }
 
 
-
 /* CalendarManagerDialog is a dialog, where the user can delete or modify a calendar.
  * UI-part of this dialog can be found in calendarmanagerdialog.ui.
  * This dialog is controlled in MainWindow, as a result of menu action.
@@ -38,7 +37,7 @@ class CalendarManagerDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CalendarManagerDialog(const QList<UserCalendarInfo*> &calList, QWidget* parent);
+    explicit CalendarManagerDialog(const QList<UserCalendarInfo*> calList, QWidget* parent);
     ~CalendarManagerDialog();
 
 private:

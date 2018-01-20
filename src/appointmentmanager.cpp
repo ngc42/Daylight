@@ -1449,6 +1449,7 @@ void Appointment::makeEvents()
             QDateTime qdt = dt.addSecs( seconds );
             e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
             e.m_isAlarmEvent = false;
+            e.m_userCalendarId = m_userCalendarId;
             m_eventVector.append( e );
             m_yearsInQuestion.insert( dt.date().year() );
             m_yearsInQuestion.insert( qdt.date().year() );
@@ -1467,12 +1468,17 @@ void Appointment::makeEvents()
         e.m_startDt = m_appBasics->m_dtStart;
         e.m_endDt = m_appBasics->m_dtEnd;
         e.m_isAlarmEvent = false;
+        e.m_userCalendarId = m_userCalendarId;
         m_eventVector.append( e );
         m_yearsInQuestion.insert( e.m_startDt.date().year() );
         m_yearsInQuestion.insert( e.m_endDt.date().year() );
         m_minYear = e.m_startDt.date().year();
         m_maxYear = e.m_endDt.date().year();
+
+        qDebug() << "xx" << e.m_userCalendarId;
     }
+
+
     emit sigTickEvent( 0, 1, 1 );
 }
 

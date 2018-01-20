@@ -19,13 +19,12 @@
 
 #include <QDebug>
 
-CalendarManagerDialog::CalendarManagerDialog(const QList<UserCalendarInfo*> & calList, QWidget* parent) :
+CalendarManagerDialog::CalendarManagerDialog( const QList<UserCalendarInfo*> calList, QWidget* parent) :
     QDialog(parent),
     m_ui(new Ui::CalendarManagerDialog),
-    m_calListCopy(calList)
+    m_calListCopy( calList )
 {
     m_ui->setupUi(this);
-
     // colors for manage calendars
     for(QString cName : QColor::colorNames())
     {
@@ -58,7 +57,7 @@ void CalendarManagerDialog::showUserCalendars()
     m_ui->cbRightCalendars->clear();
     m_ui->lwManageCalendars->clear();
 
-    for(UserCalendarInfo* uci : m_calListCopy)
+    for( const UserCalendarInfo* uci : m_calListCopy)
     {
         QPixmap pix(20, 20);
         pix.fill(uci->m_color);
@@ -85,19 +84,22 @@ void CalendarManagerDialog::slotModifyCalendar()
     if(itm == nullptr) return;      // no calendar was selected, return
     bool ok;
     int calId = itm->data(Qt::UserRole).toInt(&ok);
-    qDebug() << "CalendarManagerDialog::slotModifyCalendar() id=" << calId;
+    qDebug() << "CalendarManagerDialog::slotModifyCalendar() calId=" << calId;
     QString title = m_ui->leTitle->text();
     QColor color = QColor(m_ui->cbColor->currentText());
+
+    emit signalModifyCalendar(calId, title, color);
+
     for(UserCalendarInfo* uci : m_calListCopy)
     {
         if(uci->m_id == calId)
         {
             uci->m_title = title;
             uci->m_color = color;
+            break;
         }
     }
     showUserCalendars();
-    emit signalModifyCalendar(calId, title, color);
 }
 
 

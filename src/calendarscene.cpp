@@ -534,6 +534,22 @@ void CalendarScene::setSettings(const SettingsData & settings)
 }
 
 
+void CalendarScene::eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor )
+{
+    for( DayInYearItem* itm : m_daysInYearItems )
+        itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
+#ifdef coming_soon
+    for( DayInMonthItem* itm : m_daysInMonthItems )
+        itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
+    for( DayInMonthItem* itm : m_daysIn3WeeksItems )
+        itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
+    for( DayInWeekItem* itm : m_daysInWeekItems )
+        itm->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
+    m_dayInDayItem->eventsHaveNewColor( inUsercalendarID, inCalendarColor );
+#endif
+}
+
+
 void CalendarScene::createHeader()
 {
     for(int i = 1; i <= 12; i++)

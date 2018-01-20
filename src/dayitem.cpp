@@ -50,8 +50,8 @@ void TooManyEventsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 ***********************************************************/
 
 EventItem::EventItem(QGraphicsItem *parent) :
-    QGraphicsObject(parent), m_dummy(true), m_size(3, 3), m_sizeTooSmall(true),
-    m_color(Qt::black), m_title(""), m_showTitle(false), m_fontPixelSize(0), m_appointmentId("")
+    QGraphicsObject(parent), m_color(Qt::black), m_dummy(true), m_size(3, 3), m_sizeTooSmall(true),
+    m_title(""), m_showTitle(false), m_fontPixelSize(0), m_appointmentId("")
 {
     //dummy items should not paint anything!
     setFlag(QGraphicsItem::ItemHasNoContents, true);
@@ -59,11 +59,12 @@ EventItem::EventItem(QGraphicsItem *parent) :
 
 
 EventItem::EventItem(Event event, QGraphicsItem *parent) :
-    QGraphicsObject(parent), m_dummy(false), m_size(3, 3), m_sizeTooSmall(false),
-    m_color(event.m_eventColor),
+    QGraphicsObject(parent),
+    m_color(event.m_eventColor),m_userCalendarId(event.m_userCalendarId),
+    m_dummy(false), m_size(3, 3), m_sizeTooSmall(false),
     m_title(event.m_displayText),
     m_showTitle(false), m_fontPixelSize(1),
-    m_userCalendarId(0),    // @fixme: why this?
+
     m_appointmentId(event.m_uid),
     m_startDt(event.m_startDt),
     m_endDt(event.m_endDt), m_allDay(false)
@@ -111,6 +112,7 @@ void EventItem::setFontPixelSize(int size)
 
 void EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+    qDebug() << "yyy" << m_color.name();
     if(!m_sizeTooSmall)
     {
         painter->fillRect(boundingRect(), m_color);
@@ -122,6 +124,7 @@ void EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidge
             QRectF r = QRectF({0, 0}, boundingRect().size() + m);
             painter->drawText(r, s, Qt::AlignVCenter | Qt::AlignLeft);
         }
+
     }
 }
 
@@ -480,6 +483,29 @@ void DayInYearItem::clearAppointments()
 }
 
 
+void DayInYearItem::eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor)
+{
+    for(EventItem* itm : m_appointmentSlotsDay)
+    {
+        if( itm->m_userCalendarId == inUsercalendarID )
+        {
+            qDebug() << "1 - old -> new";
+            itm->m_color = inCalendarColor;
+            itm->update();
+        }
+    }
+    for(EventItem* itm : m_appointmentSlotsRange)
+    {
+        if( itm->m_userCalendarId == inUsercalendarID )
+        {
+            qDebug() << "2 - old -> new" << itm->m_color.name() << inCalendarColor.name();
+
+            itm->m_color = inCalendarColor;
+            itm->update();
+        }
+    }
+}
+
 
 /***********************************************************
 ********** DayInMonthItem **********************************
@@ -626,6 +652,19 @@ void DayInMonthItem::clearAppointments()
 }
 
 
+void DayInMonthItem::eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor)
+{
+    for(EventItem* itm : m_appointmentSlots)
+    {
+        if( itm->m_userCalendarId == inUsercalendarID )
+        {
+            qDebug() << "1 - old -> new";
+            itm->m_color = inCalendarColor;
+            itm->update();
+        }
+    }
+}
+
 
 /***********************************************************
 ********** DayInWeekItem ***********************************
@@ -771,6 +810,19 @@ void DayInWeekItem::clearAppointments()
     m_appointmentSlots.clear();
 }
 
+
+void DayInWeekItem::eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor)
+{
+    for(EventItem* itm : m_appointmentSlots)
+    {
+        if( itm->m_userCalendarId == inUsercalendarID )
+        {
+            qDebug() << "1 - old -> new";
+            itm->m_color = inCalendarColor;
+            itm->update();
+        }
+    }
+}
 
 
 /***********************************************************
@@ -1006,6 +1058,27 @@ void DayInDayItem::clearAppointments()
 }
 
 
+void DayInDayItem::eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor)
+{
+    for( EventItem* itm : m_appointmentFullDay )
+    {
+        if( itm->m_userCalendarId == inUsercalendarID )
+        {
+            itm->m_color = inCalendarColor;
+            itm->update();
+        }
+    }
+    for( EventItem* itm : m_appointmentPartDay )
+    {
+        if( itm->m_userCalendarId == inUsercalendarID )
+        {
+            itm->m_color = inCalendarColor;
+            itm->update();
+        }
+    }
+}
+
+
 /* There are markers after a big section, where FullDay-Appointments live,
  * and between the hours. If start and end hour are away from midnight,
  * there is some space before start time and after end time.
@@ -1055,3 +1128,4 @@ void DayInDayItem::createMarkerList()
         m_markerList.append(m);
     }
 }
+

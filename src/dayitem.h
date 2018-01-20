@@ -73,16 +73,18 @@ public:
     QString title() const { return m_title; }
     void setShowTitle(const bool show);
 
+    QColor m_color;
+    int m_userCalendarId;
+
+
 private:
     bool m_dummy;
     QSizeF m_size;
     bool m_sizeTooSmall;       // true, if size too small, then we don't paint anything
-    QColor m_color;
     QString m_title;
     bool m_showTitle;
     int m_fontPixelSize;
     // copy from appointment
-    int m_userCalendarId;
     QString m_appointmentId;
     QDateTime m_startDt, m_endDt;
     bool m_allDay;
@@ -172,11 +174,13 @@ public:
     void setAppointmentRangeSlot(const int slot, const QVector<Event> &list);
     void clearAppointments();
 
+    void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
+
 private:
     QGraphicsSimpleTextItem*    m_weekNumberLabel;
     TooManyEventsItem*          m_tooManyItems;
-    QVector<EventItem*>           m_appointmentSlotsDay;
-    QVector<EventItem*>           m_appointmentSlotsRange;
+    QVector<EventItem*>         m_appointmentSlotsDay;
+    QVector<EventItem*>         m_appointmentSlotsRange;
 
 signals:
 public slots:
@@ -202,9 +206,11 @@ public:
     void setAppointments(const QVector<Event> &list);
     void clearAppointments();
 
+    void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
+
 private:
     TooManyEventsItem*  m_tooManyItems;
-    QVector<EventItem*>   m_appointmentSlots;
+    QVector<EventItem*> m_appointmentSlots;
 
 signals:
 
@@ -232,9 +238,11 @@ public:
     void setAppointments(const QVector<Event> &list);
     void clearAppointments();
 
+    void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
+
 private:
     TooManyEventsItem*      m_tooManyItems;
-    QVector<EventItem*>       m_appointmentSlots;
+    QVector<EventItem*>     m_appointmentSlots;
 
 signals:
 public slots:
@@ -275,6 +283,8 @@ public:
     void setAppointmentsFullDay(const QVector<Event> &list);
     void setAppointmentsPartDay(const QVector<Event> &list);
     void clearAppointments();
+
+    void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
 
 private:
     int                 m_activeHourStart;      // time to display

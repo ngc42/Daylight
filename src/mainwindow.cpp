@@ -14,13 +14,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
 
 #include "calendarmanagerdialog.h"
-#include "ui_mainwindow.h"
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), m_ui(new Ui::MainWindow)
@@ -67,6 +69,11 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // user calendar pool
     m_userCalendarPool = new UserCalendarPool(this);
+    m_storage->loadUserCalendarInfo( m_userCalendarPool );
+
+    // User calendars in Toolbar to switch on/off individual menus
+    QMenu* userCalendarMenu = m_userCalendarPool->calendarMenu();
+    m_toolbarUserCalendarMenu->setMenu( userCalendarMenu );
 
     // dialog to set up the appointments, non-modal
     m_appointmentDialog = new AppointmentDialog();
@@ -116,18 +123,9 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_userCalendarNewDialog, SIGNAL(finished(int)), this, SLOT(slotAddUserCalendarDlgFinished(int)));
     connect(m_ui->actionCalendarManager, SIGNAL(triggered()), this, SLOT(slotCalendarManagerDialog()));
 
-    // storage load data
-    m_storage->loadUserCalendarInfo( m_userCalendarPool );
-    QMenu* tmp = m_userCalendarPool->calendarMenu();
-    m_toolbarUserCalendarMenu->setMenu(tmp);
-    //connect(m_userCalendarPool, SIGNAL(signalUserCalendarDataModified(int,QColor,QString,bool)),
-    //        m_storage, SLOT(slotUserCalendarDataModified(int,QColor,QString,bool)));
-    // - end storage
-
     // ical import dialog
     connect(m_icalImportDialog, SIGNAL(sigFinishReadingFiles()),
             this, SLOT(slotImportFromFileFinished()) );
-
 
     // what to show depends on config
     switch( m_settingsManager->startView() )
@@ -163,7 +161,7 @@ MainWindow::~MainWindow()
 
 /* collects all resizes which affect CalendarScene and sends them to
    m_scene. CalendarScene cares for their own geometry.
-   fixme: if user wants to resize, there are MANY! resize events and every
+   @fixme: if user wants to resize, there are MANY! resize events and every
    geometry update takes a lot of time.
 */
 void MainWindow::resizeCalendarView()
@@ -559,17 +557,19 @@ void MainWindow::slotCalendarManagerDialog()
  * connected in MainWindow::slotCalendarManagerDialog() */
 void MainWindow::slotModifyCalendar(const int calendarId, const QString & title, const QColor & color)
 {
-    qDebug() << "MW:: slotmodifycalendar";
-    qDebug() << " " << calendarId << title << color;
-    qDebug() << " oldcolor " << m_userCalendarPool->color( calendarId );
+    qDebug() << "MainWindow::slotModifyCalendar(" << calendarId << title << color.name() << ")";
+    QColor oldcolor = m_userCalendarPool->color( calendarId );
+    qDebug() << " oldcolor was " << oldcolor.name() << "  changed: " << (oldcolor != color);
 
-
-    m_eventPool->changeColor( calendarId, color );
-
+    if(oldcolor != color)
+    {
+        m_eventPool->changeColor( calendarId, color );
+        m_scene->eventsHaveNewColor( calendarId, color );
+    }
     bool visible = m_userCalendarPool->isVisible(calendarId);
     //m_userCalendarPool->setData(calendarId, color, title, visible);
     m_storage->userCalendarDataModified(calendarId, color, title, visible);
-    showAppointments(m_scene->date());
+    //showAppointments(m_scene->date());
 }
 
 

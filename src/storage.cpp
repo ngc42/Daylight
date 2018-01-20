@@ -367,6 +367,7 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 e.m_startDt     = string2DateTime( qApmEvents.value(2).toString(), tzString );
                 e.m_endDt       = string2DateTime( qApmEvents.value(3).toString(), tzString );
                 e.m_isAlarmEvent    = qApmEvents.value(5).toBool();
+                e.m_userCalendarId = apmData->m_userCalendarId;
                 apmData->m_eventVector.append( e );
             }
 
