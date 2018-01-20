@@ -23,7 +23,7 @@
 #include "calendarheader.h"
 #include "dayitem.h"
 #include "settingsdialog.h"
-
+#include "usercalendar.h"
 
 
 /* An enum to describe, what is actually shown in CalendarScene */

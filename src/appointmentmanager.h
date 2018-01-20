@@ -1,6 +1,8 @@
 #ifndef APPOINTMENTMANAGER_H
 #define APPOINTMENTMANAGER_H
 
+#include <QColor>
+#include <QDebug>
 #include <QList>
 #include <QMultiMap>
 #include <QSet>
@@ -173,6 +175,7 @@ struct Event {
     DateTime    m_startDt;
     DateTime    m_endDt;
     bool        m_isAlarmEvent;     // true, if this is an alarm event
+    QColor      m_eventColor;       // is set by appointment
 
     bool operator==(const Event other) const
     {
@@ -219,6 +222,10 @@ class Appointment : public QObject
 public:
 
     Appointment( QObject *parent = Q_NULLPTR );
+    ~Appointment()
+    {
+        qDebug() << "DESTRUCTOR APPOINTMENT";
+    }
 
     // helper methods
     static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
@@ -230,6 +237,7 @@ public:
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
 
     void makeEvents();
+    void setEventColor( const QColor inEventColor );
 
     AppointmentBasics*          m_appBasics;
     AppointmentRecurrence*      m_appRecurrence;

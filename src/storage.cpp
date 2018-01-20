@@ -22,8 +22,7 @@
 #include "storage.h"
 
 
-Storage::Storage(QObject *parent) :
-    QObject(parent)
+Storage::Storage()
 {
     createDatabase();
 }
@@ -226,8 +225,10 @@ void Storage::updateAppointment( const Appointment &apmData )
 }
 
 
-void Storage::loadAppointmentByYear( const int year )
+void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAppointments )
 {
+    outAppointments.clear();
+
     QSqlQuery qApmSelect( m_db );
     qApmSelect.prepare( "SELECT uid, min_year, max_year, allyears, "
                         "usercalendar_id, have_recurrence, have_alarms "
@@ -265,19 +266,19 @@ void Storage::loadAppointmentByYear( const int year )
         while (qApmSelect.next())
         {
             // read Appointment
-            Appointment apmData;
-            apmData.m_uid       = qApmSelect.value(0).toString();
-            apmData.m_minYear   = qApmSelect.value(1).toString().toInt( &ok );
-            apmData.m_maxYear   = qApmSelect.value(2).toString().toInt( &ok );
+            Appointment *apmData = new Appointment();
+            apmData->m_uid       = qApmSelect.value(0).toString();
+            apmData->m_minYear   = qApmSelect.value(1).toString().toInt( &ok );
+            apmData->m_maxYear   = qApmSelect.value(2).toString().toInt( &ok );
             QString yearsString = qApmSelect.value(3).toString();
             for( const QString s : yearsString.split( ',', QString::SkipEmptyParts) )
-                apmData.m_yearsInQuestion.insert( s.toInt(&ok) );
-            apmData.m_userCalendarId    = qApmSelect.value(4).toString().toInt(&ok);
-            apmData.m_haveRecurrence    = qApmSelect.value(5).toBool();
-            apmData.m_haveAlarm         = qApmSelect.value(6).toBool();
+                apmData->m_yearsInQuestion.insert( s.toInt(&ok) );
+            apmData->m_userCalendarId    = qApmSelect.value(4).toString().toInt(&ok);
+            apmData->m_haveRecurrence    = qApmSelect.value(5).toBool();
+            apmData->m_haveAlarm         = qApmSelect.value(6).toBool();
 
             // read AppointmentBasic
-            qApmBasics.bindValue( ":puid", apmData.m_uid );
+            qApmBasics.bindValue( ":puid", apmData->m_uid );
             if( not qApmBasics.exec() )
             {
                 qDebug() << "ERR qApmBasics.exec()";
@@ -292,12 +293,12 @@ void Storage::loadAppointmentByYear( const int year )
             apmBasic->m_summary  = qApmBasics.value(6).toString();
             apmBasic->m_description  = qApmBasics.value(7).toString();
             apmBasic->m_busyFree     = static_cast<AppointmentBasics::BusyFreeType>(qApmBasics.value(8).toString().toInt(&ok));
-            apmData.m_appBasics = apmBasic;
+            apmData->m_appBasics = apmBasic;
 
             // read Alarms
-            if( apmData.m_haveAlarm )
+            if( apmData->m_haveAlarm )
             {
-                qApmAlarm.bindValue( ":puid", apmData.m_uid );
+                qApmAlarm.bindValue( ":puid", apmData->m_uid );
                 if( not qApmAlarm.exec() )
                 {
                     qDebug() << "ERR qApmAlarm.exec()";
@@ -309,14 +310,14 @@ void Storage::loadAppointmentByYear( const int year )
                     alarm->m_alarmSecs      = qApmAlarm.value(1).toLongLong(&ok);
                     alarm->m_repeatNumber   = qApmAlarm.value(2).toInt(&ok);
                     alarm->m_pauseSecs      = qApmAlarm.value(3).toLongLong(&ok);
-                    apmData.m_appAlarms.append(alarm);
+                    apmData->m_appAlarms.append(alarm);
                 }
             }
 
             // read Recurrences
-            if( apmData.m_haveRecurrence )
+            if( apmData->m_haveRecurrence )
             {
-                qApmRecurrence.bindValue( ":puid", apmData.m_uid );
+                qApmRecurrence.bindValue( ":puid", apmData->m_uid );
                 if( not qApmRecurrence.exec() )
                 {
                     qDebug() << "ERR qApmRecurrence.exec()";
@@ -347,11 +348,11 @@ void Storage::loadAppointmentByYear( const int year )
                 Appointment::makeIntList( qApmRecurrence.value(18).toString(), apmRecurrence->m_byMinuteList );
                 Appointment::makeIntList( qApmRecurrence.value(19).toString(), apmRecurrence->m_bySecondList );
                 Appointment::makeIntList( qApmRecurrence.value(20).toString(), apmRecurrence->m_bySetPosList );
-                apmData.m_appRecurrence = apmRecurrence;
+                apmData->m_appRecurrence = apmRecurrence;
             }
 
             // read Events
-            qApmEvents.bindValue( ":puid", apmData.m_uid );
+            qApmEvents.bindValue( ":puid", apmData->m_uid );
             if( not qApmEvents.exec() )
             {
                 qDebug() << "ERR qApmEvents.exec()";
@@ -366,10 +367,10 @@ void Storage::loadAppointmentByYear( const int year )
                 e.m_startDt     = string2DateTime( qApmEvents.value(2).toString(), tzString );
                 e.m_endDt       = string2DateTime( qApmEvents.value(3).toString(), tzString );
                 e.m_isAlarmEvent    = qApmEvents.value(5).toBool();
-                apmData.m_eventVector.append( e );
+                apmData->m_eventVector.append( e );
             }
 
-            emit signalLoadedAppointmentFromStorage( &apmData );
+            outAppointments.append( std::move(apmData) );
         }
     }
     else
@@ -429,7 +430,7 @@ void Storage::setAppointmentsCalendar(const QString appointmentId, const int cal
 
 
 /* Load calendar info and tell it to the outside world by signal */
-void Storage::loadUserCalendarInfo()
+void Storage::loadUserCalendarInfo(UserCalendarPool*& ucalPool)
 {
     QSqlQuery query("SELECT id, title, redcolor, greencolor, bluecolor, visible FROM usercalendars", m_db);
     if( query.exec() )
@@ -446,7 +447,7 @@ void Storage::loadUserCalendarInfo()
             QColor c(red, green, blue);
             info->m_color = c;
             info->m_isVisible = query.value(5).toBool();
-            emit signalLoadedUserCalendarFromStorage(info);
+            ucalPool->addUserCalendarFromStorage( info );
         }
     }
     else
@@ -489,6 +490,23 @@ void Storage::insertUserCalendarInfo(const UserCalendarInfo* ucinfo)
     }
     else
         qDebug() << " ERR: Storage::insertUserCalendarInfo()  - db not open";
+}
+
+
+void Storage::userCalendarDataModified(const int id, const QColor & color, const QString & title, const bool visible)
+{
+    QSqlQuery qUpdate(m_db);
+    qUpdate.prepare("UPDATE usercalendars SET title=:title, redcolor=:red, greencolor=:green, bluecolor=:blue, visible=:visible WHERE id=:id");
+    qUpdate.bindValue(":title", title);
+    qUpdate.bindValue(":red", color.red());
+    qUpdate.bindValue(":green", color.green());
+    qUpdate.bindValue(":blue", color.blue());
+    qUpdate.bindValue(":visible", visible);
+    qUpdate.bindValue(":id", id);
+    if(! qUpdate.exec())
+    {
+        qDebug() << " UPDATE Error: " << qUpdate.lastError().text();
+    }
 }
 
 
@@ -562,20 +580,4 @@ void Storage::dateTime2Strings( const DateTime inDateTime, QString &dtString, QS
     }
 }
 
-
-void Storage::slotUserCalendarDataModified(const int id, const QColor & color, const QString & title, const bool visible)
-{
-    QSqlQuery qUpdate(m_db);
-    qUpdate.prepare("UPDATE usercalendars SET title=:title, redcolor=:red, greencolor=:green, bluecolor=:blue, visible=:visible WHERE id=:id");
-    qUpdate.bindValue(":title", title);
-    qUpdate.bindValue(":red", color.red());
-    qUpdate.bindValue(":green", color.green());
-    qUpdate.bindValue(":blue", color.blue());
-    qUpdate.bindValue(":visible", visible);
-    qUpdate.bindValue(":id", id);
-    if(! qUpdate.exec())
-    {
-        qDebug() << " UPDATE Error: " << qUpdate.lastError().text();
-    }
-}
 

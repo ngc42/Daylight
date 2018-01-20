@@ -18,6 +18,7 @@
 #define STORAGE_H
 
 #include <QSqlDatabase>
+#include <QVector>
 
 #include "appointmentmanager.h"
 #include "datetime.h"
@@ -27,25 +28,27 @@
 /* This is the only storage class at the moment. It stores appointments and user calendars in a
  *  SQLITE database.
  */
-class Storage : public QObject
+struct Storage
 {
-    Q_OBJECT
+
 
 public:
-    explicit Storage( QObject* parent = 0 );
+    explicit Storage();
     void createDatabase();
 
     // === appointments ===
     void storeAppointment( const Appointment &apmData );
     // @fixme: this algorithm does not care for userCalendarId:
     void updateAppointment( const Appointment &apmData );
-    void loadAppointmentByYear( const int year );
+    void loadAppointmentByYear(const int year , QVector<Appointment*> &outAppointments);
     void removeAppointment(const QString id);   // remove appointment from storage
 
     void setAppointmentsCalendar(const QString appointmentId, const int calendarId);
 
-    void loadUserCalendarInfo();
+    void loadUserCalendarInfo( UserCalendarPool* &ucalPool );
     void insertUserCalendarInfo(const UserCalendarInfo* ucinfo);
+    void userCalendarDataModified(const int id, const QColor & color, const QString & title, const bool visible);
+
     void removeUserCalendar(const int id);  // delete calendar and associated appointments
 
 private:
@@ -53,14 +56,6 @@ private:
 
     DateTime string2DateTime(const QString inDateTime, const QString inTimeZoneString );
     void dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString );
-
-
-signals:
-    void signalLoadedUserCalendarFromStorage(UserCalendarInfo* &info);
-    void signalLoadedAppointmentFromStorage( Appointment* apmData);
-
-public slots:
-    void slotUserCalendarDataModified(const int id, const QColor & color, const QString & title, const bool visible);
 };
 
 #endif // STORAGE_H

@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget* parent) :
 {
     m_ui->setupUi(this);
     m_settingsManager = new SettingsManager();
-    m_storage = new Storage(this);
+    m_storage = new Storage();
     m_ui->statusBar->hide();
 
     // toolbar items
@@ -111,23 +111,17 @@ MainWindow::MainWindow(QWidget* parent) :
 #endif
 
     // user calendars
-    connect(m_ui->actionAddUserCalendar, SIGNAL(triggered()), this, SLOT(slotAddUserCalendar()));
-    connect(m_userCalendarPool, SIGNAL(signalUserCalendarInUseModified()), this, SLOT(slotUserCalendarInUseModified()));
+    connect(m_ui->actionAddUserCalendar, SIGNAL(triggered()), this, SLOT(slotAddUserCalendarDlg()));
+    //connect(m_userCalendarPool, SIGNAL(signalUserCalendarInUseModified()), this, SLOT(slotUserCalendarInUseModified()));
     connect(m_userCalendarNewDialog, SIGNAL(finished(int)), this, SLOT(slotAddUserCalendarDlgFinished(int)));
     connect(m_ui->actionCalendarManager, SIGNAL(triggered()), this, SLOT(slotCalendarManagerDialog()));
 
     // storage load data
-    connect(m_storage, SIGNAL(signalLoadedUserCalendarFromStorage(UserCalendarInfo* &)),
-            m_userCalendarPool, SLOT(slotAddUserCalendarFromStorage(UserCalendarInfo* &)));
-    m_storage->loadUserCalendarInfo();
-    connect(m_storage, SIGNAL(signalLoadedAppointmentFromStorage(Appointment*)),
-            this, SLOT(slotLoadedAppointmentFromStorage(Appointment*)));
-    m_storage->loadAppointmentByYear( QDateTime::currentDateTime().date().year() );
-    m_eventPool->addMarker( QDateTime::currentDateTime().date().year() );
+    m_storage->loadUserCalendarInfo( m_userCalendarPool );
     QMenu* tmp = m_userCalendarPool->calendarMenu();
     m_toolbarUserCalendarMenu->setMenu(tmp);
-    connect(m_userCalendarPool, SIGNAL(signalUserCalendarDataModified(int,QColor,QString,bool)),
-            m_storage, SLOT(slotUserCalendarDataModified(int,QColor,QString,bool)));
+    //connect(m_userCalendarPool, SIGNAL(signalUserCalendarDataModified(int,QColor,QString,bool)),
+    //        m_storage, SLOT(slotUserCalendarDataModified(int,QColor,QString,bool)));
     // - end storage
 
     // ical import dialog
@@ -180,12 +174,20 @@ void MainWindow::resizeCalendarView()
 
 void MainWindow::showAppointments(const QDate &date)
 {
+    QVector<Appointment*> appointmentsThisYear;
     if( not m_eventPool->queryMarker( date.year()) )
     {
-        m_storage->loadAppointmentByYear( date.year() );
+        m_storage->loadAppointmentByYear( date.year(), appointmentsThisYear );
+        for(Appointment* &a :appointmentsThisYear )
+        {
+            int calId = a->m_userCalendarId;
+            QColor calColor = m_userCalendarPool->color( calId );
+            a->setEventColor( calColor );
+            m_eventPool->addAppointment(a);
+        }
         m_eventPool->addMarker( date.year() );
     }
-    int weekStartDay = m_settingsManager->weekStartDay();
+    //int weekStartDay = m_settingsManager->weekStartDay();
     QList<UserCalendarInfo*> showHideItems = m_userCalendarPool->calendarInfos();
     QVector<Event> listYear = m_eventPool->eventsByYear( date.year() );
 
@@ -289,19 +291,6 @@ void MainWindow::slotImportFromFileFinished()
     }
     // delete threads
     m_icalImportDialog->deleteThreadsAndData();
-}
-
-
-void MainWindow::slotLoadedAppointmentFromStorage( Appointment* apmData )
-{
-    m_eventPool->addAppointment( apmData );
-    qDebug() << " loadAppointment " << apmData->m_uid;
-
-    for( Event e : apmData->m_eventVector )
-    {
-        qDebug() << "   load: " << e.m_uid;
-    }
-    //QColor color = m_userCalendarPool->color(apmData.m_userCalendarId);
 }
 
 
@@ -529,7 +518,8 @@ void MainWindow::slotSettingsDialog()
     }
 }
 
-void MainWindow::slotAddUserCalendar()
+
+void MainWindow::slotAddUserCalendarDlg()
 {
     m_userCalendarNewDialog->reset();
     m_userCalendarNewDialog->setUserCalendarInfos(m_userCalendarPool->calendarInfos());
@@ -570,10 +560,15 @@ void MainWindow::slotCalendarManagerDialog()
 void MainWindow::slotModifyCalendar(const int calendarId, const QString & title, const QColor & color)
 {
     qDebug() << "MW:: slotmodifycalendar";
-    //m_appointmentPool->setColorForId(calendarId, color);
+    qDebug() << " " << calendarId << title << color;
+    qDebug() << " oldcolor " << m_userCalendarPool->color( calendarId );
+
+
+    m_eventPool->changeColor( calendarId, color );
+
     bool visible = m_userCalendarPool->isVisible(calendarId);
-    m_userCalendarPool->setData(calendarId, color, title, visible);
-    m_storage->slotUserCalendarDataModified(calendarId, color, title, visible);
+    //m_userCalendarPool->setData(calendarId, color, title, visible);
+    m_storage->userCalendarDataModified(calendarId, color, title, visible);
     showAppointments(m_scene->date());
 }
 

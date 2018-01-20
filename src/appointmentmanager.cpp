@@ -1475,3 +1475,10 @@ void Appointment::makeEvents()
     }
     emit sigTickEvent( 0, 1, 1 );
 }
+
+
+void Appointment::setEventColor( const QColor inEventColor )
+{
+    for( Event &e : m_eventVector )
+        e.m_eventColor = inEventColor;
+}

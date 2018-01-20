@@ -63,6 +63,20 @@ const UserCalendarInfo* UserCalendarPool::addUserCalendar(const QColor & color, 
 }
 
 
+void UserCalendarPool::addUserCalendarFromStorage(UserCalendarInfo* & info)
+{
+    m_nextInsertId = info->m_id >= m_nextInsertId ? info->m_id + 1 : m_nextInsertId;
+    QPixmap pix(8, 8);
+    pix.fill(info->m_color);
+    info->m_action = new QAction(pix, info->m_title, this);
+    info->m_action->setData(info->m_id);
+    info->m_action->setCheckable(true);
+    info->m_action->setChecked(info->m_isVisible);
+    info->m_action->setIconVisibleInMenu(true);
+    m_pool.append(info);
+}
+
+
 void UserCalendarPool::removeUserCalendar(const int id)
 {
     for(UserCalendarInfo* uci : m_pool)
@@ -144,20 +158,6 @@ void UserCalendarPool::toggleVisibility(const int id)
     for(UserCalendarInfo* uci : m_pool)
         if(uci->m_id == id)
             uci->m_isVisible = ! uci->m_isVisible;
-}
-
-
-void UserCalendarPool::slotAddUserCalendarFromStorage(UserCalendarInfo* & info)
-{
-    m_nextInsertId = info->m_id >= m_nextInsertId ? info->m_id + 1 : m_nextInsertId;
-    QPixmap pix(8, 8);
-    pix.fill(info->m_color);
-    info->m_action = new QAction(pix, info->m_title, this);
-    info->m_action->setData(info->m_id);
-    info->m_action->setCheckable(true);
-    info->m_action->setChecked(info->m_isVisible);
-    info->m_action->setIconVisibleInMenu(true);
-    m_pool.append(info);
 }
 
 

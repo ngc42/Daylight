@@ -261,7 +261,7 @@ void CalendarScene::updateSize(const QSize & newSize)
 }
 
 
-void CalendarScene::setAppointmentsForYear(const QVector<Event> &list)
+void CalendarScene::setAppointmentsForYear(const QVector<Event> &list )
 {
     for(DayInYearItem* d : m_daysInYearItems)
         d->clearAppointments();

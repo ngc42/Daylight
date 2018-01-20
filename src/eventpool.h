@@ -3,6 +3,7 @@
 
 #include "appointmentmanager.h"
 
+#include <QColor>
 #include <QMap>
 #include <QSet>
 #include <QVector>
@@ -14,7 +15,7 @@ public:
     EventPool();
 
     // Appointments
-    void addAppointment( Appointment* inApp );
+    void addAppointment(Appointment* inApp );
     bool haveAppointment( const QString inUid ) const;
 
     /* year marker
@@ -23,6 +24,13 @@ public:
     */
     void addMarker( const int inMarkerYear );
     bool queryMarker( const int inMarkerYear ) const;
+
+    /* This traverses all stored appointments and all events within
+     *  and changes the color.
+     * You don't need to use it together with addAppointment(), as mainWindow
+     *  cares for the color to show up. This is for changed colors during
+     * dialogues and such. */
+    void changeColor(const int inUserCalendarId, const QColor inNewColor);
 
 
     // Events

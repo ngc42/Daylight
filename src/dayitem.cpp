@@ -51,7 +51,7 @@ void TooManyEventsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
 EventItem::EventItem(QGraphicsItem *parent) :
     QGraphicsObject(parent), m_dummy(true), m_size(3, 3), m_sizeTooSmall(true),
-    m_color(Qt::red), m_title(""), m_showTitle(false), m_fontPixelSize(0), m_appointmentId("")
+    m_color(Qt::black), m_title(""), m_showTitle(false), m_fontPixelSize(0), m_appointmentId("")
 {
     //dummy items should not paint anything!
     setFlag(QGraphicsItem::ItemHasNoContents, true);
@@ -60,13 +60,14 @@ EventItem::EventItem(QGraphicsItem *parent) :
 
 EventItem::EventItem(Event event, QGraphicsItem *parent) :
     QGraphicsObject(parent), m_dummy(false), m_size(3, 3), m_sizeTooSmall(false),
-    m_color(Qt::red), m_title(event.m_displayText), m_showTitle(false), m_fontPixelSize(1),
-    m_userCalendarId(0),
+    m_color(event.m_eventColor),
+    m_title(event.m_displayText),
+    m_showTitle(false), m_fontPixelSize(1),
+    m_userCalendarId(0),    // @fixme: why this?
     m_appointmentId(event.m_uid),
     m_startDt(event.m_startDt),
     m_endDt(event.m_endDt), m_allDay(false)
 {
-    qDebug() << m_appointmentId << event.m_uid;
     QString toolTipText = QString("%1 (cal-id = %2, app-id = %3) - %4 to %5")
             .arg(m_title)
             .arg(m_userCalendarId).arg(m_appointmentId)
@@ -457,8 +458,8 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
                 m_appointmentSlotsRange.append(itm);
             }
             EventItem* itm = new EventItem(e, this);
-            connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            //connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
+            //connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
             itm->setShowTitle(false);
             m_appointmentSlotsRange.append(itm);
         }

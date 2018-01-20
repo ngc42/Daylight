@@ -89,9 +89,6 @@ public slots:
     void slotOpenIcalFile();
     void slotImportFromFileFinished();
 
-    // storage
-    void slotLoadedAppointmentFromStorage(Appointment* apmData);
-
     // set date
     void slotShowHideNavigationDlg();
     void slotSetDate(int year, int month);      // need to set a new Date
@@ -111,7 +108,7 @@ public slots:
     void slotSettingsDialog();
 
     // User calendars
-    void slotAddUserCalendar();
+    void slotAddUserCalendarDlg();
     void slotAddUserCalendarDlgFinished(int returncode);
     void slotCalendarManagerDialog();
     void slotModifyCalendar(const int calendarId, const QString & title, const QColor & color);

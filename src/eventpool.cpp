@@ -1,5 +1,7 @@
 #include "eventpool.h"
 
+#include <QDebug>
+
 EventPool::EventPool()
 {
 }
@@ -7,6 +9,8 @@ EventPool::EventPool()
 
 void EventPool::addAppointment( Appointment* inApp )
 {
+    qDebug() << "add appointment with calid = " << inApp->m_userCalendarId << inApp->m_uid << inApp->m_eventVector.isEmpty();
+
     // empty Appointments should not exist
     if( inApp->m_eventVector.isEmpty() )
         return;
@@ -14,6 +18,7 @@ void EventPool::addAppointment( Appointment* inApp )
     // check, we don't read duplicates
     if( m_appointmentsRead.contains( inApp->m_uid ) )
         return;
+
 
     m_appointments.append( inApp );
     m_appointmentsRead.insert( inApp->m_uid  );
@@ -53,6 +58,22 @@ void EventPool::addMarker( const int inMarkerYear )
 bool EventPool::queryMarker( const int inMarkerYear ) const
 {
     return m_yearMarkers.contains( inMarkerYear );
+}
+
+
+void EventPool::changeColor(const int inUserCalendarId, const QColor inNewColor)
+{
+    for( Appointment* app : m_appointments )
+    {
+        if( app->m_userCalendarId == inUserCalendarId )
+        {
+            for( Event &e : app->m_eventVector )
+            {
+                qDebug() << " somone got a new color";
+                e.m_eventColor = inNewColor;
+            }
+        }
+    }
 }
 
 
