@@ -137,10 +137,10 @@ void Storage::storeAppointment( const Appointment &apmData )
     iBas.bindValue(":sequence", apmData.m_appBasics->m_sequence);
     QString dtString;
     QString tzString;
-    dateTime2Strings( apmData.m_appBasics->m_dtStart, dtString, tzString );
+    DateTime::dateTime2Strings( apmData.m_appBasics->m_dtStart, dtString, tzString );
     iBas.bindValue(":start", dtString );
     iBas.bindValue(":starttz", tzString );
-    dateTime2Strings( apmData.m_appBasics->m_dtEnd, dtString, tzString );
+    DateTime::dateTime2Strings( apmData.m_appBasics->m_dtEnd, dtString, tzString );
     iBas.bindValue(":end", dtString );
     iBas.bindValue(":endtz", tzString );
     iBas.bindValue(":summary", apmData.m_appBasics->m_summary );
@@ -170,7 +170,7 @@ void Storage::storeAppointment( const Appointment &apmData )
         iRec.bindValue(":frequency", static_cast<int>(apmData.m_appRecurrence->m_frequency) );
         iRec.bindValue(":count", apmData.m_appRecurrence->m_count );
         iRec.bindValue(":interval", apmData.m_appRecurrence->m_interval );
-        dateTime2Strings( apmData.m_appRecurrence->m_until, dtString, tzString );
+        DateTime::dateTime2Strings( apmData.m_appRecurrence->m_until, dtString, tzString );
         iRec.bindValue(":until", dtString );
         iRec.bindValue(":untiltz", tzString );
         iRec.bindValue(":startwd", static_cast<int>(apmData.m_appRecurrence->m_startWeekday) );
@@ -204,9 +204,9 @@ void Storage::storeAppointment( const Appointment &apmData )
         iEve.prepare("INSERT INTO events VALUES(:uid, :text, :start, :end, :timezone, :is_alarm)");
         iEve.bindValue(":uid", apmData.m_uid);
         iEve.bindValue(":text", e.m_displayText );
-        dateTime2Strings( e.m_startDt, dtString, tzString );
+        DateTime::dateTime2Strings( e.m_startDt, dtString, tzString );
         iEve.bindValue(":start", dtString );
-        dateTime2Strings( e.m_endDt, dtString, tzString );
+        DateTime::dateTime2Strings( e.m_endDt, dtString, tzString );
         iEve.bindValue(":end", dtString );
         iEve.bindValue(":timezone", tzString );
         iEve.bindValue(":is_alarm", e.m_isAlarmEvent );
@@ -288,8 +288,8 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
             AppointmentBasics* apmBasic = new AppointmentBasics();
             apmBasic->m_uid      = qApmBasics.value(0).toString();
             apmBasic->m_sequence = qApmBasics.value(1).toString().toInt(&ok);
-            apmBasic->m_dtStart  = string2DateTime( qApmBasics.value(2).toString(), qApmBasics.value(3).toString() );
-            apmBasic->m_dtEnd    = string2DateTime( qApmBasics.value(4).toString(), qApmBasics.value(5).toString() );
+            apmBasic->m_dtStart  = DateTime::string2DateTime( qApmBasics.value(2).toString(), qApmBasics.value(3).toString() );
+            apmBasic->m_dtEnd    = DateTime::string2DateTime( qApmBasics.value(4).toString(), qApmBasics.value(5).toString() );
             apmBasic->m_summary  = qApmBasics.value(6).toString();
             apmBasic->m_description  = qApmBasics.value(7).toString();
             apmBasic->m_busyFree     = static_cast<AppointmentBasics::BusyFreeType>(qApmBasics.value(8).toString().toInt(&ok));
@@ -331,7 +331,7 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 apmRecurrence->m_frequency  = static_cast<AppointmentRecurrence::RecurrenceFrequencyType>(qApmRecurrence.value(1).toInt(&ok));
                 apmRecurrence->m_count      = qApmRecurrence.value(2).toString().toInt(&ok);
                 apmRecurrence->m_interval   = qApmRecurrence.value(3).toString().toInt(&ok);
-                apmRecurrence->m_until      = string2DateTime( qApmRecurrence.value(4).toString(), qApmRecurrence.value(5).toString());
+                apmRecurrence->m_until      = DateTime::string2DateTime( qApmRecurrence.value(4).toString(), qApmRecurrence.value(5).toString());
                 apmRecurrence->m_startWeekday = static_cast<AppointmentRecurrence::WeekDay>(qApmRecurrence.value(6).toInt(&ok));
                 Appointment::makeDateList( qApmRecurrence.value(7).toString(),
                                                      qApmRecurrence.value(8).toString(),
@@ -364,8 +364,8 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 e.m_uid         = qApmEvents.value(0).toString();
                 e.m_displayText = qApmEvents.value(1).toString();
                 QString tzString    = qApmEvents.value(4).toString();
-                e.m_startDt     = string2DateTime( qApmEvents.value(2).toString(), tzString );
-                e.m_endDt       = string2DateTime( qApmEvents.value(3).toString(), tzString );
+                e.m_startDt     = DateTime::string2DateTime( qApmEvents.value(2).toString(), tzString );
+                e.m_endDt       = DateTime::string2DateTime( qApmEvents.value(3).toString(), tzString );
                 e.m_isAlarmEvent    = qApmEvents.value(5).toBool();
                 e.m_userCalendarId = apmData->m_userCalendarId;
                 apmData->m_eventVector.append( e );
@@ -540,45 +540,6 @@ void Storage::removeUserCalendar(const int id)
 }
 
 
-DateTime Storage::string2DateTime(const QString inDateTime, const QString inTimeZoneString )
-{
-    DateTime d;
-    d.readDateTime( inDateTime );
-    if( inTimeZoneString == 'Z' )
-    {
-        d.setTimeSpec( Qt::UTC );
-        return d;
-    }
-    if( inTimeZoneString.count() == 0 )
-        return d;
-    QTimeZone tz( inTimeZoneString.toUtf8() );
-    if( tz.isValid() )
-        d.setTimeZone(tz);
-    return d;
-}
 
-
-void Storage::dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString )
-{
-    if( inDateTime.isDate() )
-    {
-        dtString = inDateTime.toDtString();
-        tzString = "";
-    }
-    else
-    {
-        dtString = inDateTime.toDtString();
-        if( inDateTime.isUtc() )
-            tzString = "Z";
-        else
-        {
-            QTimeZone tz = inDateTime.timeZone();
-            if( tz.isValid() )
-                tzString = QString( tz.id() );
-            else
-                tzString = "";
-        }
-    }
-}
 
 

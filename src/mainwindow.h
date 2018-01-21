@@ -114,7 +114,10 @@ public slots:
     void slotModifyCalendar(const int calendarId, const QString & title, const QColor & color);
     void slotDeleteCalendar(const int calendarId);
 
-
+    // appointments
+    void slotAppointmentDlgStart(const QDate &date = QDate::currentDate());
+    void slotReconfigureAppointment(QString appointmentId); // user clicks on an appointment, configure AppointmentDlg and start
+    void slotAppointmentDlgFinished(int returncode);
 };
 
 

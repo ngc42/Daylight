@@ -67,6 +67,10 @@ MainWindow::MainWindow(QWidget* parent) :
     m_navigationDialog = new NavigationDialog(this);
     m_navigationDialog->hide();
 
+    // dialog to set up the appointments, non-modal
+    m_appointmentDialog = new AppointmentDialog();
+    m_appointmentDialog->hide();
+
     // user calendar pool
     m_userCalendarPool = new UserCalendarPool(this);
     m_storage->loadUserCalendarInfo( m_userCalendarPool );
@@ -108,12 +112,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_ui->actionNextDate, SIGNAL(triggered()), this, SLOT(slotSetNextDate()));
 
     // appointments
-#ifdef XXX
     connect(m_navigationDialog, SIGNAL(signalActivated(QDate)), this, SLOT(slotAppointmentDlgStart(QDate)));
     connect(m_scene, SIGNAL(signalDateClicked(QDate)), this, SLOT(slotAppointmentDlgStart(QDate)));
     connect(m_appointmentDialog, SIGNAL(finished(int)), this, SLOT(slotAppointmentDlgFinished(int)));
     connect(m_ui->actionAddAppointment, SIGNAL(triggered()), this, SLOT(slotAppointmentDlgStart()));
     connect(m_scene, SIGNAL(signalReconfigureAppointment(int)), this, SLOT(slotReconfigureAppointment(int)));
+#ifdef XXX
     connect(m_scene, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)), Qt::QueuedConnection);
 #endif
 
@@ -575,4 +579,41 @@ void MainWindow::slotDeleteCalendar(const int calendarId)
     m_userCalendarPool->removeUserCalendar(calendarId);
     m_storage->removeUserCalendar(calendarId);
     showAppointments(m_scene->date());
+}
+
+
+/* Double Click or return pressed on a selected date in the small calendar or item in calendar view.
+ * Start the AppointmentDialog and let the user create a new appointment.
+ * - Note: The Appointmentdialog is non-modal, so it does not block. We just call
+ * - show() and hide()
+ * date parameter defaults to currentDate(), so this method is used as a menu slot too. */
+void MainWindow::slotAppointmentDlgStart(const QDate & date)
+{
+    m_appointmentDialog->reset();
+    m_appointmentDialog->setFromAndTo(date);
+    QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
+    if(uciList.count() == 0)
+        return;
+    m_appointmentDialog->setUserCalendarInfos(uciList);
+    m_appointmentDialog->show();
+}
+
+
+/* User wants to reconfigure an appointment. Take the data from this appointment
+ * and show the appointmet dialog with the given data.
+ * Communicate over appointment id with slotAppointmentDlgFinished(). */
+void MainWindow::slotReconfigureAppointment(QString appointmentId)
+{
+    QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
+    m_appointmentDialog->setUserCalendarInfos(uciList);
+    m_appointmentDialog->show();
+}
+
+
+/* Appointment dialog finishes, user has set up a new appointment or modified
+ * an existing one. If user clicks on "OK", we add the appointment to the
+ * database or change the existing item. */
+void MainWindow::slotAppointmentDlgFinished(int returncode)
+{
+    m_appointmentDialog->hide();
 }

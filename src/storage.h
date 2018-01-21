@@ -31,7 +31,6 @@
 struct Storage
 {
 
-
 public:
     explicit Storage();
     void createDatabase();
@@ -53,9 +52,6 @@ public:
 
 private:
     QSqlDatabase m_db;
-
-    DateTime string2DateTime(const QString inDateTime, const QString inTimeZoneString );
-    void dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString );
 };
 
 #endif // STORAGE_H

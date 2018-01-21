@@ -172,3 +172,45 @@ bool DateTime::readTime( QString inTimeString )
     }
     return false;
 }
+
+
+DateTime DateTime::string2DateTime(const QString inDateTime, const QString inTimeZoneString )
+{
+    DateTime d;
+    d.readDateTime( inDateTime );
+    if( inTimeZoneString == 'Z' )
+    {
+        d.setTimeSpec( Qt::UTC );
+        return d;
+    }
+    if( inTimeZoneString.count() == 0 )
+        return d;
+    QTimeZone tz( inTimeZoneString.toUtf8() );
+    if( tz.isValid() )
+        d.setTimeZone(tz);
+    return d;
+}
+
+
+void DateTime::dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString )
+{
+    if( inDateTime.isDate() )
+    {
+        dtString = inDateTime.toDtString();
+        tzString = "";
+    }
+    else
+    {
+        dtString = inDateTime.toDtString();
+        if( inDateTime.isUtc() )
+            tzString = "Z";
+        else
+        {
+            QTimeZone tz = inDateTime.timeZone();
+            if( tz.isValid() )
+                tzString = QString( tz.id() );
+            else
+                tzString = "";
+        }
+    }
+}

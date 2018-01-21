@@ -49,6 +49,9 @@ public:
     QString toString() const;
     QString toDtString() const;
 
+    static DateTime string2DateTime(const QString inDateTime, const QString inTimeZoneString );
+    static void dateTime2Strings( const DateTime inDateTime, QString &dtString, QString &tzString );
+
     // === operators ===
     DateTime &operator=( const DateTime &other )
     {
