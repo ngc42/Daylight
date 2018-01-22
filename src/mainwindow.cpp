@@ -116,8 +116,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_scene, SIGNAL(signalDateClicked(QDate)), this, SLOT(slotAppointmentDlgStart(QDate)));
     connect(m_appointmentDialog, SIGNAL(finished(int)), this, SLOT(slotAppointmentDlgFinished(int)));
     connect(m_ui->actionAddAppointment, SIGNAL(triggered()), this, SLOT(slotAppointmentDlgStart()));
-    connect(m_scene, SIGNAL(signalReconfigureAppointment(int)), this, SLOT(slotReconfigureAppointment(int)));
 #ifdef XXX
+    connect(m_scene, SIGNAL(signalReconfigureAppointment(int)), this, SLOT(slotReconfigureAppointment(int)));
     connect(m_scene, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)), Qt::QueuedConnection);
 #endif
 

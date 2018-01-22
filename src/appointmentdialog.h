@@ -58,7 +58,6 @@ private:
 
 signals:
 private slots:
-    void slotWholeDayChanged(int checked);
     void slotForeverChanged(int checked);
 };
 

@@ -1262,7 +1262,7 @@ void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
  * ******* Appointment ***************************
  * **********************************************/
 
-Appointment::Appointment( QObject *parent )
+Appointment::Appointment( QObject* parent )
     :
       QObject(parent),
       m_haveRecurrence( false ),

@@ -32,7 +32,6 @@ AppointmentDialog::AppointmentDialog(QWidget* parent) :
     m_ui->comboRepeat->addItem("every day", RecurrenceType::R_DAY);
 #endif
     reset();
-    connect(m_ui->checkWholeDay, SIGNAL(stateChanged(int)), this, SLOT(slotWholeDayChanged(int)));
     connect(m_ui->checkForever, SIGNAL(stateChanged(int)), this, SLOT(slotForeverChanged(int)));
 }
 
@@ -46,7 +45,6 @@ AppointmentDialog::~AppointmentDialog()
 void AppointmentDialog::reset()
 {
     // apointment
-    m_ui->checkWholeDay->setChecked(false);
     m_ui->edReason->setText("new appointment");
     m_dtSaveStart = QDateTime::currentDateTime();
     m_dtSaveEnd = m_dtSaveStart.addSecs(3600);  // one hour
@@ -103,23 +101,6 @@ void AppointmentDialog::setAppointmentValues(Appointment* apmData)
     m_ui->checkForever->setChecked(recData.m_forever);
     m_ui->dateTimeRepeatUntil->setDateTime(recData.m_lastDt);
 #endif
-}
-
-
-void AppointmentDialog::slotWholeDayChanged(int)
-{
-    if(m_ui->checkWholeDay->isChecked())
-    {
-        m_ui->dateTimeStartInterval->setDisplayFormat("dd.MM.yyyy");
-        m_ui->dateTimeEndInterval->setDisplayFormat("dd.MM.yyyy");
-    }
-    else
-    {
-        m_ui->dateTimeStartInterval->setDisplayFormat("dd.MM.yyyy HH:mm");
-        m_ui->dateTimeEndInterval->setDisplayFormat("dd.MM.yyyy HH:mm");
-        m_ui->dateTimeStartInterval->setDateTime(m_dtSaveStart);
-        m_ui->dateTimeEndInterval->setDateTime(m_dtSaveEnd);
-    }
 }
 
 

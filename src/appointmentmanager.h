@@ -222,7 +222,7 @@ class Appointment : public QObject
 
 public:
 
-    Appointment( QObject *parent = Q_NULLPTR );
+    Appointment( QObject* parent = Q_NULLPTR );
     ~Appointment()
     {
         qDebug() << "DESTRUCTOR APPOINTMENT";

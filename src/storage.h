@@ -39,7 +39,7 @@ public:
     void storeAppointment( const Appointment &apmData );
     // @fixme: this algorithm does not care for userCalendarId:
     void updateAppointment( const Appointment &apmData );
-    void loadAppointmentByYear(const int year , QVector<Appointment*> &outAppointments);
+    void loadAppointmentByYear( const int year, QVector<Appointment*> &outAppointments);
     void removeAppointment(const QString id);   // remove appointment from storage
 
     void setAppointmentsCalendar(const QString appointmentId, const int calendarId);
