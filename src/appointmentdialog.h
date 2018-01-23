@@ -30,7 +30,7 @@ class AppointmentDialog;
 
 
 /* AppointmentDialog shows up a dialog, where a user can set up a new appointment or modify an existing one.
- * the Dialog is startet in the MainWindow.
+ *  the Dialog is startet in the MainWindow.
  * Reconfiguring an appointment involves calling setAppointmentValues().
  * UI-parts of the dialog are in appointmentdialog.ui. */
 class AppointmentDialog : public QDialog
@@ -38,13 +38,16 @@ class AppointmentDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AppointmentDialog(QWidget* parent = 0);
+    explicit AppointmentDialog( QWidget* parent = Q_NULLPTR );
     ~AppointmentDialog();
     QString appointmentId() const { return m_appointment->m_uid; }
 
     void reset();
-    void setFromAndTo(const QDate & date_from);
-    void setUserCalendarInfos(QList<UserCalendarInfo*> & uciList);
+    void reset( const QDate date );
+    void setDefaultBasicInterval( const QDate date );
+    void setDefaultBasicInterval( const QDateTime dateTime );
+
+    void setUserCalendarInfos(QList<UserCalendarInfo*> &uciList);
     void setAppointmentValues(Appointment* apmData );
 
 private:

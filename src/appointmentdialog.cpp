@@ -24,15 +24,7 @@ AppointmentDialog::AppointmentDialog(QWidget* parent) :
     QDialog(parent), m_ui(new Ui::AppointmentDialog)
 {
     m_ui->setupUi(this);
-#ifdef YYY
-    m_ui->comboRepeat->addItem("No Recurrence", RecurrenceType::R_NO_RECURRENCE);
-    m_ui->comboRepeat->addItem("every year", RecurrenceType::R_YEAR);
-    m_ui->comboRepeat->addItem("every month", RecurrenceType::R_MONTH);
-    m_ui->comboRepeat->addItem("every week", RecurrenceType::R_WEEK);
-    m_ui->comboRepeat->addItem("every day", RecurrenceType::R_DAY);
-#endif
     reset();
-    connect(m_ui->checkForever, SIGNAL(stateChanged(int)), this, SLOT(slotForeverChanged(int)));
 }
 
 
@@ -44,39 +36,50 @@ AppointmentDialog::~AppointmentDialog()
 
 void AppointmentDialog::reset()
 {
-    // apointment
-    m_ui->edReason->setText("new appointment");
-    m_dtSaveStart = QDateTime::currentDateTime();
-    m_dtSaveEnd = m_dtSaveStart.addSecs(3600);  // one hour
-    m_ui->dateTimeStartInterval->setDateTime(m_dtSaveStart);
-    m_ui->dateTimeEndInterval->setDateTime(m_dtSaveEnd);
-    m_ui->comboSelectCalendar->setCurrentIndex(0);
-    m_ui->comboRepeat->setCurrentIndex(0);
-    m_ui->checkForever->setChecked(false);
-    m_ui->dateTimeRepeatUntil->setDateTime(m_dtSaveEnd.addYears(3));
-    m_ui->comboReminder->setCurrentIndex(0);
+    // Page Basic
+    m_ui->basic_title_le->setText("new appointment");
+    m_ui->basic_select_calendar_combo->setCurrentIndex(0);
+    setDefaultBasicInterval( QDateTime::currentDateTime() );
+
+    // Page Recurrence
+    // ...
+    // Page Alarm
+    // ...
 }
 
 
-void AppointmentDialog::setFromAndTo(const QDate & date_from)
+void AppointmentDialog::reset(const QDate date )
 {
-    QTime now = QTime::currentTime();
-    m_dtSaveStart = QDateTime(date_from, now);
+    reset();
+    setDefaultBasicInterval( date );
+}
+
+
+void AppointmentDialog::setDefaultBasicInterval(const QDate date )
+{
+    QDateTime dt = QDateTime::currentDateTime();
+    dt.setDate( date );
+    setDefaultBasicInterval( dt );
+}
+
+
+void AppointmentDialog::setDefaultBasicInterval(const QDateTime dateTime )
+{
+    m_dtSaveStart = dateTime;
     m_dtSaveEnd = m_dtSaveStart.addSecs(3600);  // one hour
-    m_ui->dateTimeStartInterval->setDateTime(m_dtSaveStart);
-    m_ui->dateTimeEndInterval->setDateTime(m_dtSaveEnd);
-    m_ui->dateTimeRepeatUntil->setDateTime(m_dtSaveEnd.addYears(3));
+    m_ui->basic_datetime_startInterval->setDateTime(m_dtSaveStart);
+    m_ui->basic_datetime_endInterval->setDateTime(m_dtSaveEnd);
 }
 
 
 void AppointmentDialog::setUserCalendarInfos(QList<UserCalendarInfo*> & uciList)
 {
-    m_ui->comboSelectCalendar->clear();
+    m_ui->basic_select_calendar_combo->clear();
     for(UserCalendarInfo* uci : uciList)
     {
         QPixmap pix(32, 32);
         pix.fill(uci->m_color);
-        m_ui->comboSelectCalendar->addItem(pix, uci->m_title, uci->m_id);
+        m_ui->basic_select_calendar_combo->addItem(pix, uci->m_title, uci->m_id);
     }
 }
 
@@ -84,34 +87,10 @@ void AppointmentDialog::setUserCalendarInfos(QList<UserCalendarInfo*> & uciList)
 void AppointmentDialog::setAppointmentValues(Appointment* apmData)
 {
     m_appointment = apmData;
-#ifdef XXX
-    // appointment
-    m_ui->checkWholeDay->setChecked(apmData.m_allDay);
-    m_ui->edReason->setText(apmData.m_title);
-    m_dtSaveStart = apmData.m_startDt;
-    m_dtSaveEnd = apmData.m_endDt;
-    m_ui->dateTimeStartInterval->setDateTime(apmData.m_startDt);
-    m_ui->dateTimeEndInterval->setDateTime(apmData.m_endDt);
-    int index = m_ui->comboSelectCalendar->findData(apmData.m_userCalendarId);
-    m_ui->comboSelectCalendar->setCurrentIndex(index);
-
-    // recurrence
-    index = m_ui->comboRepeat->findData(recData.m_type);
-    m_ui->comboRepeat->setCurrentIndex(index);
-    m_ui->checkForever->setChecked(recData.m_forever);
-    m_ui->dateTimeRepeatUntil->setDateTime(recData.m_lastDt);
-#endif
 }
 
 
 void AppointmentDialog::slotForeverChanged(int)
 {
-    if(m_ui->checkForever->isChecked())
-    {
-        m_ui->dateTimeRepeatUntil->setDisabled(true);
-    }
-    else
-    {
-        m_ui->dateTimeRepeatUntil->setEnabled(true);
-    }
+
 }

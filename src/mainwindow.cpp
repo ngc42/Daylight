@@ -587,10 +587,9 @@ void MainWindow::slotDeleteCalendar(const int calendarId)
  * - Note: The Appointmentdialog is non-modal, so it does not block. We just call
  * - show() and hide()
  * date parameter defaults to currentDate(), so this method is used as a menu slot too. */
-void MainWindow::slotAppointmentDlgStart(const QDate & date)
+void MainWindow::slotAppointmentDlgStart(const QDate &date)
 {
-    m_appointmentDialog->reset();
-    m_appointmentDialog->setFromAndTo(date);
+    m_appointmentDialog->reset( date );
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
     if(uciList.count() == 0)
         return;

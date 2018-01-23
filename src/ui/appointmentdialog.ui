@@ -32,7 +32,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_basic">
       <attribute name="title">
@@ -47,7 +47,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="edReason"/>
+        <widget class="QLineEdit" name="basic_title_le"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_4">
@@ -57,7 +57,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QComboBox" name="comboSelectCalendar"/>
+        <widget class="QComboBox" name="basic_select_calendar_combo"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label">
@@ -67,7 +67,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDateTimeEdit" name="dateTimeStartInterval">
+        <widget class="QDateTimeEdit" name="basic_datetime_startInterval">
          <property name="correctionMode">
           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
          </property>
@@ -87,7 +87,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QDateTimeEdit" name="dateTimeEndInterval">
+        <widget class="QDateTimeEdit" name="basic_datetime_endInterval">
          <property name="correctionMode">
           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
          </property>
@@ -107,7 +107,7 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QComboBox" name="comboRepeat">
+        <widget class="QComboBox" name="basic_repeattype_combo">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -133,7 +133,7 @@
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="QComboBox" name="comboReminder">
+        <widget class="QComboBox" name="basic_selectalarm_combo">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -200,18 +200,18 @@
        <item>
         <widget class="QToolBox" name="toolBox">
          <property name="currentIndex">
-          <number>5</number>
+          <number>0</number>
          </property>
          <property name="tabSpacing">
           <number>2</number>
          </property>
-         <widget class="QWidget" name="rec_page_bym">
+         <widget class="QWidget" name="rec_page_bymonth">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>483</width>
-            <height>248</height>
+            <width>575</width>
+            <height>277</height>
            </rect>
           </property>
           <attribute name="label">
@@ -219,84 +219,84 @@
           </attribute>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="0">
-            <widget class="QCheckBox" name="cb_bm_jan">
+            <widget class="QCheckBox" name="rec_bymonth_jan">
              <property name="text">
               <string>Jan</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QCheckBox" name="cb_bm_feb">
+            <widget class="QCheckBox" name="rec_bymonth_feb">
              <property name="text">
               <string>Feb</string>
              </property>
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QCheckBox" name="cb_bm_mar">
+            <widget class="QCheckBox" name="rec_bymonth_mar">
              <property name="text">
               <string>Mar</string>
              </property>
             </widget>
            </item>
            <item row="0" column="3">
-            <widget class="QCheckBox" name="cb_bm_apr">
+            <widget class="QCheckBox" name="rec_bymonth_apr">
              <property name="text">
               <string>Apr</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QCheckBox" name="cb_bm_may">
+            <widget class="QCheckBox" name="rec_bymonth_may">
              <property name="text">
               <string>May</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QCheckBox" name="cb_bm_jun">
+            <widget class="QCheckBox" name="rec_bymonth_jun">
              <property name="text">
               <string>Jun</string>
              </property>
             </widget>
            </item>
            <item row="2" column="2">
-            <widget class="QCheckBox" name="cb_bm_jul">
+            <widget class="QCheckBox" name="rec_bymonth_jul">
              <property name="text">
               <string>Jul</string>
              </property>
             </widget>
            </item>
            <item row="2" column="3">
-            <widget class="QCheckBox" name="cb_bm_aug">
+            <widget class="QCheckBox" name="rec_bymonth_aug">
              <property name="text">
               <string>Aug</string>
              </property>
             </widget>
            </item>
            <item row="3" column="0">
-            <widget class="QCheckBox" name="cb_bm_sep">
+            <widget class="QCheckBox" name="rec_bymonth_sep">
              <property name="text">
               <string>Sep</string>
              </property>
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QCheckBox" name="cb_bm_oct">
+            <widget class="QCheckBox" name="rec_bymonth_oct">
              <property name="text">
               <string>Oct</string>
              </property>
             </widget>
            </item>
            <item row="3" column="2">
-            <widget class="QCheckBox" name="cb_bm_nov">
+            <widget class="QCheckBox" name="rec_bymonth_nov">
              <property name="text">
               <string>Nov</string>
              </property>
             </widget>
            </item>
            <item row="3" column="3">
-            <widget class="QCheckBox" name="cb_bm_dec">
+            <widget class="QCheckBox" name="rec_bymonth_dec">
              <property name="text">
               <string>Dec</string>
              </property>
@@ -304,13 +304,13 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="rec_page_bwn">
+         <widget class="QWidget" name="rec_page_byweekno">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>483</width>
-            <height>248</height>
+            <width>575</width>
+            <height>277</height>
            </rect>
           </property>
           <attribute name="label">
@@ -318,7 +318,7 @@
           </attribute>
           <layout class="QGridLayout" name="gridLayout_4">
            <item row="0" column="0">
-            <widget class="QSpinBox" name="sb_bw_weekno">
+            <widget class="QSpinBox" name="rec_byweekno_weeknumber">
              <property name="prefix">
               <string>Week </string>
              </property>
@@ -331,31 +331,39 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QPushButton" name="pb_bw_add">
+            <widget class="QPushButton" name="rec_byweekno_add">
              <property name="text">
               <string>Add</string>
              </property>
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QPushButton" name="pb_bw_remove">
+            <widget class="QPushButton" name="rec_byweekno_remove">
              <property name="text">
               <string>Remove</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0" colspan="3">
-            <widget class="QListWidget" name="lw_bw_list"/>
+            <widget class="QListWidget" name="rec_byweekno_list"/>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="rec_page_byd">
+         <widget class="QWidget" name="rec_page_byyearday">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>575</width>
+            <height>277</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>By Year Day</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="0" column="0">
-            <widget class="QSpinBox" name="sb_byd_yearday">
+            <widget class="QSpinBox" name="rec_byyearday_daynumber">
              <property name="suffix">
               <string/>
              </property>
@@ -371,31 +379,39 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QPushButton" name="bp_byd_add">
+            <widget class="QPushButton" name="rec_byyearday_add">
              <property name="text">
               <string>Add</string>
              </property>
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QPushButton" name="bp_byd_remove">
+            <widget class="QPushButton" name="rec_byyearday_remove">
              <property name="text">
               <string>Remove</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0" colspan="3">
-            <widget class="QListWidget" name="lw_byd_list"/>
+            <widget class="QListWidget" name="rec_byyearday_list"/>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="rec_page_bymday">
+         <widget class="QWidget" name="rec_page_bymonthday">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>575</width>
+            <height>277</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>By Monthday </string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
-            <widget class="QSpinBox" name="sb_bymday_monthday">
+            <widget class="QSpinBox" name="rec_bymonthday_daynumber">
              <property name="prefix">
               <string>Day </string>
              </property>
@@ -408,31 +424,39 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QPushButton" name="pb_bymday_add">
+            <widget class="QPushButton" name="rec_bymonthday_add">
              <property name="text">
-              <string>PushButton</string>
+              <string>Add</string>
              </property>
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QPushButton" name="bp_bymday_remove">
+            <widget class="QPushButton" name="rec_bymonthday_remove">
              <property name="text">
-              <string>PushButton</string>
+              <string>Remove</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0" colspan="3">
-            <widget class="QListWidget" name="lw_bymday_list"/>
+            <widget class="QListWidget" name="rec_bymonthday_list"/>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="rec_page_bd">
+         <widget class="QWidget" name="rec_page_byday">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>575</width>
+            <height>277</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>By Day</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_5">
            <item row="0" column="0">
-            <widget class="QSpinBox" name="sb_byday_daynum">
+            <widget class="QSpinBox" name="rec_byday_daynumber">
              <property name="suffix">
               <string>.</string>
              </property>
@@ -448,7 +472,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="cb_byday_dayname">
+            <widget class="QComboBox" name="rec_byday_weekdayname">
              <item>
               <property name="text">
                <string>Monday</string>
@@ -487,31 +511,39 @@
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QPushButton" name="pb_byday_add">
+            <widget class="QPushButton" name="rec_byday_add">
              <property name="text">
               <string>Add</string>
              </property>
             </widget>
            </item>
            <item row="0" column="3">
-            <widget class="QPushButton" name="pb_byday_remove">
+            <widget class="QPushButton" name="rec_byday_remove">
              <property name="text">
-              <string>PushButton</string>
+              <string>Remove</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0" colspan="4">
-            <widget class="QListWidget" name="lw_byday_list"/>
+            <widget class="QListWidget" name="rec_byday_list"/>
            </item>
           </layout>
          </widget>
          <widget class="QWidget" name="rec_page_misc">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>575</width>
+            <height>277</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>Misc</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_7">
            <item row="1" column="2">
-            <widget class="QDateTimeEdit" name="dateTimeRepeatUntil">
+            <widget class="QDateTimeEdit" name="rec_misc_repeatuntil_datetime">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -537,7 +569,7 @@
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QComboBox" name="cb_byday_dayname_2">
+            <widget class="QComboBox" name="rec_misc_weekstartday">
              <item>
               <property name="text">
                <string>Monday</string>
@@ -604,7 +636,7 @@
                <number>2</number>
               </property>
               <item row="0" column="0">
-               <widget class="QSpinBox" name="sb_setposday_days">
+               <widget class="QSpinBox" name="rec_misc_setpos_posnumber">
                 <property name="minimum">
                  <number>-366</number>
                 </property>
@@ -614,27 +646,27 @@
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QPushButton" name="pb_setposday_add">
+               <widget class="QPushButton" name="rec_misc_setpos_add">
                 <property name="text">
-                 <string>PushButton</string>
+                 <string>Add</string>
                 </property>
                </widget>
               </item>
               <item row="0" column="2">
-               <widget class="QPushButton" name="pb_setposday_remove">
+               <widget class="QPushButton" name="rec_misc_setpos_remove">
                 <property name="text">
-                 <string>PushButton</string>
+                 <string>Remove</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="0" colspan="3">
-               <widget class="QListWidget" name="lw_setposday_list"/>
+               <widget class="QListWidget" name="rec_misc_setpos_list"/>
               </item>
              </layout>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QCheckBox" name="checkForever">
+            <widget class="QCheckBox" name="rec_misc_repeatuntil_forever">
              <property name="text">
               <string>forever</string>
              </property>
@@ -666,12 +698,12 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>dateTimeEndInterval</tabstop>
-  <tabstop>edReason</tabstop>
-  <tabstop>comboSelectCalendar</tabstop>
-  <tabstop>comboRepeat</tabstop>
-  <tabstop>dateTimeStartInterval</tabstop>
-  <tabstop>comboReminder</tabstop>
+  <tabstop>basic_datetime_endInterval</tabstop>
+  <tabstop>basic_title_le</tabstop>
+  <tabstop>basic_select_calendar_combo</tabstop>
+  <tabstop>basic_repeattype_combo</tabstop>
+  <tabstop>basic_datetime_startInterval</tabstop>
+  <tabstop>basic_selectalarm_combo</tabstop>
  </tabstops>
  <resources/>
  <connections>
