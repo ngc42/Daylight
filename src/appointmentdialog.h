@@ -37,6 +37,12 @@ class AppointmentDialog : public QDialog
 {
     Q_OBJECT
 
+    // just for a combobox.
+    // this looks like duplicated code, see appointmentmanager.h (Recurrence) for details
+    enum RecurrenceFrequencyType {
+        NO_RECURRENCE, YEARLY, MONTHLY, WEEKLY, DAILY
+    };
+
 public:
     explicit AppointmentDialog( QWidget* parent = Q_NULLPTR );
     ~AppointmentDialog();
@@ -61,7 +67,14 @@ private:
 
 signals:
 private slots:
+    // page basic
+    void slotIndexChangedRecurrenceFrequency( int index );
+
+    // page recurrence
     void slotForeverChanged(int checked);
+
+    // page alarm
+
 };
 
 #endif // APPOINTMENTDIALOG_H

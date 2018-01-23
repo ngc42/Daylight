@@ -24,7 +24,27 @@ AppointmentDialog::AppointmentDialog(QWidget* parent) :
     QDialog(parent), m_ui(new Ui::AppointmentDialog)
 {
     m_ui->setupUi(this);
+
+    m_ui->basic_repeattype_combo->addItem( "no recurrence", NO_RECURRENCE );
+    m_ui->basic_repeattype_combo->addItem( "yearly", YEARLY );
+    m_ui->basic_repeattype_combo->addItem( "monthly", MONTHLY );
+    m_ui->basic_repeattype_combo->addItem( "weekly", WEEKLY );
+    m_ui->basic_repeattype_combo->addItem( "daily", DAILY );
+
+
+    // it starts on monday and iterates over all weekdays
+    QDate d(2018, 1, 1);
+    for(int i = 1; i < 8; i++ )
+    {
+        m_ui->rec_byday_weekdayname->addItem( d.toString( "dddd" ), i );
+        m_ui->rec_misc_weekstartday->addItem( d.toString( "dddd" ), i );
+        d = d.addDays( 1 );
+    }
+
     reset();
+
+    connect( m_ui->basic_repeattype_combo, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(slotIndexChangedRecurrenceFrequency(int)) );
 }
 
 
@@ -38,13 +58,49 @@ void AppointmentDialog::reset()
 {
     // Page Basic
     m_ui->basic_title_le->setText("new appointment");
-    m_ui->basic_select_calendar_combo->setCurrentIndex(0);
+    m_ui->basic_select_calendar_combo->setCurrentIndex( 0 );
     setDefaultBasicInterval( QDateTime::currentDateTime() );
+    m_ui->basic_repeattype_combo->setCurrentIndex( 0 );
 
     // Page Recurrence
-    // ...
+    m_ui->rec_bymonth_jan->setChecked(false);
+    m_ui->rec_bymonth_feb->setChecked(false);
+    m_ui->rec_bymonth_mar->setChecked(false);
+    m_ui->rec_bymonth_apr->setChecked(false);
+    m_ui->rec_bymonth_may->setChecked(false);
+    m_ui->rec_bymonth_jun->setChecked(false);
+    m_ui->rec_bymonth_jul->setChecked(false);
+    m_ui->rec_bymonth_aug->setChecked(false);
+    m_ui->rec_bymonth_sep->setChecked(false);
+    m_ui->rec_bymonth_oct->setChecked(false);
+    m_ui->rec_bymonth_nov->setChecked(false);
+    m_ui->rec_bymonth_dec->setChecked(false);
+
+    m_ui->rec_byweekno_weeknumber->setValue( 1 );
+    m_ui->rec_byweekno_list->clear();
+
+    m_ui->rec_byyearday_daynumber->setValue( 1 );
+    m_ui->rec_byyearday_list->clear();
+
+    m_ui->rec_bymonthday_daynumber->setValue( 1 );
+    m_ui->rec_bymonthday_list->clear();
+
+    m_ui->rec_byday_daynumber->setValue( 1 );
+    m_ui->rec_byday_weekdayname->setCurrentIndex( 0 );
+    m_ui->rec_byday_list->clear();
+
+    m_ui->rec_misc_weekstartday->setCurrentIndex( 0 );
+    m_ui->rec_misc_repeatuntil_forever->setChecked(true);
+    m_ui->rec_misc_repeatuntil_datetime->setDateTime( m_dtSaveEnd.addYears( 10 ) );
+    m_ui->rec_misc_setpos_posnumber->setValue( 1 );
+    m_ui->rec_misc_setpos_list->clear();
+
     // Page Alarm
     // ...
+
+    // Disable Pages Recurrence and Alarm
+    m_ui->tab_recurrence->setDisabled( true );
+    m_ui->tab_alarm->setDisabled( true );
 }
 
 
@@ -87,6 +143,27 @@ void AppointmentDialog::setUserCalendarInfos(QList<UserCalendarInfo*> & uciList)
 void AppointmentDialog::setAppointmentValues(Appointment* apmData)
 {
     m_appointment = apmData;
+}
+
+
+void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
+{
+    qDebug() << index;
+    switch( index )
+    {
+        case YEARLY:
+        case MONTHLY:
+        case WEEKLY:
+        case DAILY:
+        default:
+            m_ui->rec_page_bymonth->setDisabled( true );
+            m_ui->rec_page_byweekno->setDisabled( true );
+            m_ui->rec_page_byyearday->setDisabled( true );
+            m_ui->rec_page_bymonthday->setDisabled( true );
+            m_ui->rec_page_byday->setDisabled( true );
+            m_ui->rec_page_misc->setDisabled( true );
+    }
+
 }
 
 

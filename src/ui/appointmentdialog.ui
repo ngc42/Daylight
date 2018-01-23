@@ -200,7 +200,7 @@
        <item>
         <widget class="QToolBox" name="toolBox">
          <property name="currentIndex">
-          <number>0</number>
+          <number>5</number>
          </property>
          <property name="tabSpacing">
           <number>2</number>
@@ -472,43 +472,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="rec_byday_weekdayname">
-             <item>
-              <property name="text">
-               <string>Monday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Tuesday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Wednesday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Thursday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Friday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Satueday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Sunday</string>
-              </property>
-             </item>
-            </widget>
+            <widget class="QComboBox" name="rec_byday_weekdayname"/>
            </item>
            <item row="0" column="2">
             <widget class="QPushButton" name="rec_byday_add">
@@ -569,43 +533,7 @@
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QComboBox" name="rec_misc_weekstartday">
-             <item>
-              <property name="text">
-               <string>Monday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Tuesday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Wednesday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Thursday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Friday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Satueday</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Sunday</string>
-              </property>
-             </item>
-            </widget>
+            <widget class="QComboBox" name="rec_misc_weekstartday"/>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_9">
