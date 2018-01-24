@@ -19,6 +19,7 @@
 
 #include <QDialog>
 #include <QDateTime>
+#include <QSet>
 
 #include "appointmentmanager.h"
 #include "usercalendar.h"
@@ -47,6 +48,7 @@ public:
     explicit AppointmentDialog( QWidget* parent = Q_NULLPTR );
     ~AppointmentDialog();
     QString appointmentId() const { return m_appointment->m_uid; }
+    RecurrenceFrequencyType recurrence() const;
 
     void reset();
     void reset( const QDate date );
@@ -64,6 +66,12 @@ private:
 
     Appointment* m_appointment;
 
+    QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
+    QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
+    QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
+    QSet<int>   m_weekDaysDaysByDay;    // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
+    QSet<int>   m_setPos;           // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
+
 
 signals:
 private slots:
@@ -71,7 +79,20 @@ private slots:
     void slotIndexChangedRecurrenceFrequency( int index );
 
     // page recurrence
-    void slotForeverChanged(int checked);
+    void slotAddWeekNoClicked();
+    void slotRemoveWeekNoClicked();
+
+    void slotAddYearDayClicked();
+    void slotRemoveYearDayClicked();
+
+    void slotAddMonthDayClicked();
+    void slotRemoveMonthDayClicked();
+
+    void slotAddDayDayClicked();
+    void slotRemoveDayDayClicked();
+
+    void slotAddSetposClicked();
+    void slotRemoveSetposClicked();
 
     // page alarm
 
