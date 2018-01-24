@@ -11,6 +11,7 @@ GNU General Public License for more details.
 */
 #include "appointmentmanager.h"
 #include <QDebug>
+#include <QRandomGenerator>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
@@ -1268,6 +1269,17 @@ Appointment::Appointment( QObject* parent )
       m_haveRecurrence( false ),
       m_haveAlarm( false )
 {
+
+}
+
+
+void Appointment::generateUid()
+{
+    QDateTime dt = QDateTime::currentDateTime().toUTC();
+    m_uid = dt.toString( "yyyyMMddTHHmmssZ-zzz" ) +
+            QString( "-%1-DAILIGHT" )
+            .arg( QRandomGenerator::global()->generate64() , 0, 16 )
+            .toUpper();
 }
 
 

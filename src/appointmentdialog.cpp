@@ -87,6 +87,26 @@ void AppointmentDialog::reset()
     m_ui->basic_repeattype_combo->setCurrentIndex( 0 );
 
     // Page Recurrence
+    resetRecurrencePage();
+
+    // Page Alarm
+    // ...
+
+    // Disable Pages Recurrence and Alarm
+    m_ui->tab_recurrence->setDisabled( true );
+    m_ui->tab_alarm->setDisabled( true );
+}
+
+
+void AppointmentDialog::reset(const QDate date )
+{
+    reset();
+    setDefaultBasicInterval( date );
+}
+
+
+void AppointmentDialog::resetRecurrencePage()
+{
     m_ui->rec_bymonth_jan->setChecked(false);
     m_ui->rec_bymonth_feb->setChecked(false);
     m_ui->rec_bymonth_mar->setChecked(false);
@@ -118,20 +138,6 @@ void AppointmentDialog::reset()
     m_ui->rec_misc_repeatuntil_datetime->setDateTime( m_dtSaveEnd.addYears( 10 ) );
     m_ui->rec_misc_setpos_posnumber->setValue( 1 );
     m_ui->rec_misc_setpos_list->clear();
-
-    // Page Alarm
-    // ...
-
-    // Disable Pages Recurrence and Alarm
-    m_ui->tab_recurrence->setDisabled( true );
-    m_ui->tab_alarm->setDisabled( true );
-}
-
-
-void AppointmentDialog::reset(const QDate date )
-{
-    reset();
-    setDefaultBasicInterval( date );
 }
 
 
@@ -163,10 +169,27 @@ void AppointmentDialog::setUserCalendarInfos(QList<UserCalendarInfo*> & uciList)
     }
 }
 
-
-void AppointmentDialog::setAppointmentValues(Appointment* apmData)
+void AppointmentDialog::createNewAppointment()
 {
-    m_appointment = apmData;
+    m_isNewAppointment = true;
+    m_appointment = new Appointment();
+    m_appointment->generateUid();
+}
+
+
+void AppointmentDialog::setAppointmentValues(Appointment* )//apmData)
+{
+    m_isNewAppointment = false;
+    m_appointment = new Appointment();
+    //m_appointment = apmData;
+}
+
+
+void AppointmentDialog::collectAppointmentData()
+{
+    AppointmentBasics* basics = new AppointmentBasics();
+    basics->m_uid = m_appointment->m_uid;
+    //basics->m_dtStart
 }
 
 
@@ -174,6 +197,7 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
 {
     // these tabs and pages are enabled/disabled according to
     // RFC 5545, 3.3.10 (table).
+    resetRecurrencePage();
     m_ui->tab_recurrence->setEnabled( true );
     switch( index )
     {

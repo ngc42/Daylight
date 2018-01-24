@@ -13,6 +13,8 @@
 
 * RDATE in icalinterpreter noch nicht eingebunden. Es fehlen Beispiele.
 
+* QSet statt QMap oder QMultiMap?
+
 == TESTEN ==
 * Property RDATE nirgends eingebunden
 

@@ -227,6 +227,8 @@ public:
     {
         qDebug() << "DESTRUCTOR APPOINTMENT";
     }
+    // creates a possible unique UID
+    void generateUid();
 
     // helper methods
     static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );

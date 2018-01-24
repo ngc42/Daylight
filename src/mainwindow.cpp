@@ -594,6 +594,7 @@ void MainWindow::slotAppointmentDlgStart(const QDate &date)
     if(uciList.count() == 0)
         return;
     m_appointmentDialog->setUserCalendarInfos(uciList);
+    m_appointmentDialog->createNewAppointment();
     m_appointmentDialog->show();
 }
 
@@ -605,6 +606,7 @@ void MainWindow::slotReconfigureAppointment(QString appointmentId)
 {
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
     m_appointmentDialog->setUserCalendarInfos(uciList);
+    //m_appointmentDialog->setAppointmentValues( ... );
     m_appointmentDialog->show();
 }
 
@@ -614,5 +616,14 @@ void MainWindow::slotReconfigureAppointment(QString appointmentId)
  * database or change the existing item. */
 void MainWindow::slotAppointmentDlgFinished(int returncode)
 {
+    if( returncode == QDialog::Accepted )
+    {
+
+    }
+    else
+    {
+        if( m_appointmentDialog->isNewAppointment() )
+            m_appointmentDialog->deleteAppointment();
+    }
     m_appointmentDialog->hide();
 }

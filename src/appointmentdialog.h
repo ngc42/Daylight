@@ -49,29 +49,38 @@ public:
     ~AppointmentDialog();
     QString appointmentId() const { return m_appointment->m_uid; }
     RecurrenceFrequencyType recurrence() const;
+    bool isNewAppointment() const { return m_isNewAppointment; }
+    Appointment* appointment() { return m_appointment; }
+    void deleteAppointment() { delete m_appointment; }
+
 
     void reset();
     void reset( const QDate date );
+    void resetRecurrencePage();
     void setDefaultBasicInterval( const QDate date );
     void setDefaultBasicInterval( const QDateTime dateTime );
 
     void setUserCalendarInfos(QList<UserCalendarInfo*> &uciList);
+
+    void createNewAppointment();
     void setAppointmentValues(Appointment* apmData );
+
+    void collectAppointmentData();
 
 private:
     Ui::AppointmentDialog *m_ui;
     // saving the datetime for slotWholeDayChanged()
-    QDateTime m_dtSaveStart;
-    QDateTime m_dtSaveEnd;
+    QDateTime   m_dtSaveStart;
+    QDateTime   m_dtSaveEnd;
 
     Appointment* m_appointment;
+    bool m_isNewAppointment;
 
     QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
     QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
     QSet<int>   m_weekDaysDaysByDay;    // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
     QSet<int>   m_setPos;           // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
-
 
 signals:
 private slots:
@@ -95,7 +104,6 @@ private slots:
     void slotRemoveSetposClicked();
 
     // page alarm
-
 };
 
 #endif // APPOINTMENTDIALOG_H
