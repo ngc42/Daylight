@@ -148,13 +148,43 @@ void AppointmentDialog::setAppointmentValues(Appointment* apmData)
 
 void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
 {
-    qDebug() << index;
+    // these tabs and pages are enabled/disabled according to
+    // RFC 5545, 3.3.10 (table).
+    m_ui->tab_recurrence->setEnabled( true );
     switch( index )
     {
         case YEARLY:
+            m_ui->rec_page_bymonth->setEnabled( true );
+            m_ui->rec_page_byweekno->setEnabled( true );
+            m_ui->rec_page_byyearday->setEnabled( true );
+            m_ui->rec_page_bymonthday->setEnabled( true );
+            m_ui->rec_page_byday->setEnabled( true );
+            m_ui->rec_page_misc->setEnabled( true );
+        break;
         case MONTHLY:
+            m_ui->rec_page_bymonth->setEnabled( true );
+            m_ui->rec_page_byweekno->setEnabled( false );
+            m_ui->rec_page_byyearday->setEnabled( false );
+            m_ui->rec_page_bymonthday->setEnabled( true );
+            m_ui->rec_page_byday->setEnabled( true );
+            m_ui->rec_page_misc->setEnabled( true );
+        break;
         case WEEKLY:
+            m_ui->rec_page_bymonth->setEnabled( true );
+            m_ui->rec_page_byweekno->setEnabled( false );
+            m_ui->rec_page_byyearday->setEnabled( false );
+            m_ui->rec_page_bymonthday->setEnabled( false );
+            m_ui->rec_page_byday->setEnabled( true );
+            m_ui->rec_page_misc->setEnabled( true );
+        break;
         case DAILY:
+            m_ui->rec_page_bymonth->setEnabled( true );
+            m_ui->rec_page_byweekno->setEnabled( false );
+            m_ui->rec_page_byyearday->setEnabled( false );
+            m_ui->rec_page_bymonthday->setEnabled( true );
+            m_ui->rec_page_byday->setEnabled( true );
+            m_ui->rec_page_misc->setEnabled( true );
+        break;
         default:
             m_ui->rec_page_bymonth->setDisabled( true );
             m_ui->rec_page_byweekno->setDisabled( true );
@@ -162,8 +192,8 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_bymonthday->setDisabled( true );
             m_ui->rec_page_byday->setDisabled( true );
             m_ui->rec_page_misc->setDisabled( true );
+            m_ui->tab_recurrence->setEnabled( true );   // disable tab
     }
-
 }
 
 
