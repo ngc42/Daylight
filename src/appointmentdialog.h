@@ -62,11 +62,11 @@ public:
     void setDefaultBasicInterval( const QDate date );
     void setDefaultBasicInterval( const QDateTime dateTime );
 
-    void setUserCalendarInfos(QList<UserCalendarInfo*> &uciList);
+    void setUserCalendarInfos( QList<UserCalendarInfo*> &uciList );
     void setUserCalendarIndexById( const int usercalendarId );
 
     void createNewAppointment();
-    void setAppointmentValues(const Appointment* apmData );
+    void setAppointmentValues( const Appointment* apmData );
     void setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 );
 
     void collectAppointmentData();

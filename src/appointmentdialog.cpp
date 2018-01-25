@@ -21,8 +21,9 @@
 #include <QTimeZone>
 
 
-AppointmentDialog::AppointmentDialog(QWidget* parent) :
-    QDialog(parent), m_ui(new Ui::AppointmentDialog)
+AppointmentDialog::AppointmentDialog( QWidget* parent ) :
+    QDialog( parent ),
+    m_ui( new Ui::AppointmentDialog )
 {
     m_ui->setupUi(this);
 
@@ -43,7 +44,6 @@ AppointmentDialog::AppointmentDialog(QWidget* parent) :
     }
 
     setUpTimezones();
-
     reset();
 
     // signals basic tab
@@ -102,7 +102,7 @@ void AppointmentDialog::setUpTimezones()
 void AppointmentDialog::reset()
 {
     // Page Basic
-    m_ui->basic_title_le->setText("new appointment");
+    m_ui->basic_title_le->setText( "new appointment" );
     m_ui->basic_select_calendar_combo->setCurrentIndex( 0 );
     setDefaultBasicInterval( QDateTime::currentDateTime() );
     m_ui->basic_tz_start_combo->setCurrentIndex( 0 );
@@ -123,7 +123,7 @@ void AppointmentDialog::reset()
 }
 
 
-void AppointmentDialog::reset(const QDate date )
+void AppointmentDialog::reset( const QDate date )
 {
     reset();
     setDefaultBasicInterval( date );
@@ -132,18 +132,18 @@ void AppointmentDialog::reset(const QDate date )
 
 void AppointmentDialog::resetRecurrencePage()
 {
-    m_ui->rec_bymonth_jan->setChecked(false);
-    m_ui->rec_bymonth_feb->setChecked(false);
-    m_ui->rec_bymonth_mar->setChecked(false);
-    m_ui->rec_bymonth_apr->setChecked(false);
-    m_ui->rec_bymonth_may->setChecked(false);
-    m_ui->rec_bymonth_jun->setChecked(false);
-    m_ui->rec_bymonth_jul->setChecked(false);
-    m_ui->rec_bymonth_aug->setChecked(false);
-    m_ui->rec_bymonth_sep->setChecked(false);
-    m_ui->rec_bymonth_oct->setChecked(false);
-    m_ui->rec_bymonth_nov->setChecked(false);
-    m_ui->rec_bymonth_dec->setChecked(false);
+    m_ui->rec_bymonth_jan->setChecked( false );
+    m_ui->rec_bymonth_feb->setChecked( false );
+    m_ui->rec_bymonth_mar->setChecked( false );
+    m_ui->rec_bymonth_apr->setChecked( false );
+    m_ui->rec_bymonth_may->setChecked( false );
+    m_ui->rec_bymonth_jun->setChecked( false );
+    m_ui->rec_bymonth_jul->setChecked( false );
+    m_ui->rec_bymonth_aug->setChecked( false );
+    m_ui->rec_bymonth_sep->setChecked( false );
+    m_ui->rec_bymonth_oct->setChecked( false );
+    m_ui->rec_bymonth_nov->setChecked( false );
+    m_ui->rec_bymonth_dec->setChecked( false );
 
     m_ui->rec_byweekno_weeknumber->setValue( 1 );
     m_ui->rec_byweekno_list->clear();
@@ -159,14 +159,14 @@ void AppointmentDialog::resetRecurrencePage()
     m_ui->rec_byday_list->clear();
 
     m_ui->rec_misc_weekstartday->setCurrentIndex( 0 );
-    m_ui->rec_misc_repeatuntil_forever->setChecked(true);
+    m_ui->rec_misc_repeatuntil_forever->setChecked( true );
     m_ui->rec_misc_repeatuntil_datetime->setDateTime( m_dtSaveEnd.addYears( 10 ) );
     m_ui->rec_misc_setpos_posnumber->setValue( 1 );
     m_ui->rec_misc_setpos_list->clear();
 }
 
 
-void AppointmentDialog::setDefaultBasicInterval(const QDate date )
+void AppointmentDialog::setDefaultBasicInterval( const QDate date )
 {
     QDateTime dt = QDateTime::currentDateTime();
     dt.setDate( date );
@@ -174,23 +174,23 @@ void AppointmentDialog::setDefaultBasicInterval(const QDate date )
 }
 
 
-void AppointmentDialog::setDefaultBasicInterval(const QDateTime dateTime )
+void AppointmentDialog::setDefaultBasicInterval( const QDateTime dateTime )
 {
     m_dtSaveStart = dateTime;
-    m_dtSaveEnd = m_dtSaveStart.addSecs(3600);  // one hour
-    m_ui->basic_datetime_startInterval->setDateTime(m_dtSaveStart);
-    m_ui->basic_datetime_endInterval->setDateTime(m_dtSaveEnd);
+    m_dtSaveEnd = m_dtSaveStart.addSecs( 3600 );  // one hour
+    m_ui->basic_datetime_startInterval->setDateTime( m_dtSaveStart );
+    m_ui->basic_datetime_endInterval->setDateTime( m_dtSaveEnd );
 }
 
 
-void AppointmentDialog::setUserCalendarInfos(QList<UserCalendarInfo*> & uciList)
+void AppointmentDialog::setUserCalendarInfos( QList<UserCalendarInfo*> & uciList )
 {
     m_ui->basic_select_calendar_combo->clear();
-    for(UserCalendarInfo* uci : uciList)
+    for( UserCalendarInfo* uci : uciList )
     {
         QPixmap pix(32, 32);
-        pix.fill(uci->m_color);
-        m_ui->basic_select_calendar_combo->addItem(pix, uci->m_title, uci->m_id);
+        pix.fill( uci->m_color );
+        m_ui->basic_select_calendar_combo->addItem( pix, uci->m_title, uci->m_id );
     }
 }
 
@@ -216,7 +216,7 @@ void AppointmentDialog::createNewAppointment()
 }
 
 
-void AppointmentDialog::setAppointmentValues(const Appointment* apmData )
+void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
 {
     m_isNewAppointment = false;
     m_appointment = new Appointment();
@@ -261,7 +261,7 @@ void AppointmentDialog::collectAppointmentData()
     basics->m_busyFree = m_ui->basic_busy_check->isChecked() ?
                 AppointmentBasics::BUSY : AppointmentBasics::FREE;
     m_appointment->m_appBasics = basics;
-    m_appointment->m_userCalendarId = m_ui->basic_select_calendar_combo->currentData().toInt(&ok);
+    m_appointment->m_userCalendarId = m_ui->basic_select_calendar_combo->currentData().toInt( &ok );
     m_appointment->m_appRecurrence = nullptr;
     m_appointment->m_haveAlarm = false;
     m_appointment->m_haveRecurrence = false;
@@ -346,7 +346,7 @@ void AppointmentDialog::slotRemoveWeekNoClicked()
     bool ok;
     for( const QListWidgetItem* item : itemList )
     {
-        int weekNumber = item->data( Qt::UserRole ).toInt(&ok);
+        int weekNumber = item->data( Qt::UserRole ).toInt( &ok );
         // remove from set
         m_weeksByWeekNo.remove( weekNumber );
         // remove the item from QListWidget
@@ -364,7 +364,7 @@ void AppointmentDialog::slotAddYearDayClicked()
     if( m_daysByYearDay.contains( dayNumber) )
         return;
     m_daysByYearDay.insert( dayNumber );
-    QListWidgetItem* item = new QListWidgetItem( QString( "Day in Year %1").arg( dayNumber) );
+    QListWidgetItem* item = new QListWidgetItem( QString( "Day in Year %1" ).arg( dayNumber) );
     item->setData( Qt::UserRole, dayNumber );
     m_ui->rec_byyearday_list->addItem( item );
 }
@@ -394,7 +394,7 @@ void AppointmentDialog::slotAddMonthDayClicked()
     if( m_daysByMonthDay.contains( dayNumber) )
         return;
     m_daysByMonthDay.insert( dayNumber );
-    QListWidgetItem* item = new QListWidgetItem( QString( "Day in Month %1").arg( dayNumber) );
+    QListWidgetItem* item = new QListWidgetItem( QString( "Day in Month %1" ).arg( dayNumber) );
     item->setData( Qt::UserRole, dayNumber );
     m_ui->rec_bymonthday_list->addItem( item );
 }
@@ -408,7 +408,7 @@ void AppointmentDialog::slotRemoveMonthDayClicked()
     bool ok;
     for( const QListWidgetItem* item : itemList )
     {
-        int dayNumber = item->data( Qt::UserRole ).toInt(&ok);
+        int dayNumber = item->data( Qt::UserRole ).toInt( &ok );
         m_daysByMonthDay.remove( dayNumber );
         int itemRow = m_ui->rec_bymonthday_list->row( item );
         delete m_ui->rec_bymonthday_list->takeItem( itemRow );
@@ -420,7 +420,7 @@ void AppointmentDialog::slotAddDayDayClicked()
 {
     bool ok;
     QString weekDayName = m_ui->rec_byday_weekdayname->currentText();
-    int weekDay = m_ui->rec_byday_weekdayname->currentData( Qt::UserRole ).toInt(&ok);
+    int weekDay = m_ui->rec_byday_weekdayname->currentData( Qt::UserRole ).toInt( &ok );
     int dayNumber;
     RecurrenceFrequencyType recurrenceType = recurrence();
     if( recurrenceType == WEEKLY or recurrenceType == DAILY )
@@ -438,7 +438,7 @@ void AppointmentDialog::slotAddDayDayClicked()
     if( m_weekDaysDaysByDay.contains( data ) )
         return;
     m_weekDaysDaysByDay.insert( data );
-    QString text = dayNumber == 0 ? weekDayName : QString( "%1. %2" ).arg(dayNumber).arg(weekDayName);
+    QString text = dayNumber == 0 ? weekDayName : QString( "%1. %2" ).arg( dayNumber ).arg( weekDayName );
     QListWidgetItem* item = new QListWidgetItem( text );
     item->setData( Qt::UserRole, data );
     m_ui->rec_byday_list->addItem( item );
@@ -453,7 +453,7 @@ void AppointmentDialog::slotRemoveDayDayClicked()
     bool ok;
     for( const QListWidgetItem* item : itemList )
     {
-        int data = item->data( Qt::UserRole ).toInt(&ok);
+        int data = item->data( Qt::UserRole ).toInt( &ok );
         m_weekDaysDaysByDay.remove( data );
         int itemRow = m_ui->rec_byday_list->row( item );
         delete m_ui->rec_byday_list->takeItem( itemRow );
@@ -483,7 +483,7 @@ void AppointmentDialog::slotRemoveSetposClicked()
     bool ok;
     for( const QListWidgetItem* item : itemList )
     {
-        int posNumber = item->data( Qt::UserRole ).toInt(&ok);
+        int posNumber = item->data( Qt::UserRole ).toInt( &ok );
         m_setPos.remove( posNumber );
         int itemRow = m_ui->rec_misc_setpos_list->row( item );
         delete m_ui->rec_misc_setpos_list->takeItem( itemRow );
