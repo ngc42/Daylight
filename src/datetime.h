@@ -65,6 +65,13 @@ public:
         }
         return *this;
     }
+    DateTime &operator=( const QDateTime &other )
+    {
+        setDate( other.date() );
+        setTime( other.time() );
+        setTimeZone( other.timeZone() );
+        return *this;
+    }
 
 private:
     bool readDate( QString inDateString );

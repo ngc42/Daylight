@@ -177,19 +177,32 @@ void AppointmentDialog::createNewAppointment()
 }
 
 
-void AppointmentDialog::setAppointmentValues(Appointment* )//apmData)
+void AppointmentDialog::setAppointmentValues( Appointment* apmData )
 {
     m_isNewAppointment = false;
     m_appointment = new Appointment();
-    //m_appointment = apmData;
+    m_appointment->m_uid = apmData->m_uid;
+    m_appointment->m_userCalendarId = apmData->m_userCalendarId;
+    // @fixme: usercalendar and more...
 }
 
 
 void AppointmentDialog::collectAppointmentData()
 {
     AppointmentBasics* basics = new AppointmentBasics();
+    // @fixme: description missing
+    // @fixme: sequence missing
+    // @fixme: busyfree missing
+    // @fixme: calendar missing
     basics->m_uid = m_appointment->m_uid;
-    //basics->m_dtStart
+    basics->m_dtStart = m_ui->basic_datetime_startInterval->dateTime();
+    basics->m_dtEnd = m_ui->basic_datetime_endInterval->dateTime();
+    basics->m_summary = m_ui->basic_title_le->text();
+    m_appointment->m_appBasics = basics;
+
+    m_appointment->m_haveAlarm = false;
+    m_appointment->m_haveRecurrence = false;
+    m_appointment->m_appRecurrence = nullptr;
 }
 
 
