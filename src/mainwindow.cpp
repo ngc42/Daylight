@@ -112,8 +112,9 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_scene, SIGNAL(signalDateClicked(QDate)), this, SLOT(slotAppointmentDlgStart(QDate)));
     connect(m_appointmentDialog, SIGNAL(finished(int)), this, SLOT(slotAppointmentDlgFinished(int)));
     connect(m_ui->actionAddAppointment, SIGNAL(triggered()), this, SLOT(slotAppointmentDlgStart()));
+    connect(m_scene, SIGNAL(signalReconfigureAppointment(QString)), this, SLOT(slotReconfigureAppointment(QString)));
 #ifdef XXX
-    connect(m_scene, SIGNAL(signalReconfigureAppointment(int)), this, SLOT(slotReconfigureAppointment(int)));
+
     connect(m_scene, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)), Qt::QueuedConnection);
 #endif
 
@@ -600,10 +601,16 @@ void MainWindow::slotAppointmentDlgStart(const QDate &date)
  * Communicate over appointment id with slotAppointmentDlgFinished(). */
 void MainWindow::slotReconfigureAppointment(QString appointmentId)
 {
+    qDebug() << "MainWindow::slotReconfigureAppointment";
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
     m_appointmentDialog->setUserCalendarInfos(uciList);
-    //m_appointmentDialog->setAppointmentValues( ... );
-    m_appointmentDialog->show();
+
+    qDebug() << "--> have? " << m_eventPool->haveAppointment( appointmentId );
+    if( m_eventPool->haveAppointment( appointmentId ) )
+    {
+        m_appointmentDialog->setAppointmentValues( m_eventPool->appointment( appointmentId) );
+        m_appointmentDialog->show();
+    }
 }
 
 

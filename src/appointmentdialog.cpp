@@ -216,7 +216,7 @@ void AppointmentDialog::createNewAppointment()
 }
 
 
-void AppointmentDialog::setAppointmentValues( Appointment* apmData )
+void AppointmentDialog::setAppointmentValues(const Appointment* apmData )
 {
     m_isNewAppointment = false;
     m_appointment = new Appointment();

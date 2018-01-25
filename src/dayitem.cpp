@@ -437,8 +437,8 @@ void DayInYearItem::setAppointmentDaySlots(const QVector<Event> &list)
         if( e.containsDay(date()) )
         {
             EventItem* itm = new EventItem(e, this);
-            connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+            connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
             itm->setShowTitle(false);
             m_appointmentSlotsDay.append(itm);
         }
@@ -460,8 +460,8 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
                 m_appointmentSlotsRange.append(itm);
             }
             EventItem* itm = new EventItem(e, this);
-            //connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            //connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+            connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
             itm->setShowTitle(false);
             m_appointmentSlotsRange.append(itm);
         }
@@ -594,8 +594,8 @@ void DayInMonthItem::setAppointmentRangeSlot(const int slot, const QVector<Event
             }
 
             EventItem* itm = new EventItem(e, this);
-            connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+            connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
             bool showTitle = (date().dayOfWeek() == weekStart) or
                     (e.m_startDt.date().day() == date().day() and
                      e.m_startDt.date().month() == date().month());
@@ -617,8 +617,8 @@ void DayInMonthItem::setAppointments(const QVector<Event> &list)
             bool replaced = false;
 
             EventItem* itm = new EventItem(e, this);
-            connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+            connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
             itm->setShowTitle(true);
 
             //find and replace dummy-item
@@ -752,8 +752,8 @@ void DayInWeekItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
             }
 
             EventItem* itm = new EventItem(e, this);
-            connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+            connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
             bool showTitle = (date().dayOfWeek() == weekStart) or
                     (e.m_startDt.date().day() == date().day() and
                      e.m_startDt.date().month() == date().month());
@@ -775,8 +775,8 @@ void DayInWeekItem::setAppointments(const QVector<Event> &list)
             bool replaced = false;
 
             EventItem* itm = new EventItem(e, this);
-            connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-            connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+            connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+            connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
             itm->setShowTitle(true);
 
             //find and replace dummy-item
@@ -969,8 +969,8 @@ void DayInDayItem::setAppointmentsFullDay(const QVector<Event> &list)
     for(Event e : list)
     {
         EventItem* itm = new EventItem(e, this);
-        connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-        connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+        connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+        connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
         itm->setShowTitle(true);
         m_appointmentFullDay.append(itm);
     }
@@ -1032,8 +1032,8 @@ void DayInDayItem::setAppointmentsPartDay(const QVector<Event> &list)
     for(Event e : sortedList)
     {
         EventItem* itm = new EventItem(e, this);
-        connect(itm, SIGNAL(signalReconfigureAppointment(int)), this, SIGNAL(signalReconfigureAppointment(int)));
-        connect(itm, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)));
+        connect(itm, SIGNAL(signalReconfigureAppointment(QString)), this, SIGNAL(signalReconfigureAppointment(QString)));
+        connect(itm, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)));
         itm->setShowTitle(true);
         m_appointmentPartDay.append(itm);
     }

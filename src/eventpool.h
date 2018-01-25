@@ -17,6 +17,7 @@ public:
     // Appointments
     void addAppointment(Appointment* inApp );
     bool haveAppointment( const QString inUid ) const;
+    const Appointment* appointment( const QString inUid ) const;
 
     /* year marker
      * Appointments can get requested fo special years. If we had such requests,

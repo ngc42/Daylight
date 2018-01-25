@@ -66,7 +66,7 @@ public:
     void setUserCalendarIndexById( const int usercalendarId );
 
     void createNewAppointment();
-    void setAppointmentValues(Appointment* apmData );
+    void setAppointmentValues(const Appointment* apmData );
     void setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 );
 
     void collectAppointmentData();

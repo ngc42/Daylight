@@ -49,6 +49,25 @@ bool EventPool::haveAppointment( const QString inUid ) const
 }
 
 
+const Appointment* EventPool::appointment( const QString inUid ) const
+{
+    const Appointment* tmp;
+    bool found = false;
+    for( const Appointment* app : m_appointments )
+    {
+        if( app->m_uid == inUid )
+        {
+            found = true;
+            tmp = app;
+            break;
+        }
+    }
+    if( found )
+        return tmp;
+    return nullptr;
+}
+
+
 void EventPool::addMarker( const int inMarkerYear )
 {
     m_yearMarkers.insert( inMarkerYear );
