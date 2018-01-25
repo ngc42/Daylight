@@ -46,41 +46,84 @@ class AppointmentDialog : public QDialog
 
 public:
     explicit AppointmentDialog( QWidget* parent = Q_NULLPTR );
+
     ~AppointmentDialog();
+
     QString appointmentId() const { return m_appointment->m_uid; }
+
     RecurrenceFrequencyType recurrence() const;
+
+    /* If we are modifying an already existing appointment, this method
+     *  returns false.
+     * The dialog was then startet with setAppointmentValues(ExistingAppointment).
+     */
     bool isNewAppointment() const { return m_isNewAppointment; }
+
+    /* Finds out, if the data here differs from m_storedOrigAppointment.
+     * This is only applicable, if setAppointmentValues was used to store an
+     * used appointment, in this case, m_isNewAppointment is false.
+     * - returns false, if user has not modified anything
+     * - returns false, if m_isNewAppointment is true
+     * - else returns true
+     * @fixme: does not check recurrences
+     * @fixme: does not check alarm
+     */
+    bool modified() const;
+
     Appointment* appointment() { return m_appointment; }
+
+    /* Deletes a newly created appointment. Used, if this dialog is cancelled. */
     void deleteAppointment() { delete m_appointment; }
 
-
+    // timezones as strings in the form.
     void setUpTimezones();
 
+    // reset default values
     void reset();
     void reset( const QDate date );
     void resetRecurrencePage();
     void setDefaultBasicInterval( const QDate date );
     void setDefaultBasicInterval( const QDateTime dateTime );
 
+    // setting user calendars
     void setUserCalendarInfos( QList<UserCalendarInfo*> &uciList );
     void setUserCalendarIndexById( const int usercalendarId );
 
+    /* We can create a new appointment - this is done by clicking on a free
+     *  day.
+     * We can also modify an existing appointment by clicking on an appointment
+     */
     void createNewAppointment();
     void setAppointmentValues( const Appointment* apmData );
+    // set up timezone-Combos with existing iana ids
     void setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 );
 
+    /* we are close to finish: Here, we collect the user input and create
+     * a new appointment out of it.
+     * @fixme: missing m_sequence, use modified() for it.
+     */
     void collectAppointmentData();
 
 private:
-    Ui::AppointmentDialog *m_ui;
-    QDateTime   m_dtSaveStart;
-    QDateTime   m_dtSaveEnd;
+    Ui::AppointmentDialog*  m_ui;
+    QDateTime               m_dtSaveStart;
+    QDateTime               m_dtSaveEnd;
 
-    Appointment*    m_appointment;
+    // the new-to-create aappointment
+    Appointment*        m_appointment;
+
+    // Original appointment to compare to m_appointment
+    // used to calculate m_sequence
+    // Set by setAppointmentValues
+    const Appointment*  m_storedOrigAppointment;
+
     // @fixme: need to notify about changes
-    int             m_sequence;
-    bool            m_isNewAppointment;
+    int         m_sequence;
 
+    // false, if we modify an existing appointment
+    bool        m_isNewAppointment;
+
+    // recurrence part
     QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
     QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days

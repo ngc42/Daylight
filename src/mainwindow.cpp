@@ -599,11 +599,11 @@ void MainWindow::slotAppointmentDlgStart(const QDate &date)
 /* User wants to reconfigure an appointment. Take the data from this appointment
  * and show the appointmet dialog with the given data.
  * Communicate over appointment id with slotAppointmentDlgFinished(). */
-void MainWindow::slotReconfigureAppointment(QString appointmentId)
+void MainWindow::slotReconfigureAppointment( QString appointmentId )
 {
     qDebug() << "MainWindow::slotReconfigureAppointment";
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
-    m_appointmentDialog->setUserCalendarInfos(uciList);
+    m_appointmentDialog->setUserCalendarInfos( uciList );
 
     qDebug() << "--> have? " << m_eventPool->haveAppointment( appointmentId );
     if( m_eventPool->haveAppointment( appointmentId ) )
@@ -621,7 +621,10 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
 {
     if( returncode == QDialog::Accepted )
     {
-
+        if( not m_appointmentDialog->isNewAppointment() )
+        {
+            qDebug() << "old appointment, modified? " << m_appointmentDialog->modified();
+        }
     }
     else
     {

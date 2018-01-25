@@ -81,6 +81,32 @@ AppointmentDialog::RecurrenceFrequencyType AppointmentDialog::recurrence() const
 }
 
 
+bool AppointmentDialog::modified() const
+{
+    if( m_isNewAppointment )
+        return false;
+    // find out, if this appointment was modified by the user.
+    bool ok;
+    bool same = true;
+    same = same and ( m_storedOrigAppointment->m_userCalendarId ==
+                      m_ui->basic_select_calendar_combo->currentData().toInt( &ok ) );
+    if( not same )
+        return true;
+    // check appointment basic
+    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtStart == m_ui->basic_datetime_startInterval->dateTime() );
+    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtStart.timeZone().id() ==
+            m_ui->basic_tz_start_combo->currentText() );
+    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtEnd == m_ui->basic_datetime_endInterval->dateTime() );
+    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtEnd.timeZone().id() ==
+            m_ui->basic_tz_end_combo->currentText() );
+    same = same and ( m_storedOrigAppointment->m_appBasics->m_summary == m_ui->basic_title_le->text() );
+    same = same and ( m_storedOrigAppointment->m_appBasics->m_description == m_ui->basic_description->toPlainText() );
+    same = same and ( (m_storedOrigAppointment->m_appBasics->m_busyFree == AppointmentBasics::BUSY ) ==
+                      m_ui->basic_busy_check->isChecked() );
+    return not same;
+}
+
+
 void AppointmentDialog::setUpTimezones()
 {
     QTimeZone systemTz = QTimeZone::systemTimeZone();
@@ -219,6 +245,7 @@ void AppointmentDialog::createNewAppointment()
 void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
 {
     m_isNewAppointment = false;
+    m_storedOrigAppointment = apmData;
     m_appointment = new Appointment();
     m_appointment->m_uid = apmData->m_uid;
     m_appointment->m_userCalendarId = apmData->m_userCalendarId;
@@ -254,6 +281,7 @@ void AppointmentDialog::collectAppointmentData()
     AppointmentBasics* basics = new AppointmentBasics();
     basics->m_uid = m_appointment->m_uid;
     basics->m_sequence = m_sequence;
+    // @fixme: missing timezones
     basics->m_dtStart = m_ui->basic_datetime_startInterval->dateTime();
     basics->m_dtEnd = m_ui->basic_datetime_endInterval->dateTime();
     basics->m_summary = m_ui->basic_title_le->text();
