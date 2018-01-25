@@ -26,7 +26,7 @@
 
 
 namespace Ui {
-class AppointmentDialog;
+    class AppointmentDialog;
 }
 
 
@@ -54,6 +54,8 @@ public:
     void deleteAppointment() { delete m_appointment; }
 
 
+    void setUpTimezones();
+
     void reset();
     void reset( const QDate date );
     void resetRecurrencePage();
@@ -61,20 +63,23 @@ public:
     void setDefaultBasicInterval( const QDateTime dateTime );
 
     void setUserCalendarInfos(QList<UserCalendarInfo*> &uciList);
+    void setUserCalendarIndexById( const int usercalendarId );
 
     void createNewAppointment();
     void setAppointmentValues(Appointment* apmData );
+    void setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 );
 
     void collectAppointmentData();
 
 private:
     Ui::AppointmentDialog *m_ui;
-    // saving the datetime for slotWholeDayChanged()
     QDateTime   m_dtSaveStart;
     QDateTime   m_dtSaveEnd;
 
-    Appointment* m_appointment;
-    bool m_isNewAppointment;
+    Appointment*    m_appointment;
+    // @fixme: need to notify about changes
+    int             m_sequence;
+    bool            m_isNewAppointment;
 
     QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days

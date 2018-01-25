@@ -17,8 +17,9 @@
 #include "appointmentdialog.h"
 #include "ui_appointmentdialog.h"
 
-#include <QVariant>
 #include <QDebug>
+#include <QTimeZone>
+
 
 AppointmentDialog::AppointmentDialog(QWidget* parent) :
     QDialog(parent), m_ui(new Ui::AppointmentDialog)
@@ -40,6 +41,8 @@ AppointmentDialog::AppointmentDialog(QWidget* parent) :
         m_ui->rec_misc_weekstartday->addItem( d.toString( "dddd" ), i );
         d = d.addDays( 1 );
     }
+
+    setUpTimezones();
 
     reset();
 
@@ -78,12 +81,34 @@ AppointmentDialog::RecurrenceFrequencyType AppointmentDialog::recurrence() const
 }
 
 
+void AppointmentDialog::setUpTimezones()
+{
+    QTimeZone systemTz = QTimeZone::systemTimeZone();
+
+    m_ui->basic_tz_start_combo->insertItem( 0, systemTz.id() );
+    m_ui->basic_tz_end_combo->insertItem( 0, systemTz.id() );
+
+    m_ui->basic_tz_start_combo->insertItem( 1, "UTC" );
+    m_ui->basic_tz_end_combo->insertItem( 1, "UTC" );
+
+    for( QByteArray tz : QTimeZone::availableTimeZoneIds() )
+    {
+        m_ui->basic_tz_start_combo->addItem( tz );
+        m_ui->basic_tz_end_combo->addItem( tz);
+    }
+}
+
+
 void AppointmentDialog::reset()
 {
     // Page Basic
     m_ui->basic_title_le->setText("new appointment");
     m_ui->basic_select_calendar_combo->setCurrentIndex( 0 );
     setDefaultBasicInterval( QDateTime::currentDateTime() );
+    m_ui->basic_tz_start_combo->setCurrentIndex( 0 );
+    m_ui->basic_tz_end_combo->setCurrentIndex( 0 );
+    m_ui->basic_busy_check->setChecked( false );
+    m_ui->basic_description->clear();
     m_ui->basic_repeattype_combo->setCurrentIndex( 0 );
 
     // Page Recurrence
@@ -169,11 +194,25 @@ void AppointmentDialog::setUserCalendarInfos(QList<UserCalendarInfo*> & uciList)
     }
 }
 
+
+void AppointmentDialog::setUserCalendarIndexById( const int usercalendarId )
+{
+    int index = m_ui->basic_select_calendar_combo->findData( usercalendarId );
+    if( index == -1 and usercalendarId != 0 )
+    {
+        index = m_ui->basic_select_calendar_combo->findData( 0 );
+    }
+    m_ui->basic_select_calendar_combo->setCurrentIndex( index );
+}
+
+
 void AppointmentDialog::createNewAppointment()
 {
     m_isNewAppointment = true;
     m_appointment = new Appointment();
     m_appointment->generateUid();
+    m_sequence = 0;     // start with a fresh sequence
+    setUserCalendarIndexById( 0 );
 }
 
 
@@ -183,26 +222,49 @@ void AppointmentDialog::setAppointmentValues( Appointment* apmData )
     m_appointment = new Appointment();
     m_appointment->m_uid = apmData->m_uid;
     m_appointment->m_userCalendarId = apmData->m_userCalendarId;
-    // @fixme: usercalendar and more...
+    m_sequence = apmData->m_appBasics->m_sequence;
+
+    // gui part
+    m_ui->basic_title_le->setText( apmData->m_appBasics->m_summary );
+    setUserCalendarIndexById( apmData->m_userCalendarId );
+    m_ui->basic_datetime_startInterval->setDateTime( apmData->m_appBasics->m_dtStart );
+    m_ui->basic_datetime_endInterval->setDateTime( apmData->m_appBasics->m_dtEnd );
+    setTimezoneIndexesByIanaId(
+                apmData->m_appBasics->m_dtStart.timeZone().id(),
+                apmData->m_appBasics->m_dtEnd.timeZone().id() );
+    m_ui->basic_busy_check->setChecked(
+                apmData->m_appBasics->m_busyFree == AppointmentBasics::BUSY );
+    m_ui->basic_description->setPlainText( apmData->m_appBasics->m_description );
+}
+
+
+void AppointmentDialog::setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 )
+{
+    qDebug() << "AppointmentDialog::setTimezoneIndexesByIanaId " << iana1 << iana2;
+    int index_iana1 = m_ui->basic_tz_start_combo->findText( iana1 );
+    m_ui->basic_tz_start_combo->setCurrentIndex( index_iana1 );
+    int index_iana2 = m_ui->basic_tz_end_combo->findText( iana2 );
+    m_ui->basic_tz_end_combo->setCurrentIndex( index_iana2 );
 }
 
 
 void AppointmentDialog::collectAppointmentData()
 {
+    bool ok = false;
     AppointmentBasics* basics = new AppointmentBasics();
-    // @fixme: description missing
-    // @fixme: sequence missing
-    // @fixme: busyfree missing
-    // @fixme: calendar missing
     basics->m_uid = m_appointment->m_uid;
+    basics->m_sequence = m_sequence;
     basics->m_dtStart = m_ui->basic_datetime_startInterval->dateTime();
     basics->m_dtEnd = m_ui->basic_datetime_endInterval->dateTime();
     basics->m_summary = m_ui->basic_title_le->text();
+    basics->m_description = m_ui->basic_description->toPlainText();
+    basics->m_busyFree = m_ui->basic_busy_check->isChecked() ?
+                AppointmentBasics::BUSY : AppointmentBasics::FREE;
     m_appointment->m_appBasics = basics;
-
+    m_appointment->m_userCalendarId = m_ui->basic_select_calendar_combo->currentData().toInt(&ok);
+    m_appointment->m_appRecurrence = nullptr;
     m_appointment->m_haveAlarm = false;
     m_appointment->m_haveRecurrence = false;
-    m_appointment->m_appRecurrence = nullptr;
 }
 
 

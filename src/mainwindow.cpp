@@ -79,10 +79,6 @@ MainWindow::MainWindow(QWidget* parent) :
     QMenu* userCalendarMenu = m_userCalendarPool->calendarMenu();
     m_toolbarUserCalendarMenu->setMenu( userCalendarMenu );
 
-    // dialog to set up the appointments, non-modal
-    m_appointmentDialog = new AppointmentDialog();
-    m_appointmentDialog->hide();
-
     // new user calendar
     m_userCalendarNewDialog = new UserCalendarNew(this);
     m_userCalendarNewDialog->hide();

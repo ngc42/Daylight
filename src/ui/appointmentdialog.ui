@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>595</width>
+    <width>459</width>
     <height>509</height>
    </rect>
   </property>
@@ -14,9 +14,6 @@
    <string>New Appointment - Daylight</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>2</number>
-   </property>
    <property name="leftMargin">
     <number>4</number>
    </property>
@@ -38,16 +35,32 @@
       <attribute name="title">
        <string>Basic</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_7">
+      <layout class="QGridLayout" name="gridLayout_8">
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Title</string>
+          <string>Repeat...</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="basic_title_le"/>
+       <item row="4" column="1">
+        <widget class="QDateTimeEdit" name="basic_datetime_endInterval">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>3</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="correctionMode">
+          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+         </property>
+         <property name="displayFormat">
+          <string>dd.MM.yyyy HH:mm</string>
+         </property>
+         <property name="calendarPopup">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_4">
@@ -56,8 +69,60 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="basic_select_calendar_combo"/>
+       <item row="9" column="0" colspan="3">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="11" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Reminder</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDateTimeEdit" name="basic_datetime_startInterval">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>3</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="correctionMode">
+          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+         </property>
+         <property name="displayFormat">
+          <string>dd.MM.yyyy HH:mm</string>
+         </property>
+         <property name="calendarPopup">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Title</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label">
@@ -66,47 +131,92 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QDateTimeEdit" name="basic_datetime_startInterval">
-         <property name="correctionMode">
-          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Description</string>
          </property>
-         <property name="displayFormat">
-          <string>dd.MM.yyyy HH:mm</string>
-         </property>
-         <property name="calendarPopup">
-          <bool>true</bool>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="11" column="1" colspan="3">
+        <widget class="QComboBox" name="basic_selectalarm_combo">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2" colspan="2">
+        <widget class="QComboBox" name="basic_tz_end_combo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1" colspan="3">
+        <widget class="QPlainTextEdit" name="basic_description">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>1000</height>
+          </size>
+         </property>
+         <property name="sizeIncrement">
+          <size>
+           <width>0</width>
+           <height>1</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>0</width>
+           <height>100</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="3">
+        <widget class="QLineEdit" name="basic_title_le">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="3">
+        <widget class="QComboBox" name="basic_select_calendar_combo"/>
+       </item>
+       <item row="2" column="2" colspan="2">
+        <widget class="QComboBox" name="basic_tz_start_combo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>To</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QDateTimeEdit" name="basic_datetime_endInterval">
-         <property name="correctionMode">
-          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-         </property>
-         <property name="displayFormat">
-          <string>dd.MM.yyyy HH:mm</string>
-         </property>
-         <property name="calendarPopup">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Repeat...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
+       <item row="10" column="1" colspan="3">
         <widget class="QComboBox" name="basic_repeattype_combo">
          <property name="enabled">
           <bool>true</bool>
@@ -125,58 +235,12 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label_6">
+       <item row="5" column="1">
+        <widget class="QCheckBox" name="basic_busy_check">
          <property name="text">
-          <string>Reminder</string>
+          <string>Busy</string>
          </property>
         </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QComboBox" name="basic_selectalarm_combo">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="8" column="1">
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="1">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -210,7 +274,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>230</width>
+            <width>239</width>
             <height>99</height>
            </rect>
           </property>
@@ -309,8 +373,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>575</width>
-            <height>277</height>
+            <width>439</width>
+            <height>273</height>
            </rect>
           </property>
           <attribute name="label">
@@ -354,7 +418,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>274</width>
+            <width>281</width>
             <height>120</height>
            </rect>
           </property>
@@ -402,7 +466,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>267</width>
+            <width>273</width>
             <height>120</height>
            </rect>
           </property>
@@ -447,7 +511,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>347</width>
+            <width>368</width>
             <height>120</height>
            </rect>
           </property>
@@ -498,7 +562,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>299</width>
+            <width>329</width>
             <height>209</height>
            </rect>
           </property>
@@ -629,9 +693,7 @@
   <tabstop>basic_datetime_endInterval</tabstop>
   <tabstop>basic_title_le</tabstop>
   <tabstop>basic_select_calendar_combo</tabstop>
-  <tabstop>basic_repeattype_combo</tabstop>
   <tabstop>basic_datetime_startInterval</tabstop>
-  <tabstop>basic_selectalarm_combo</tabstop>
  </tabstops>
  <resources/>
  <connections>
