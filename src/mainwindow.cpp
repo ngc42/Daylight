@@ -645,13 +645,13 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     }
     else
     {
-        //m_scene->removeEvents();
+        m_scene->removeAllEvents();
         // write to db
-        //m_storage->updateAppointment( (*a) );
+        m_storage->updateAppointment( (*a) );
         // push to eventpool
-        //m_eventPool->updateAppointment( a );
+        m_eventPool->updateAppointment( a );
     }
     // show
-    //showAppointments( m_settingsManager->startDate() );
+    showAppointments( m_settingsManager->startDate() );
     m_appointmentDialog->hide();
 }

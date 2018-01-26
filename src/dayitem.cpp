@@ -64,7 +64,6 @@ EventItem::EventItem(Event event, QGraphicsItem *parent) :
     m_dummy(false), m_size(3, 3), m_sizeTooSmall(false),
     m_title(event.m_displayText),
     m_showTitle(false), m_fontPixelSize(1),
-
     m_appointmentId(event.m_uid),
     m_startDt(event.m_startDt),
     m_endDt(event.m_endDt), m_allDay(false)
@@ -88,10 +87,6 @@ EventItem::EventItem(Event event, QGraphicsItem *parent) :
 
 EventItem::~EventItem()
 {
-    disconnect(m_actionReconfigureAppointment, SIGNAL(triggered()), this, SLOT(slotPrepareReconfigureAppointment()));
-    disconnect(m_deleteThisAppointment, SIGNAL(triggered()), this, SLOT(slotPrepareDeleteAppointment()));
-    delete m_actionReconfigureAppointment;
-    delete m_deleteThisAppointment;
 }
 
 
@@ -454,7 +449,6 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
     {
         if( e.containsDay(date()) )
         {
-            qDebug() << " place: " << e.m_uid << " geht nach " << slot;
             while(slot > m_appointmentSlotsRange.count())
             {
                 EventItem* itm = new EventItem(this);
@@ -473,12 +467,11 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
 
 void DayInYearItem::clearAppointments()
 {
-    for(EventItem* &itm : m_appointmentSlotsDay)
-        delete itm;
-    for(EventItem* &itm : m_appointmentSlotsRange)
-        delete itm;
-    m_appointmentSlotsDay.clear();
-    m_appointmentSlotsRange.clear();
+    while( not m_appointmentSlotsDay.isEmpty() )
+        delete m_appointmentSlotsDay.takeLast();
+    while( not m_appointmentSlotsRange.isEmpty() )
+        delete m_appointmentSlotsRange.takeLast();
+
     m_tooManyItems->hide();
 }
 
