@@ -160,17 +160,6 @@ MainWindow::~MainWindow()
 }
 
 
-/* collects all resizes which affect CalendarScene and sends them to
-   m_scene. CalendarScene cares for their own geometry.
-   @fixme: if user wants to resize, there are MANY! resize events and every
-   geometry update takes a lot of time.
-*/
-void MainWindow::resizeCalendarView()
-{
-    m_scene->updateSize(m_ui->graphicsView->size());
-}
-
-
 void MainWindow::showAppointments(const QDate &date)
 {
     QVector<Appointment*> appointmentsThisYear;
@@ -241,9 +230,12 @@ void MainWindow::showAppointments(const QDate &date)
 }
 
 
-void MainWindow::resizeEvent(QResizeEvent* )
+void MainWindow::resizeEvent( QResizeEvent* )
 {
-    resizeCalendarView();
+    // @fixme: Why does graphicsView does not
+    // auto-resize with parents?
+    m_ui->graphicsView->resize( centralWidget()->size() );
+    m_scene->updateSize(m_ui->graphicsView->size());
 }
 
 
@@ -605,7 +597,6 @@ void MainWindow::slotReconfigureAppointment( QString appointmentId )
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
     m_appointmentDialog->setUserCalendarInfos( uciList );
 
-    qDebug() << "--> have? " << m_eventPool->haveAppointment( appointmentId );
     if( m_eventPool->haveAppointment( appointmentId ) )
     {
         m_appointmentDialog->setAppointmentValues( m_eventPool->appointment( appointmentId) );
@@ -619,17 +610,34 @@ void MainWindow::slotReconfigureAppointment( QString appointmentId )
  * database or change the existing item. */
 void MainWindow::slotAppointmentDlgFinished(int returncode)
 {
-    if( returncode == QDialog::Accepted )
-    {
-        if( not m_appointmentDialog->isNewAppointment() )
-        {
-            qDebug() << "old appointment, modified? " << m_appointmentDialog->modified();
-        }
-    }
-    else
+    if( returncode == QDialog::Rejected )
     {
         if( m_appointmentDialog->isNewAppointment() )
             m_appointmentDialog->deleteAppointment();
+        m_appointmentDialog->hide();
+        return;
+    }
+
+    // returncode == QDialog::Accepted
+    if( m_appointmentDialog->isNewAppointment() )
+    {
+        // new appointment
+        // collect user data
+        m_appointmentDialog->collectAppointmentData();
+        Appointment* a = m_appointmentDialog->appointment();
+        // make events
+        a->makeEvents();
+        a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
+        // write to db
+        m_storage->storeAppointment( (*a) );
+        // maybe push to eventpool
+        m_eventPool->addAppointment( a );
+        // show
+        showAppointments( m_settingsManager->startDate() );
+    }
+    else
+    {
+         qDebug() << "old appointment, modified? " << m_appointmentDialog->modified();
     }
     m_appointmentDialog->hide();
 }

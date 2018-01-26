@@ -29,7 +29,7 @@ void EventPool::addAppointment( Appointment* inApp )
         {
             if( m_eventMap.contains( year ) )
             {
-                QVector<Event> events = m_eventMap[year];
+                QVector<Event> &events = m_eventMap[year];
                 events.append( e );
             }
             else

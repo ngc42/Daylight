@@ -77,7 +77,6 @@ private:
     SettingsManager*    m_settingsManager;
     UserCalendarNew*    m_userCalendarNewDialog;    // Dialog to add a user calendar
 
-    void resizeCalendarView();                  // collector of resize events
     void showAppointments(const QDate &date);   // update appointments
 
 protected:

@@ -1486,8 +1486,6 @@ void Appointment::makeEvents()
         m_yearsInQuestion.insert( e.m_endDt.date().year() );
         m_minYear = e.m_startDt.date().year();
         m_maxYear = e.m_endDt.date().year();
-
-        qDebug() << "xx" << e.m_userCalendarId;
     }
 
 
