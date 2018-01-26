@@ -156,6 +156,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
 MainWindow::~MainWindow()
 {
+    delete m_scene;
     delete m_ui;
 }
 
@@ -220,7 +221,7 @@ void MainWindow::showAppointments(const QDate &date)
     }
 #endif
     // show the rest
-    m_scene->setAppointmentsForYear(listYear );
+    m_scene->setAppointmentsForYear( listYear );
 #ifdef xxx
     m_scene->setAppointmentsForMonth(listMonth);
     m_scene->setAppointmentsFor3Weeks(list3Weeks);
@@ -615,29 +616,42 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
         if( m_appointmentDialog->isNewAppointment() )
             m_appointmentDialog->deleteAppointment();
         m_appointmentDialog->hide();
+        qDebug() << "MainWindow::slotAppointmentDlgFinished -> rejected";
+        return;
+    }
+    // an in-use appointment,
+    if( not ( m_appointmentDialog->modified() or m_appointmentDialog->isNewAppointment() ) )
+    {
+        m_appointmentDialog->hide();
+        qDebug() << "MainWindow::slotAppointmentDlgFinished -> not modified";
         return;
     }
 
     // returncode == QDialog::Accepted
+
+    // collect user data
+    m_appointmentDialog->collectAppointmentData();
+    Appointment* a = m_appointmentDialog->appointment();
+    // make events
+    a->makeEvents();
+    a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
+
     if( m_appointmentDialog->isNewAppointment() )
     {
-        // new appointment
-        // collect user data
-        m_appointmentDialog->collectAppointmentData();
-        Appointment* a = m_appointmentDialog->appointment();
-        // make events
-        a->makeEvents();
-        a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
         // write to db
         m_storage->storeAppointment( (*a) );
-        // maybe push to eventpool
+        // push to eventpool
         m_eventPool->addAppointment( a );
-        // show
-        showAppointments( m_settingsManager->startDate() );
     }
     else
     {
-         qDebug() << "old appointment, modified? " << m_appointmentDialog->modified();
+        //m_scene->removeEvents();
+        // write to db
+        //m_storage->updateAppointment( (*a) );
+        // push to eventpool
+        //m_eventPool->updateAppointment( a );
     }
+    // show
+    //showAppointments( m_settingsManager->startDate() );
     m_appointmentDialog->hide();
 }

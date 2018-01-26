@@ -43,16 +43,17 @@ class CalendarScene : public QGraphicsScene
     Q_OBJECT
 
 public:
-    explicit CalendarScene(const SettingsData & settings, QObject* parent = 0);
+    explicit CalendarScene( const SettingsData & settings, QObject* parent = Q_NULLPTR );
     void setDate(const QDate & date, bool update = false);
     QDate date() const { return m_currentBaseDate; }
     CalendarShow showView() const { return m_showView; }
     void updateSize(const QSize & newSize);
-    void setAppointmentsForYear(const QVector<Event> &list);
+    void setAppointmentsForYear(const QVector<Event>& list);
     void setAppointmentsForMonth(const QVector<Event> &list);
     void setAppointmentsFor3Weeks(const QVector<Event> &list);
     void setAppointmentsForWeek(const QVector<Event> &list);
     void setAppointmentsForDay(const QVector<Event> &list);
+    void removeAllEvents();
     void setSettings(const SettingsData & settings);
 
     void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );

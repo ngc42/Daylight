@@ -15,7 +15,10 @@ public:
     EventPool();
 
     // Appointments
-    void addAppointment(Appointment* inApp );
+    void addAppointment( Appointment* inApp );
+    void updateAppointment( Appointment* inApp );
+    void removeAppointmentWithEventsById( const QString inUid );
+
     bool haveAppointment( const QString inUid ) const;
     const Appointment* appointment( const QString inUid ) const;
 
@@ -31,15 +34,14 @@ public:
      * You don't need to use it together with addAppointment(), as mainWindow
      *  cares for the color to show up. This is for changed colors during
      * dialogues and such. */
-    void changeColor(const int inUserCalendarId, const QColor inNewColor);
-
+    void changeColor( const int inUserCalendarId, const QColor inNewColor );
 
     // Events
     QVector<Event> eventsByYear( const int inYear ) const;
     QVector<Event> eventsByYearMonth( const int inYear, const int inMonth ) const;
     QVector<Event> eventsByYearMonthDay( const int inYear, const int inMonth, const int inDay ) const;
     QVector<Event> eventsByYearMonthDayRange( const int inYearS, const int inMonthS, const int inDayS,
-                                              const int inYearE, const int inMonthE, const int inDayE) const;
+                                              const int inYearE, const int inMonthE, const int inDayE ) const;
 
 private:
     QVector<Appointment*>       m_appointments;
@@ -51,7 +53,6 @@ private:
     QSet<int>                   m_yearMarkers;
 
     QMap<int, QVector<Event>>   m_eventMap; // year and event list
-
 };
 
 #endif // EVENTPOOL_H

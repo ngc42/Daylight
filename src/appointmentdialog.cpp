@@ -267,7 +267,6 @@ void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
 
 void AppointmentDialog::setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 )
 {
-    qDebug() << "AppointmentDialog::setTimezoneIndexesByIanaId " << iana1 << iana2;
     int index_iana1 = m_ui->basic_tz_start_combo->findText( iana1 );
     m_ui->basic_tz_start_combo->setCurrentIndex( index_iana1 );
     int index_iana2 = m_ui->basic_tz_end_combo->findText( iana2 );

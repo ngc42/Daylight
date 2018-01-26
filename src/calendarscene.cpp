@@ -261,7 +261,7 @@ void CalendarScene::updateSize(const QSize & newSize)
 }
 
 
-void CalendarScene::setAppointmentsForYear(const QVector<Event> &list )
+void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
 {
     for(DayInYearItem* d : m_daysInYearItems)
         d->clearAppointments();
@@ -511,6 +511,20 @@ void CalendarScene::setAppointmentsForDay(const QVector<Event> &list)
     // send them to item
     m_dayInDayItem->setAppointmentsFullDay(fullDayList);
     m_dayInDayItem->setAppointmentsPartDay(partDayList);
+}
+
+
+void CalendarScene::removeAllEvents()
+{
+    for( DayInYearItem* itm : m_daysInYearItems )
+        itm->clearAppointments();
+    for( DayInMonthItem* itm : m_daysInMonthItems )
+        itm->clearAppointments();
+    for( DayInMonthItem* itm : m_daysIn3WeeksItems )
+        itm->clearAppointments();
+    for( DayInWeekItem* itm : m_daysInWeekItems )
+        itm->clearAppointments();
+    m_dayInDayItem->clearAppointments();
 }
 
 

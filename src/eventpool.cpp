@@ -43,6 +43,39 @@ void EventPool::addAppointment( Appointment* inApp )
 }
 
 
+void EventPool::updateAppointment( Appointment* inApp )
+{
+    removeAppointmentWithEventsById( inApp->m_uid );
+    addAppointment( inApp );
+}
+
+
+void EventPool::removeAppointmentWithEventsById( const QString inUid )
+{
+    m_appointmentsRead.remove( inUid );
+    for( Appointment* &app : m_appointments )
+    {
+        if( app->m_uid == inUid )
+        {
+            qDebug() << "EventPool::removeAppointmentWithEventsById app-delete: " <<  m_appointments.removeOne( app );
+            delete app;
+            break;
+        }
+    }
+    for( int year : m_eventMap.keys() )
+    {
+        QVector<Event> &events = m_eventMap[year];
+        for( Event &ev : events )
+        {
+            if( ev.m_uid == inUid )
+            {
+                qDebug() << "EventPool::removeAppointmentWithEventsById event-delete: " <<  events.removeOne( ev );
+            }
+        }
+    }
+}
+
+
 bool EventPool::haveAppointment( const QString inUid ) const
 {
     return m_appointmentsRead.contains( inUid );

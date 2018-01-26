@@ -454,6 +454,7 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
     {
         if( e.containsDay(date()) )
         {
+            qDebug() << " place: " << e.m_uid << " geht nach " << slot;
             while(slot > m_appointmentSlotsRange.count())
             {
                 EventItem* itm = new EventItem(this);
@@ -472,9 +473,9 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
 
 void DayInYearItem::clearAppointments()
 {
-    for(EventItem* itm : m_appointmentSlotsDay)
+    for(EventItem* &itm : m_appointmentSlotsDay)
         delete itm;
-    for(EventItem* itm : m_appointmentSlotsRange)
+    for(EventItem* &itm : m_appointmentSlotsRange)
         delete itm;
     m_appointmentSlotsDay.clear();
     m_appointmentSlotsRange.clear();
