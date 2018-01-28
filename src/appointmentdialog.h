@@ -17,13 +17,15 @@
 #ifndef APPOINTMENTDIALOG_H
 #define APPOINTMENTDIALOG_H
 
-#include <QButtonGroup>
-#include <QDialog>
-#include <QDateTime>
-#include <QSet>
 
 #include "appointmentmanager.h"
 #include "usercalendar.h"
+
+#include <QButtonGroup>
+#include <QDateTime>
+#include <QDialog>
+#include <QPair>
+#include <QSet>
 
 
 namespace Ui {
@@ -140,6 +142,7 @@ private:
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
     QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
     QSet<int>   m_weekDaysDaysByDay;    // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
+    QSet<QPair<int, int>> m_weekDaysDaysByDay2; // TEST
     QSet<int>   m_setPos;           // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
 
     RepeatRestrictionType repeatRestriction() const;

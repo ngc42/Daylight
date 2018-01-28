@@ -585,6 +585,16 @@ void AppointmentDialog::slotAddDayDayClicked()
             return;
     }
 
+
+    QPair<int, int> value = QPair<int,int>( weekDay, dayNumber );
+    qDebug() << "1. " << value;
+    m_weekDaysDaysByDay2.insert( value );
+    QVariant v = QVariant::fromValue( value );
+    qDebug() << "2. " << v;
+    QPair<int,int> value2  = v.value<QPair<int,int>>();
+    qDebug() << "3. " << value2.first;
+
+
     // numeric value to store
     int data = weekDay * 1000 + 500 + dayNumber;
 
