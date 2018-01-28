@@ -1,1 +1,4 @@
-Lesen von Ical-Dateien
+Missing:
+
+- exception dates (EXDATE)
+- fixed dates (RDATE)

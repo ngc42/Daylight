@@ -27,6 +27,27 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
 {
     m_ui->setupUi(this);
 
+    m_repeatByMonthButtonGroup = new QButtonGroup( m_ui->rec_page_bymonth );
+    m_repeatByMonthButtonGroup->setExclusive( false );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_jan, 1 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_feb, 2 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_mar, 3 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_apr, 4 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_may, 5 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_jun, 6 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_jul, 7 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_aug, 8 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_sep, 9 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_oct, 10 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_nov, 11 );
+    m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_dec, 12 );
+
+
+    m_repeatRestrictionButtonGroup = new QButtonGroup( m_ui->rec_misc_repeat_groupbox );
+    m_repeatRestrictionButtonGroup->addButton( m_ui->rec_misc_repeat_forever, REPEAT_FOREVER );
+    m_repeatRestrictionButtonGroup->addButton( m_ui->rec_misc_repeat_count, REPEAT_COUNT );
+    m_repeatRestrictionButtonGroup->addButton( m_ui->rec_misc_repeat_until, REPEAT_UNTIL );
+
     m_ui->basic_repeattype_combo->addItem( "no recurrence", NO_RECURRENCE );
     m_ui->basic_repeattype_combo->addItem( "yearly", YEARLY );
     m_ui->basic_repeattype_combo->addItem( "monthly", MONTHLY );
@@ -44,12 +65,14 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     }
 
     setUpTimezones();
-    reset();
 
     // signals basic tab
     connect( m_ui->basic_repeattype_combo, SIGNAL(currentIndexChanged(int)),
              this, SLOT(slotIndexChangedRecurrenceFrequency(int)) );
     // signals recurrence tab
+    connect( m_repeatByMonthButtonGroup, SIGNAL(buttonToggled(int,bool)),
+             this, SLOT(slotMonthClicked(int, bool)) );
+
     connect( m_ui->rec_byweekno_add, SIGNAL(clicked()), this, SLOT(slotAddWeekNoClicked()) );
     connect( m_ui->rec_byweekno_remove, SIGNAL(clicked()), this, SLOT(slotRemoveWeekNoClicked()) );
 
@@ -62,13 +85,19 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     connect( m_ui->rec_byday_add, SIGNAL(clicked()), this, SLOT(slotAddDayDayClicked()) );
     connect( m_ui->rec_byday_remove, SIGNAL(clicked()), this, SLOT(slotRemoveDayDayClicked()) );
 
+    connect( m_repeatRestrictionButtonGroup, SIGNAL(buttonClicked(int)),
+             this, SLOT(slotRepeatRestrictionRadiobuttonClicked(int)) );
+
     connect( m_ui->rec_misc_setpos_add, SIGNAL(clicked()), this, SLOT(slotAddSetposClicked()) );
     connect( m_ui->rec_misc_setpos_remove, SIGNAL(clicked()), this, SLOT(slotRemoveSetposClicked()) );
+
+    reset();
 }
 
 
 AppointmentDialog::~AppointmentDialog()
 {
+    delete m_repeatRestrictionButtonGroup;
     delete m_ui;
 }
 
@@ -90,8 +119,8 @@ bool AppointmentDialog::modified() const
     bool same = true;
     same = same and ( m_storedOrigAppointment->m_userCalendarId ==
                       m_ui->basic_select_calendar_combo->currentData().toInt( &ok ) );
-    if( not same )
-        return true;
+
+    if( not same )  return true;
     // check appointment basic
     same = same and ( m_storedOrigAppointment->m_appBasics->m_dtStart == m_ui->basic_datetime_startInterval->dateTime() );
     same = same and ( m_storedOrigAppointment->m_appBasics->m_dtStart.timeZone().id() ==
@@ -103,6 +132,81 @@ bool AppointmentDialog::modified() const
     same = same and ( m_storedOrigAppointment->m_appBasics->m_description == m_ui->basic_description->toPlainText() );
     same = same and ( (m_storedOrigAppointment->m_appBasics->m_busyFree == AppointmentBasics::BUSY ) ==
                       m_ui->basic_busy_check->isChecked() );
+
+    if( not same )  return true;
+    // check recurrence
+    RecurrenceFrequencyType currentRecurrence = recurrence();
+
+    if( m_storedOrigAppointment->m_haveRecurrence )
+    {
+        switch( m_storedOrigAppointment->m_appRecurrence->m_frequency )
+        {
+            case AppointmentRecurrence::RFT_SIMPLE_YEARLY:
+            case AppointmentRecurrence::RFT_YEARLY:
+                same = same and ( currentRecurrence == YEARLY );
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_MONTHLY:
+            case AppointmentRecurrence::RFT_MONTHLY:
+                same = same and ( currentRecurrence == MONTHLY );
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_WEEKLY:
+            case AppointmentRecurrence::RFT_WEEKLY:
+                same = same and ( currentRecurrence == WEEKLY );
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_DAILY:
+            case AppointmentRecurrence::RFT_DAILY:
+                same = same and ( currentRecurrence == DAILY );
+            break;
+            default:
+                same = false;
+        }
+
+        if( m_storedOrigAppointment->m_appRecurrence->m_haveCount )
+        {
+            same = same and
+                   repeatRestriction() == REPEAT_COUNT and
+                   m_storedOrigAppointment->m_appRecurrence->m_count == m_ui->rec_misc_repeat_countnumber->value();
+        }
+        else
+        {
+            if( m_storedOrigAppointment->m_appRecurrence->m_haveUntil )
+            {
+                same = same and
+                       repeatRestriction() == REPEAT_UNTIL and
+                       m_storedOrigAppointment->m_appRecurrence->m_until == m_ui->rec_misc_repeat_untildate->dateTime();
+            }
+            else
+            {
+                same = same and repeatRestriction() == REPEAT_FOREVER;
+            }
+        }
+
+        same = same and (
+               ( m_storedOrigAppointment->m_appRecurrence->m_haveInterval and
+                 m_storedOrigAppointment->m_appRecurrence->m_interval == m_ui->rec_misc_repeat_intervalnumber->value() ) or
+               ( not m_storedOrigAppointment->m_appRecurrence->m_haveInterval and
+                m_ui->rec_misc_repeat_intervalnumber->value() == 1 ) );
+
+        same = same and static_cast<int>(m_storedOrigAppointment->m_appRecurrence->m_startWeekday) ==
+               m_ui->rec_misc_weekstartday->currentData().toInt(&ok);
+
+
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthList.toSet() == m_monthsMonthNo;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberList.toSet() == m_weeksByWeekNo;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDayList.toSet() == m_daysByYearDay;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDayList.toSet() == m_daysByMonthDay;
+
+        // @fixme: m_byDayMap missing
+
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosList.toSet() == m_setPos;
+
+
+    }
+    else
+    {
+        same = same and currentRecurrence == NO_RECURRENCE;
+    }
+
     return not same;
 }
 
@@ -158,6 +262,7 @@ void AppointmentDialog::reset( const QDate date )
 
 void AppointmentDialog::resetRecurrencePage()
 {
+    m_monthsMonthNo.clear();
     m_ui->rec_bymonth_jan->setChecked( false );
     m_ui->rec_bymonth_feb->setChecked( false );
     m_ui->rec_bymonth_mar->setChecked( false );
@@ -185,8 +290,12 @@ void AppointmentDialog::resetRecurrencePage()
     m_ui->rec_byday_list->clear();
 
     m_ui->rec_misc_weekstartday->setCurrentIndex( 0 );
-    m_ui->rec_misc_repeatuntil_forever->setChecked( true );
-    m_ui->rec_misc_repeatuntil_datetime->setDateTime( m_dtSaveEnd.addYears( 10 ) );
+    m_ui->rec_misc_repeat_intervalnumber->setValue( 1 );
+    m_ui->rec_misc_repeat_intervalnumber->setSuffix( "" );
+    m_ui->rec_misc_repeat_forever->click();
+    m_ui->rec_misc_repeat_untildate->setDateTime( m_dtSaveEnd.addYears( 10 ) );
+    m_ui->rec_misc_repeat_countnumber->setValue( 10 );
+
     m_ui->rec_misc_setpos_posnumber->setValue( 1 );
     m_ui->rec_misc_setpos_list->clear();
 }
@@ -295,6 +404,16 @@ void AppointmentDialog::collectAppointmentData()
 }
 
 
+AppointmentDialog::RepeatRestrictionType AppointmentDialog::repeatRestriction() const
+{
+    if( m_ui->rec_misc_repeat_count->isChecked() )
+        return REPEAT_COUNT;
+    if( m_ui->rec_misc_repeat_until->isChecked() )
+        return REPEAT_UNTIL;
+    return REPEAT_FOREVER;
+}
+
+
 void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
 {
     // these tabs and pages are enabled/disabled according to
@@ -311,6 +430,7 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_byday->setEnabled( true );
             m_ui->rec_byday_daynumber->setEnabled( true );
             m_ui->rec_page_misc->setEnabled( true );
+            m_ui->rec_misc_repeat_intervalnumber->setSuffix( " years" );
         break;
         case MONTHLY:
             m_ui->rec_page_bymonth->setEnabled( true );
@@ -320,6 +440,7 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_byday->setEnabled( true );
             m_ui->rec_byday_daynumber->setEnabled( true );
             m_ui->rec_page_misc->setEnabled( true );
+            m_ui->rec_misc_repeat_intervalnumber->setSuffix( " months" );
         break;
         case WEEKLY:
             m_ui->rec_page_bymonth->setEnabled( true );
@@ -329,6 +450,7 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_byday->setEnabled( true );
             m_ui->rec_byday_daynumber->setEnabled( false );
             m_ui->rec_page_misc->setEnabled( true );
+            m_ui->rec_misc_repeat_intervalnumber->setSuffix( " weeks" );
         break;
         case DAILY:
             m_ui->rec_page_bymonth->setEnabled( true );
@@ -338,6 +460,7 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_byday->setEnabled( true );
             m_ui->rec_byday_daynumber->setEnabled( false );
             m_ui->rec_page_misc->setEnabled( true );
+            m_ui->rec_misc_repeat_intervalnumber->setSuffix( " days" );
         break;
         default:
             m_ui->rec_page_bymonth->setDisabled( true );
@@ -347,7 +470,17 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_byday->setDisabled( true );
             m_ui->rec_page_misc->setDisabled( true );
             m_ui->tab_recurrence->setEnabled( true );   // disable tab
+            m_ui->rec_misc_repeat_intervalnumber->setSuffix( "" );
     }
+}
+
+
+void AppointmentDialog::slotMonthClicked( int id, bool checked )
+{
+    if( checked )
+        m_monthsMonthNo.insert( id );
+    else
+        m_monthsMonthNo.remove( id );
 }
 
 
@@ -484,6 +617,26 @@ void AppointmentDialog::slotRemoveDayDayClicked()
         m_weekDaysDaysByDay.remove( data );
         int itemRow = m_ui->rec_byday_list->row( item );
         delete m_ui->rec_byday_list->takeItem( itemRow );
+    }
+}
+
+
+void AppointmentDialog::slotRepeatRestrictionRadiobuttonClicked(int id)
+{
+    switch ( static_cast<RepeatRestrictionType>(id) )
+    {
+        case REPEAT_FOREVER:
+            m_ui->rec_misc_repeat_countnumber->setDisabled( true );
+            m_ui->rec_misc_repeat_untildate->setDisabled( true );
+        break;
+        case REPEAT_COUNT:
+            m_ui->rec_misc_repeat_countnumber->setEnabled( true );
+            m_ui->rec_misc_repeat_untildate->setDisabled( true );
+        break;
+        case REPEAT_UNTIL:
+            m_ui->rec_misc_repeat_countnumber->setDisabled( true );
+            m_ui->rec_misc_repeat_untildate->setEnabled( true );
+        break;
     }
 }
 

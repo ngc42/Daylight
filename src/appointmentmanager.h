@@ -147,6 +147,11 @@ public:
 
     // === Data ===
 
+    // for check, if we have received this (default: false)
+    bool    m_haveCount;
+    bool    m_haveInterval;
+    bool    m_haveUntil;
+
     RecurrenceFrequencyType     m_frequency;
     int                         m_count;
     int                         m_interval;
@@ -211,6 +216,10 @@ struct Event {
     bool containsDay( const QDate inDate ) const
     {
         return m_startDt.date() <= inDate and m_endDt.date() >= inDate;
+    }
+    bool sameDay() const
+    {
+        return m_startDt.date() == m_endDt.date() ;
     }
 };
 

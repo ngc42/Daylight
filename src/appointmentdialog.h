@@ -17,6 +17,7 @@
 #ifndef APPOINTMENTDIALOG_H
 #define APPOINTMENTDIALOG_H
 
+#include <QButtonGroup>
 #include <QDialog>
 #include <QDateTime>
 #include <QSet>
@@ -42,6 +43,13 @@ class AppointmentDialog : public QDialog
     // this looks like duplicated code, see appointmentmanager.h (Recurrence) for details
     enum RecurrenceFrequencyType {
         NO_RECURRENCE, YEARLY, MONTHLY, WEEKLY, DAILY
+    };
+
+    /* values for radiobuttons Recurrence/Misc/Repeat.
+     * According to standard, UNTIL and COUNT must not be in the same RRULE.
+     *  But one of them may occur. */
+    enum RepeatRestrictionType {
+        REPEAT_FOREVER, REPEAT_UNTIL, REPEAT_COUNT
     };
 
 public:
@@ -106,6 +114,9 @@ public:
 
 private:
     Ui::AppointmentDialog*  m_ui;
+    QButtonGroup*           m_repeatByMonthButtonGroup;
+    QButtonGroup*           m_repeatRestrictionButtonGroup;
+
     QDateTime               m_dtSaveStart;
     QDateTime               m_dtSaveEnd;
 
@@ -124,11 +135,14 @@ private:
     bool        m_isNewAppointment;
 
     // recurrence part
+    QSet<int>   m_monthsMonthNo;    // Recurrence, ByMonth, Set of months
     QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
     QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
     QSet<int>   m_weekDaysDaysByDay;    // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
     QSet<int>   m_setPos;           // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
+
+    RepeatRestrictionType repeatRestriction() const;
 
 signals:
 private slots:
@@ -136,6 +150,8 @@ private slots:
     void slotIndexChangedRecurrenceFrequency( int index );
 
     // page recurrence
+    void slotMonthClicked( int id, bool checked );
+
     void slotAddWeekNoClicked();
     void slotRemoveWeekNoClicked();
 
@@ -147,6 +163,8 @@ private slots:
 
     void slotAddDayDayClicked();
     void slotRemoveDayDayClicked();
+
+    void slotRepeatRestrictionRadiobuttonClicked(int id);
 
     void slotAddSetposClicked();
     void slotRemoveSetposClicked();

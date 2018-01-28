@@ -274,9 +274,12 @@ void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
     // dispatch all appointments to a day and a range list
     for(Event e : list)
     {
-        // @fixme: if(apm->sameDay())
-        //    dayList.append(apm);
-        // else
+        if( e.sameDay() )
+        {
+            dayList.append(e);
+            qDebug() << "CalendarScene::setAppointmentsForYear - appended";
+        }
+        else
             nextList.append(e);
     }
 
@@ -328,15 +331,11 @@ void CalendarScene::setAppointmentsForMonth(const QVector<Event> &list)
     // dispatch all appointments to day and a range lists
     for(Event e : list)
     {
-        /* @fixme:
-         * if(apm->sameDay())
+        if(e.sameDay())
         {
-            if(apm->m_appointmentData.m_allDay)
-                allDayList.append(apm);
-            else
-                dayList.append(apm);
+            dayList.append(e);
         }
-        else*/
+        else
             nextList.append(e);
     }
 

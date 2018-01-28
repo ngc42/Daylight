@@ -67,6 +67,9 @@ QString AppointmentAlarm::contentToString() const
 AppointmentRecurrence::AppointmentRecurrence( QObject* parent )
     :
       QObject( parent ),
+      m_haveCount(false),
+      m_haveInterval(false),
+      m_haveUntil(false),
       m_frequency(RFT_SIMPLE_YEARLY),
       m_count(0),
       m_interval(1),

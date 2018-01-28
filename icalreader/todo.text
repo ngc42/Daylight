@@ -18,4 +18,5 @@
 == TESTEN ==
 * Property RDATE nirgends eingebunden
 
+* have_count und have_until für recurrence rules testen: Es kann nur einen geben! :-)
 
