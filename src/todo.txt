@@ -1,4 +1,7 @@
-Missing:
 
+
+- QMap und QMultiMap replace with QSet< QPair<> >
+
+Missing:
 - exception dates (EXDATE)
 - fixed dates (RDATE)
