@@ -54,12 +54,11 @@ QString Parameter::contentToString() const
         }
         break;
         case PST_INT:           ret += QString( "%1" ).arg( m_contentInteger );    break;
-        case PST_INTLIST:
+        case PST_INTSET:
         {
-            for( int i : m_contentIntList )
+            for( int i : m_contentIntSet )
                 ret.append( QString( "%1," ).arg(i) );
         }
-        break;
         case PST_STRING:        ret += m_content;   break;
         case PST_DATETIME:      ret += m_contentDateTime.toString(); break;
         case PST_STRINGLIST:
@@ -94,8 +93,6 @@ QString Parameter::contentToString() const
     }
     return ret;
 }
-
-
 
 
 bool Parameter::readParameter( const QString s )
@@ -504,15 +501,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( value >= 0 ) and ( value <= 60 );
+            ret = ok and ( value >= 0 ) and ( value <= 60 ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -526,15 +523,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( value >= 0 ) and ( value < 60 );
+            ret = ok and ( value >= 0 ) and ( value < 60 ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -548,15 +545,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( value >= 0 ) and ( value < 24 );
+            ret = ok and ( value >= 0 ) and ( value < 24 ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -615,15 +612,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( ( value > 0 and value < 32 ) or ( value < 0 and value > -32 ) );
+            ret = ok and ( ( value > 0 and value < 32 ) or ( value < 0 and value > -32 ) ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -637,15 +634,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( ( value > 0 and value <= 366 ) or ( value < 0 and value >= -366 ) );
+            ret = ok and ( ( value > 0 and value <= 366 ) or ( value < 0 and value >= -366 ) ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -659,15 +656,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( ( value > 0 and value <= 53 ) or ( value < 0 and value >= -53 ) );
+            ret = ok and ( ( value > 0 and value <= 53 ) or ( value < 0 and value >= -53 ) ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -681,15 +678,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and value > 0 and value <= 12;
+            ret = ok and value > 0 and value <= 12 and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -703,15 +700,15 @@ bool Parameter::readParameter( const QString s )
         for( const QString s : m_content.split( ',', QString::SkipEmptyParts ) )
         {
             value = s.toInt( &ok );
-            ret = ok and ( ( value > 0 and value <= 366 ) or ( value < 0 and value >= -366 ) );
+            ret = ok and ( ( value > 0 and value <= 366 ) or ( value < 0 and value >= -366 ) ) and ( not m_contentIntSet.contains( value ) );
             if( not ret )
             {
                 m_hasErrors = true;
                 return false;
             }
-            m_contentIntList.append( value );
+            m_contentIntSet.insert( value );
         }
-        m_storageType = PST_INTLIST;
+        m_storageType = PST_INTSET;
         return true;
     }
 
@@ -749,7 +746,7 @@ bool Parameter::validate() const
     {
         qDebug() << "ValidateParameter: Parameter has Errors " << m_content;
         return false;
-    }    
+    }
     // We didn't find a problem.
     return true;
 }

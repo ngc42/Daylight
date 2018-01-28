@@ -121,8 +121,8 @@ public:
      * creates a list of times from hour, minutes and seconds list. Every missing value is
      *  filled up by inRefDateTime.
      */
-    void        timeExpand(const DateTime inRefDateTime, const QList<int> inHourList, const QList<int> inMinList,
-                           const QList<int> inSecList, QVector<QTime> &outTimeList);
+    void        timeExpand(const DateTime inRefDateTime, const QSet<int> inHourSet, const QSet<int> inMinSet,
+                           const QSet<int> inSecSet, QVector<QTime> &outTimeList);
 
     /* firstDayOfWeek()
      * Tries to calculate the first day in the first week and then adds the number of
@@ -159,15 +159,15 @@ public:
     WeekDay                     m_startWeekday;
     QList<DateTime>             m_exceptionDates;
     QList<DateTime>             m_fixedDates;
-    QList<int>                  m_byMonthList;
-    QList<int>                  m_byWeekNumberList;
-    QList<int>                  m_byYearDayList;
-    QList<int>                  m_byMonthDayList;
+    QSet<int>                   m_byMonthSet;
+    QSet<int>                   m_byWeekNumberSet;
+    QSet<int>                   m_byYearDaySet;
+    QSet<int>                   m_byMonthDaySet;
     QMultiMap<WeekDay, int>     m_byDayMap;
-    QList<int>                  m_byHourList;
-    QList<int>                  m_byMinuteList;
-    QList<int>                  m_bySecondList;
-    QList<int>                  m_bySetPosList;
+    QSet<int>                   m_byHourSet;
+    QSet<int>                   m_byMinuteSet;
+    QSet<int>                   m_bySecondSet;
+    QSet<int>                   m_bySetPosSet;
 
 signals:
     void signalTick( int first, int current, int last );
@@ -242,10 +242,10 @@ public:
     // helper methods
     static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
     static void makeDaymap( const QString inElementsString, QMultiMap<AppointmentRecurrence::WeekDay, int> &outMap );
-    static void makeIntList( const QString inElementsString, QList<int> &outList );
+    static void makeIntSet( const QString inElementsString, QSet<int> &outList );
+
     static void makeStringsFromDateList( const QList<DateTime> &inList, QString &outDtString, QString &outTzString );
     static void makeStringFromDaymap( const QMultiMap<AppointmentRecurrence::WeekDay, int> inMap, QString &outString );
-    static void makeStringFromIntList( const QList<int> inIntList, QString &outString );
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
 
     void makeEvents();

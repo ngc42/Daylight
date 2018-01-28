@@ -170,15 +170,11 @@ bool AppointmentDialog::modified() const
         else
         {
             if( m_storedOrigAppointment->m_appRecurrence->m_haveUntil )
-            {
                 same = same and
                        repeatRestriction() == REPEAT_UNTIL and
                        m_storedOrigAppointment->m_appRecurrence->m_until == m_ui->rec_misc_repeat_untildate->dateTime();
-            }
             else
-            {
                 same = same and repeatRestriction() == REPEAT_FOREVER;
-            }
         }
 
         same = same and (
@@ -186,26 +182,23 @@ bool AppointmentDialog::modified() const
                  m_storedOrigAppointment->m_appRecurrence->m_interval == m_ui->rec_misc_repeat_intervalnumber->value() ) or
                ( not m_storedOrigAppointment->m_appRecurrence->m_haveInterval and
                 m_ui->rec_misc_repeat_intervalnumber->value() == 1 ) );
-
         same = same and static_cast<int>(m_storedOrigAppointment->m_appRecurrence->m_startWeekday) ==
                m_ui->rec_misc_weekstartday->currentData().toInt(&ok);
-
-
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthList.toSet() == m_monthsMonthNo;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberList.toSet() == m_weeksByWeekNo;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDayList.toSet() == m_daysByYearDay;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDayList.toSet() == m_daysByMonthDay;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthSet == m_monthsMonthNo;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberSet == m_weeksByWeekNo;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDaySet == m_daysByYearDay;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDaySet == m_daysByMonthDay;
 
         // @fixme: m_byDayMap missing
 
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosList.toSet() == m_setPos;
-
-
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosSet == m_setPos;
     }
     else
     {
         same = same and currentRecurrence == NO_RECURRENCE;
     }
+
+    // @fixme: Alarm missing
 
     return not same;
 }

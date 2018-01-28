@@ -12,8 +12,8 @@ GNU General Public License for more details.
 #ifndef PARAMETER_H
 #define PARAMETER_H
 
-#include <QList>
 #include <QMultiMap>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QTimeZone>
@@ -36,7 +36,7 @@ struct Parameter
         PST_BOOLEAN,    // this parameter is a boolean value
         PST_FREQUENCY,  // for RR_FREQ a const fom IcalFrequency
         PST_INT,        // this parameter is an int
-        PST_INTLIST,    // ... a QList<int>
+        PST_INTSET,     // ... a QSet<int>
         PST_STRING,     // ... a QString
         PST_DATETIME,   // a single DateTime
         PST_STRINGLIST, // ... a QStringList
@@ -182,7 +182,7 @@ struct Parameter
     QString                     m_content;
     DateTime                    m_contentDateTime;
     int                         m_contentInteger;
-    QList<int>                  m_contentIntList;
+    QSet<int>                   m_contentIntSet;
     QStringList                 m_contentStringList;
     bool                        m_contentBoolean;
     IcalFrequencyType           m_contentFrequency;

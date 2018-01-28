@@ -117,81 +117,81 @@ QString AppointmentRecurrence::contentToString() const
     }
 
     QString mdl;
-    if( m_byMonthDayList.isEmpty() )
-        mdl = "[monthdaylist:no]";
+    if( m_byMonthDaySet.isEmpty() )
+        mdl = "[monthdayset:no]";
     else
     {
-        for( const int i : m_byMonthDayList )
+        for( const int i : m_byMonthDaySet )
             mdl = mdl.append( QString( "(mdl:%1)").arg( i ) );
-        mdl = mdl.prepend( "[monthdaylist:");
+        mdl = mdl.prepend( "[monthdayset:");
         mdl = mdl.append( "]" );
     }
     QString ydl;
-    if( m_byYearDayList.isEmpty() )
-        ydl = "[yeardaylist:no]";
+    if( m_byYearDaySet.isEmpty() )
+        ydl = "[yeardayset:no]";
     else
     {
-        for( const int i : m_byYearDayList )
+        for( const int i : m_byYearDaySet )
             ydl = ydl.append( QString( "(ydl:%1)").arg( i ) );
         ydl = ydl.prepend( "[yeardaylist:");
         ydl = ydl.append( "]" );
     }
     QString wnl;
-    if( m_byWeekNumberList.isEmpty() )
+    if( m_byWeekNumberSet.isEmpty() )
         wnl = "[weekno:no]";
     else
     {
-        for( const int i : m_byWeekNumberList )
+        for( const int i : m_byWeekNumberSet )
             wnl = wnl.append( QString( "(wno:%1)").arg(i) );
         wnl = wnl.prepend( "[weekno:");
         wnl = wnl.append( "]" );
     }
     QString bml;
-    if( m_byMonthList.isEmpty() )
+    if( m_byMonthSet.isEmpty() )
         bml = "[months:no]";
     else
     {
-        for( const int i : m_byMonthList )
+        for( const int i : m_byMonthSet )
             bml = bml.append( QString( "(mo:%1)").arg(i) );
         bml = bml.prepend( "[months:");
         bml = bml.append( "]" );
     }
     QString hl;
-    if( m_byHourList.isEmpty() )
+    if( m_byHourSet.isEmpty() )
         hl = "[hours:no]";
     else
     {
-        for( const int i : m_byHourList )
+        for( const int i : m_byHourSet )
             hl = hl.append( QString( "(h:%1)").arg(i) );
         hl = hl.prepend( "[hours:");
         hl = hl.append( "]" );
     }
     QString ml;
-    if( m_byMinuteList.isEmpty() )
+    if( m_byMinuteSet.isEmpty() )
         ml = "[minutes:no]";
     else
     {
-        for( const int i : m_byMinuteList )
+        for( const int i : m_byMinuteSet )
             ml = ml.append( QString( "(m:%1)").arg(i) );
         ml = ml.prepend( "[minutes:");
         ml = ml.append( "]" );
     }
     QString sl;
-    if( m_bySecondList.isEmpty() )
+    if( m_bySecondSet.isEmpty() )
         sl = "[seconds:no]";
     else
     {
-        for( const int i : m_bySecondList )
+        for( const int i : m_bySecondSet )
             sl = sl.append( QString( "(s:%1)").arg(i) );
         sl = sl.prepend( "[seconds:");
         sl = sl.append( "]" );
     }
     QString sp;
-    if( m_bySetPosList.isEmpty() )
+    if( m_bySetPosSet.isEmpty() )
         sp = "[setpos:no]";
     else
     {
-        for( const int i : m_bySetPosList )
+        for( const int i : m_bySetPosSet )
             sp = sp.append( QString( "(sp:%1)").arg(i) );
         sp = sp.prepend( "[setpos:");
         sp = sp.append( "]" );
@@ -329,15 +329,15 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
     QVector<DateTime> yearTargetList;
     DateTime runner = inDtStart;
 
-    bool have_byMonth =     not m_byMonthList.isEmpty();
-    bool have_byWeekNo =    not m_byWeekNumberList.isEmpty();
-    bool have_byYearDay =   not m_byYearDayList.isEmpty();
-    bool have_byMonthDay =  not m_byMonthDayList.isEmpty();
+    bool have_byMonth =     not m_byMonthSet.isEmpty();
+    bool have_byWeekNo =    not m_byWeekNumberSet.isEmpty();
+    bool have_byYearDay =   not m_byYearDaySet.isEmpty();
+    bool have_byMonthDay =  not m_byMonthDaySet.isEmpty();
     bool have_byDay =       not m_byDayMap.isEmpty();
-    bool have_byTime =      not (m_byHourList.isEmpty() and
-                                 m_byMinuteList.isEmpty() and
-                                 m_bySecondList.isEmpty() );
-    bool have_bySetPos =    not m_bySetPosList.isEmpty();
+    bool have_byTime =      not (m_byHourSet.isEmpty() and
+                                 m_byMinuteSet.isEmpty() and
+                                 m_bySecondSet.isEmpty() );
+    bool have_bySetPos =    not m_bySetPosSet.isEmpty();
 
     while( runner <= inDtLast )
     {
@@ -345,11 +345,11 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         {
             if( have_byMonthDay )   // BYMONTH + BYMONTHDAY
             {
-                for( const int month : m_byMonthList )
+                for( const int month : m_byMonthSet )
                 {
                     QDate start( runner.date().year(), month, 1 );
                     QDate end( runner.date().year(), month, start.daysInMonth() );
-                    for( const int monthDay : m_byMonthDayList )
+                    for( const int monthDay : m_byMonthDaySet )
                     {
                         QDate d;
                         if( monthDay > 0 )  d = start.addDays( monthDay - 1);
@@ -375,7 +375,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
             {
                 if( have_byDay )                // BYMONTH + BYDAY without BYMONTHDAY
                 {
-                    for( const int month : m_byMonthList )
+                    for( const int month : m_byMonthSet )
                     {
                         QDate start( runner.date().year(), month, 1 );
                         QDate end( runner.date().year(), month, start.daysInMonth() );
@@ -393,7 +393,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                 }
                 else                            // just BYMONTH, nothing else
                 {
-                    for( const int month : m_byMonthList )
+                    for( const int month : m_byMonthSet )
                     {
                         QDate d( runner.date().year(), month, runner.date().day() );
                         DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
@@ -410,7 +410,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
             {
                 QDate start( runner.date().year(), month, 1 );
                 QDate end( runner.date().year(), month, start.daysInMonth() );
-                for( const int day : m_byMonthDayList )
+                for( const int day : m_byMonthDaySet )
                 {
                     QDate d;
                     if( day > 0 )
@@ -433,7 +433,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         else if( have_byWeekNo )            // Expand BYWEEKNO
         {
             QVector<DateTime> tempList;
-            for( const int week : m_byWeekNumberList )
+            for( const int week : m_byWeekNumberSet )
                 weekExpand( runner, week, tempList );
             if( have_byDay )                // BYWEEKNO + BYDAY
             {
@@ -465,7 +465,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         {
             QDate start(runner.date().year(), 1, 1);
             QDate end( runner.date().year(), 12, 31 );
-            for( const int dayNum : m_byYearDayList )
+            for( const int dayNum : m_byYearDaySet )
             {
                 QDate d;
                 if( dayNum > 0 )
@@ -565,7 +565,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         {
             QVector<QTime> timeList;
             QVector<DateTime> targetAndTimeMerged;
-            timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
+            timeExpand( runner, m_byHourSet, m_byMinuteSet, m_bySecondSet, timeList );
             for( DateTime dt : yearTargetList )
             {
                 for( const QTime t : timeList )
@@ -586,7 +586,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         if( have_bySetPos )
         {
             QVector<DateTime> setPosList;
-            for( const int pos : m_bySetPosList )
+            for( const int pos : m_bySetPosSet )
             {
                 if( pos > 0 and yearTargetList.count() >= pos )
                 {
@@ -630,19 +630,19 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
     QVector<DateTime> targetList;
     QVector<DateTime> monthTargetList;
     DateTime runner = inDtStart;
-    bool have_byMonth =     not m_byMonthList.isEmpty();
-    bool have_byMonthDay =  not m_byMonthDayList.isEmpty();
+    bool have_byMonth =     not m_byMonthSet.isEmpty();
+    bool have_byMonthDay =  not m_byMonthDaySet.isEmpty();
     bool have_byDay =       not m_byDayMap.isEmpty();
-    bool have_byTime =      not (m_byHourList.isEmpty() and
-                                 m_byMinuteList.isEmpty() and
-                                 m_bySecondList.isEmpty() );
-    bool have_bySetPos =    not m_bySetPosList.isEmpty();
+    bool have_byTime =      not (m_byHourSet.isEmpty() and
+                                 m_byMinuteSet.isEmpty() and
+                                 m_bySecondSet.isEmpty() );
+    bool have_bySetPos =    not m_bySetPosSet.isEmpty();
 
     while( runner <= inDtLast )
     {
         if( have_byMonth )          // limit BYMONTH
         {
-            bool validMonth = m_byMonthList.contains( runner.date().month() );
+            bool validMonth = m_byMonthSet.contains( runner.date().month() );
             if( not validMonth )
             {
                 runner = runner.addMonths( m_interval );
@@ -655,7 +655,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
         {
             QDate start( runner.date().year(), runner.date().month(), 1 );
             QDate end( start.year(), start.month(), start.daysInMonth() );
-            for( const int day : m_byMonthDayList )
+            for( const int day : m_byMonthDaySet )
             {
                 QDate d;
                 if( day > 0 )
@@ -750,7 +750,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
         {
             QVector<QTime> timeList;
             QVector<DateTime> targetAndTimeMerged;
-            timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
+            timeExpand( runner, m_byHourSet, m_byMinuteSet, m_bySecondSet, timeList );
             for( DateTime dt : monthTargetList )
             {
                 for( const QTime t : timeList )
@@ -771,7 +771,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
         if( have_bySetPos )
         {
             QVector<DateTime> setPosList;
-            for( const int pos : m_bySetPosList )
+            for( const int pos : m_bySetPosSet )
             {
                 if( pos > 0 and monthTargetList.count() >= pos )
                 {
@@ -816,18 +816,18 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateT
     QVector<DateTime> weekTargetList;
     DateTime runner = inDtStart;
 
-    bool have_byMonth =     not m_byMonthList.isEmpty();
+    bool have_byMonth =     not m_byMonthSet.isEmpty();
     bool have_byDay =       not m_byDayMap.isEmpty();
-    bool have_byTime =      not (m_byHourList.isEmpty() and
-                                 m_byMinuteList.isEmpty() and
-                                 m_bySecondList.isEmpty() );
-    bool have_bySetPos =    not m_bySetPosList.isEmpty();
+    bool have_byTime =      not (m_byHourSet.isEmpty() and
+                                 m_byMinuteSet.isEmpty() and
+                                 m_bySecondSet.isEmpty() );
+    bool have_bySetPos =    not m_bySetPosSet.isEmpty();
 
     while( runner <= inDtLast )
     {
         if( have_byMonth )          // limit BYMONTH
         {
-            bool validMonth = m_byMonthDayList.contains( runner.date().month() );
+            bool validMonth = m_byMonthDaySet.contains( runner.date().month() );
             if( not validMonth )
             {
                 runner = runner.addWeeks( m_interval );
@@ -882,7 +882,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateT
         {
             QVector<QTime> timeList;
             QVector<DateTime> targetAndTimeMerged;
-            timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
+            timeExpand( runner, m_byHourSet, m_byMinuteSet, m_bySecondSet, timeList );
             for( DateTime dt : weekTargetList )
             {
                 for( const QTime t : timeList )
@@ -903,7 +903,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateT
         if( have_bySetPos )
         {
             QVector<DateTime> setPosList;
-            for( const int pos : m_bySetPosList )
+            for( const int pos : m_bySetPosSet )
             {
                 if( pos > 0 and weekTargetList.count() >= pos )
                 {
@@ -947,13 +947,13 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
     QVector<DateTime> targetList;
     QVector<DateTime> dayTargetList;
     DateTime runner = inDtStart;
-    bool have_byMonth =     not m_byMonthList.isEmpty();
-    bool have_byMonthDay =  not m_byMonthDayList.isEmpty();
+    bool have_byMonth =     not m_byMonthSet.isEmpty();
+    bool have_byMonthDay =  not m_byMonthDaySet.isEmpty();
     bool have_byDay =       not m_byDayMap.isEmpty();
-    bool have_byTime =      not (m_byHourList.isEmpty() and
-                                 m_byMinuteList.isEmpty() and
-                                 m_bySecondList.isEmpty() );
-    bool have_bySetPos =    not m_bySetPosList.isEmpty();
+    bool have_byTime =      not (m_byHourSet.isEmpty() and
+                                 m_byMinuteSet.isEmpty() and
+                                 m_bySecondSet.isEmpty() );
+    bool have_bySetPos =    not m_bySetPosSet.isEmpty();
 
     emit signalTick( inDtStart.date().year(), inDtStart.date().year(), inDtLast.date().year() );
 
@@ -963,7 +963,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
 
         if( have_byMonth )          // limit BYMONTH
         {
-            bool validMonth = m_byMonthList.contains( runner.date().month() );
+            bool validMonth = m_byMonthSet.contains( runner.date().month() );
             if( not validMonth )
             {
                 runner = runner.addDays( m_interval );
@@ -979,7 +979,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
             QDate endDate( startDate.year(), startDate.month(), startDate.daysInMonth() );
             QDate d;
             bool found = false;
-            for( const int relDay : m_byMonthDayList )
+            for( const int relDay : m_byMonthDaySet )
             {
                 if( relDay > 0 )
                 {
@@ -1030,7 +1030,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
         {
             QVector<QTime> timeList;
             QVector<DateTime> targetAndTimeMerged;
-            timeExpand( runner, m_byHourList, m_byMinuteList, m_bySecondList, timeList );
+            timeExpand( runner, m_byHourSet, m_byMinuteSet, m_bySecondSet, timeList );
             for( DateTime dt : dayTargetList )
             {
                 for( const QTime t : timeList )
@@ -1051,7 +1051,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
         if( have_bySetPos )
         {
             QVector<DateTime> setPosList;
-            for( const int pos : m_bySetPosList )
+            for( const int pos : m_bySetPosSet )
             {
                 if( pos > 0 and dayTargetList.count() >= pos )
                 {
@@ -1116,17 +1116,17 @@ void AppointmentRecurrence::weekExpand( const DateTime inRefDateTime, const int 
 }
 
 
-void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QList<int> inHourList, const QList<int> inMinList,
-                           const QList<int> inSecList, QVector<QTime> &outTimeList)
+void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QSet<int> inHourSet, const QSet<int> inMinSet,
+                           const QSet<int> inSecSet, QVector<QTime> &outTimeList)
 {
     QTime refTime = inRefDateTime.time();
 
     // append hours, if available. Else append a default hour
     QVector<QTime> t_hour;
-    if( inHourList.isEmpty() )
+    if( inHourSet.isEmpty() )
         t_hour.append( QTime( refTime.hour(), refTime.minute(), refTime.second() ) );
     else
-        for( const int h : inHourList )
+        for( const int h : inHourSet )
         {
             QTime elem( h, refTime.minute(), refTime.second() );
             t_hour.append( elem );
@@ -1134,7 +1134,7 @@ void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QList
 
     // cross with minutes, if available. Else set minutes by default minute
     QVector<QTime> t_min;
-    if( inMinList.isEmpty())
+    if( inMinSet.isEmpty())
     {
         for( const QTime t : t_hour )
         {
@@ -1146,7 +1146,7 @@ void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QList
     {
         for( const QTime t : t_hour )
         {
-            for( const int m : inMinList )
+            for( const int m : inMinSet )
             {
                 QTime elem( t.hour(), m, refTime.second() );
                 t_min.append( elem );
@@ -1156,14 +1156,14 @@ void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QList
 
     // cross with seconds, else return t_min, as there are default values for
     //   missing seconds
-    if( inSecList.isEmpty() )
+    if( inSecSet.isEmpty() )
     {
         outTimeList = t_min;
         return;
     }
     for( const QTime t : t_min )
     {
-        for( const int s : inSecList )
+        for( const int s : inSecSet )
         {
             QTime elem( t.hour(), t.minute(), s );
             outTimeList.append( elem );
@@ -1334,13 +1334,13 @@ void Appointment::makeDaymap( const QString inElementsString, QMultiMap<Appointm
 }
 
 
-void Appointment::makeIntList( const QString inElementsString, QList<int> &outList )
+void Appointment::makeIntSet( const QString inElementsString, QSet<int> &outSet )
 {
-    outList.clear();
+    outSet.clear();
     bool ok;
     for( const QString s : inElementsString.split( ',', QString::SkipEmptyParts ) )
     {
-        outList.append( s.toInt(&ok) );
+        outSet.insert( s.toInt(&ok) );
     }
 }
 
@@ -1405,24 +1405,6 @@ void Appointment::makeStringFromDaymap( const QMultiMap<AppointmentRecurrence::W
             else
                 s = QString( "%1%2").arg( v ).arg( k );
         }
-    }
-}
-
-
-void Appointment::makeStringFromIntList( const QList<int> inIntList, QString &outString )
-{
-    outString = "";
-    int count = inIntList.count();
-    int num = 0;
-    for( const int i : inIntList )
-    {
-        QString s;
-        num++;
-        if( num != count )
-            s = QString("%1,").arg( i );
-        else
-            s = QString("%1").arg( i );
-        outString = outString.append(s);
     }
 }
 

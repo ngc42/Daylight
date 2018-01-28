@@ -277,42 +277,42 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
         else if( p->m_type == Parameter::RR_BYMONTHDAY )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byMonthDayList = p->m_contentIntList;
+            outAppRecurrence->m_byMonthDaySet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYYEARDAY )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byYearDayList = p->m_contentIntList;
+            outAppRecurrence->m_byYearDaySet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYWEEKNO )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byWeekNumberList = p->m_contentIntList;
+            outAppRecurrence->m_byWeekNumberSet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYMONTH )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byMonthList = p->m_contentIntList;
+            outAppRecurrence->m_byMonthSet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYHOUR )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byHourList = p->m_contentIntList;
+            outAppRecurrence->m_byHourSet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYMINUTE )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byMinuteList = p->m_contentIntList;
+            outAppRecurrence->m_byMinuteSet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYSECOND )
         {
             numberOfByRules++;
-            outAppRecurrence->m_bySecondList = p->m_contentIntList;
+            outAppRecurrence->m_bySecondSet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_BYSETPOS )
         {
             numberOfByRules++;
-            outAppRecurrence->m_bySetPosList = p->m_contentIntList;
+            outAppRecurrence->m_bySetPosSet = p->m_contentIntSet;
         }
         else if( p->m_type == Parameter::RR_WKST)
         {

@@ -73,7 +73,7 @@ public:
      * - returns false, if user has not modified anything
      * - returns false, if m_isNewAppointment is true
      * - else returns true
-     * @fixme: does not check recurrences
+     * @fixme: does not check recurrences (partially included)
      * @fixme: does not check alarm
      */
     bool modified() const;
