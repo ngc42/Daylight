@@ -244,8 +244,9 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
         else if( p->m_type == Parameter::RR_BYDAY )
         {
             numberOfByRules++;
-            for( Parameter::IcalWeekDayType wd : p->m_contentDayMap.uniqueKeys() )
+            for( const std::pair<Parameter::IcalWeekDayType, int> day : p->m_contentDaySet )
             {
+                Parameter::IcalWeekDayType wd = day.first;
                 AppointmentRecurrence::WeekDay weekDay = AppointmentRecurrence::WeekDay::WD_MO;
                 switch( wd )
                 {
@@ -273,10 +274,7 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
                     default:
                     break;
                 }
-                for( int val : p->m_contentDayMap.values( wd ) )
-                {
-                    outAppRecurrence->m_byDayMap.insert( weekDay, val );
-                }
+                outAppRecurrence->m_byDayMap.insert( weekDay, day.second );
             }
         }
         else if( p->m_type == Parameter::RR_BYMONTHDAY )

@@ -64,7 +64,7 @@ QString Parameter::contentToString() const
             for( int i : m_contentIntSet )
                 ret.append( QString( "%1," ).arg(i) );
         }
-            break;
+        break;
         case PST_STRING:        ret += m_content;   break;
         case PST_DATETIME:      ret += m_contentDateTime.toString(); break;
         case PST_STRINGLIST:
@@ -73,16 +73,13 @@ QString Parameter::contentToString() const
                 ret += ret.append( s ).append( ',' );
         }
         break;
-        case PST_DAYMAP:
+        case PST_DAYSET:
         {
-            for( const IcalWeekDayType wd : m_contentDayMap.uniqueKeys() )
+            for( const std::pair<IcalWeekDayType, int> dayElem : m_contentDaySet )
             {
-                for( const int v : m_contentDayMap.values( wd ) )
-                {
-                    QString s( "(%1:%2),");
-                    s = s.arg( static_cast<int>(wd) ).arg( v );
-                    ret += s;
-                }
+                QString s( "(%1:%2),");
+                s = s.arg( static_cast<int>(dayElem.first) ).arg( dayElem.second );
+                ret += s;
             }
         }
         break;
@@ -602,9 +599,11 @@ bool Parameter::readParameter( const QString s )
                 m_hasErrors = true;
                 return false;
             }
-            m_contentDayMap.insert( weekDay, value );
+
+            std::pair<IcalWeekDayType,int> dayElem = std::make_pair(weekDay, value);
+            m_contentDaySet.insert( dayElem );
         }
-        m_storageType = PST_DAYMAP;
+        m_storageType = PST_DAYSET;
         return true;
     }
 

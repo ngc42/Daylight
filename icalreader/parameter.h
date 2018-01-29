@@ -17,11 +17,13 @@
 #ifndef PARAMETER_H
 #define PARAMETER_H
 
-#include <QMultiMap>
 #include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QTimeZone>
+
+#include <set>
+#include <utility>
 
 #include "datetime.h"
 
@@ -45,7 +47,7 @@ struct Parameter
         PST_STRING,     // ... a QString
         PST_DATETIME,   // a single DateTime
         PST_STRINGLIST, // ... a QStringList
-        PST_DAYMAP,     // special: QMultiMap for RR_BYDAY
+        PST_DAYSET,     // special: QSet<QPair<>> for RR_BYDAY
         PST_DAY,        // special: IcalWeekDay for RR_WKST
         PST_CUTYPE,     // special for CUTYPE
         PST_PARTSTAT,   // special, stored in m_contentPartstat
@@ -191,7 +193,7 @@ struct Parameter
     QStringList                 m_contentStringList;
     bool                        m_contentBoolean;
     IcalFrequencyType           m_contentFrequency;
-    QMultiMap<IcalWeekDayType, int> m_contentDayMap;
+    std::set<std::pair<IcalWeekDayType, int>> m_contentDaySet;
     IcalWeekDayType             m_contentWeekDay;
     IcalCutypeType              m_contentCutype;
     IcalPartstatParamType       m_contentPartstat;

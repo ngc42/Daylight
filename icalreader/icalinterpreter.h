@@ -22,7 +22,10 @@
 #include "property.h"
 #include "datetime.h"
 
+#include <utility>
+
 #include <QVector>
+
 
 class IcalInterpreter : public QObject
 {
