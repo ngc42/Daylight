@@ -142,7 +142,7 @@ private:
     QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
     QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
-    std::set<std::pair<int, int>> m_weekDaysDaysByDay; // Recurrence, ByDays, pair<WeekDay, DayNum>
+    std::set<std::pair<AppointmentRecurrence::WeekDay, int>> m_weekDaysDaysByDay; // Recurrence, ByDays, pair<WeekDay, DayNum>
     QSet<int>   m_setPos;           // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
 
     RepeatRestrictionType repeatRestriction() const;

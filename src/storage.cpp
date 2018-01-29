@@ -187,7 +187,7 @@ void Storage::storeAppointment( const Appointment &apmData )
         iRec.bindValue(":byydlist", listString );
         Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_byMonthDaySet, listString );
         iRec.bindValue(":bymdlist", listString );
-        Appointment::makeStringFromDaymap( apmData.m_appRecurrence->m_byDayMap, listString );
+        Appointment::makeStringFromDayset( apmData.m_appRecurrence->m_byDaySet, listString );
         iRec.bindValue(":bydmap", listString );
         Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_byHourSet, listString );
         iRec.bindValue(":byhlist", listString );
@@ -343,7 +343,7 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 Appointment::makeIntSet( qApmRecurrence.value(13).toString(), apmRecurrence->m_byWeekNumberSet );
                 Appointment::makeIntSet( qApmRecurrence.value(14).toString(), apmRecurrence->m_byYearDaySet );
                 Appointment::makeIntSet( qApmRecurrence.value(15).toString(), apmRecurrence->m_byMonthDaySet );
-                Appointment::makeDaymap( qApmRecurrence.value(16).toString(), apmRecurrence->m_byDayMap );
+                Appointment::makeDayset( qApmRecurrence.value(16).toString(), apmRecurrence->m_byDaySet );
                 Appointment::makeIntSet( qApmRecurrence.value(17).toString(), apmRecurrence->m_byHourSet );
                 Appointment::makeIntSet( qApmRecurrence.value(18).toString(), apmRecurrence->m_byMinuteSet );
                 Appointment::makeIntSet( qApmRecurrence.value(19).toString(), apmRecurrence->m_bySecondSet );

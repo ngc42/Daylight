@@ -274,7 +274,7 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
                     default:
                     break;
                 }
-                outAppRecurrence->m_byDayMap.insert( weekDay, day.second );
+                outAppRecurrence->m_byDaySet.insert( std::make_pair( weekDay, day.second ) );
             }
         }
         else if( p->m_type == Parameter::RR_BYMONTHDAY )

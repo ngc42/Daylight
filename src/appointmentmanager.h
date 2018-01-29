@@ -17,16 +17,18 @@
 #ifndef APPOINTMENTMANAGER_H
 #define APPOINTMENTMANAGER_H
 
+#include "datetime.h"
+
+#include <set>
+#include <utility>
+
 #include <QColor>
 #include <QDebug>
 #include <QList>
-#include <QMultiMap>
 #include <QSet>
 #include <QString>
 #include <QTimeZone>
 #include <QVector>
-
-#include "datetime.h"
 
 
 /* AppointmentBasics is everything we need to show a single event in a calendar */
@@ -161,6 +163,17 @@ public:
     // sorts the list in place.
     void        sortDaytimeList( QVector<DateTime> &inoutSortList );
 
+    bool daysetContainsDay( const std::set<std::pair<WeekDay, int>> inStdSet,
+                            const WeekDay inWeekday ) const
+    {
+        for( const std::pair<WeekDay, int> dayElem : inStdSet )
+        {
+            if( dayElem.first == inWeekday )
+                return true;
+        }
+        return false;
+    }
+
     // === Data ===
 
     // for check, if we have received this (default: false)
@@ -179,7 +192,7 @@ public:
     QSet<int>                   m_byWeekNumberSet;
     QSet<int>                   m_byYearDaySet;
     QSet<int>                   m_byMonthDaySet;
-    QMultiMap<WeekDay, int>     m_byDayMap;
+    std::set<std::pair<WeekDay, int>>   m_byDaySet;
     QSet<int>                   m_byHourSet;
     QSet<int>                   m_byMinuteSet;
     QSet<int>                   m_bySecondSet;
@@ -257,11 +270,11 @@ public:
 
     // helper methods
     static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
-    static void makeDaymap( const QString inElementsString, QMultiMap<AppointmentRecurrence::WeekDay, int> &outMap );
+    static void makeDayset( const QString inElementsString, std::set<std::pair<AppointmentRecurrence::WeekDay, int>> &outSet );
     static void makeIntSet( const QString inElementsString, QSet<int> &outList );
 
     static void makeStringsFromDateList( const QList<DateTime> &inList, QString &outDtString, QString &outTzString );
-    static void makeStringFromDaymap( const QMultiMap<AppointmentRecurrence::WeekDay, int> inMap, QString &outString );
+    static void makeStringFromDayset( const std::set<std::pair<AppointmentRecurrence::WeekDay, int>> inSet, QString &outString );
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
 
     void makeEvents();

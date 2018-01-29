@@ -59,8 +59,8 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     QDate d(2018, 1, 1);
     for(int i = 1; i < 8; i++ )
     {
-        m_ui->rec_byday_weekdayname->addItem( d.toString( "dddd" ), i );
-        m_ui->rec_misc_weekstartday->addItem( d.toString( "dddd" ), i );
+        m_ui->rec_byday_weekdayname->addItem( d.toString( "dddd" ), static_cast<AppointmentRecurrence::WeekDay>(i) );
+        m_ui->rec_misc_weekstartday->addItem( d.toString( "dddd" ), static_cast<AppointmentRecurrence::WeekDay>(i) );
         d = d.addDays( 1 );
     }
 
@@ -586,13 +586,14 @@ void AppointmentDialog::slotAddDayDayClicked()
             return;
     }
 
-    std::pair<int, int> dayElem = std::make_pair( weekDay, dayNumber );
+    std::pair<AppointmentRecurrence::WeekDay, int> dayElem =
+            std::make_pair( static_cast<AppointmentRecurrence::WeekDay>(weekDay), dayNumber );
     if( m_weekDaysDaysByDay.find( dayElem ) != m_weekDaysDaysByDay.end() )
         return;
     m_weekDaysDaysByDay.insert( dayElem );
     QString text = dayNumber == 0 ? weekDayName : QString( "%1. %2" ).arg( dayNumber ).arg( weekDayName );
     QListWidgetItem* item = new QListWidgetItem( text );
-    item->setData( Qt::UserRole, QVariant::fromValue( dayElem ) );
+    item->setData( Qt::UserRole, QVariant::fromValue( std::make_pair(weekDay, dayNumber) ) );
     m_ui->rec_byday_list->addItem( item );
 }
 
@@ -605,9 +606,11 @@ void AppointmentDialog::slotRemoveDayDayClicked()
     for( const QListWidgetItem* item : itemList )
     {
         std::pair<int,int> dayElem  = item->data( Qt::UserRole ).value<std::pair<int,int>>();
-        m_weekDaysDaysByDay.erase( dayElem );
+        m_weekDaysDaysByDay.erase(
+                    std::make_pair( static_cast<AppointmentRecurrence::WeekDay>(dayElem.first), dayElem.second ) );
         int itemRow = m_ui->rec_byday_list->row( item );
         delete m_ui->rec_byday_list->takeItem( itemRow );
+        qDebug() << m_weekDaysDaysByDay.size();
     }
 }
 

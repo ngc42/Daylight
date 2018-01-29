@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "appointmentmanager.h"
+
 #include <QDebug>
 #include <QRandomGenerator>
 #include <QRegularExpression>
@@ -107,18 +108,18 @@ QString AppointmentRecurrence::contentToString() const
         fd = fd.append( "]" );
     }
 
-    QString bdm;
-    if( m_byDayMap.isEmpty() )
-        bdm = "[bydaymap:no]";
+    QString bds;
+    if( m_byDaySet.size() == 0 )
+        bds = "[bydaymap:no]";
     else
     {
-        for( WeekDay d : m_byDayMap.uniqueKeys() )
+        for( const std::pair<WeekDay,int> dayElem : m_byDaySet )
         {
-            for( int v : m_byDayMap.values( d ) )
-                bdm = bdm.append( QString( "(%1:%2)" ).arg( static_cast<int>(d) ).arg( v) );
+             bds = bds.append( QString( "(%1:%2)" ).arg( static_cast<int>(dayElem.first) ).arg( dayElem.second ) );
         }
-        bdm = bdm.prepend( "[bydaymap:" );
-        bdm = bdm.append( "]" );
+
+        bds = bds.prepend( "[bydaymap:" );
+        bds = bds.append( "]" );
     }
 
     QString mdl;
@@ -210,7 +211,7 @@ QString AppointmentRecurrence::contentToString() const
             .arg( static_cast<int>(m_startWeekday ) )
             .arg( ed )
             .arg( fd )
-            .arg( bdm )
+            .arg( bds )
             .arg( mdl )
             .arg( ydl )
             .arg( wnl )
@@ -338,7 +339,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
     bool have_byWeekNo =    not m_byWeekNumberSet.isEmpty();
     bool have_byYearDay =   not m_byYearDaySet.isEmpty();
     bool have_byMonthDay =  not m_byMonthDaySet.isEmpty();
-    bool have_byDay =       not m_byDayMap.isEmpty();
+    bool have_byDay =       m_byDaySet.size() > 0;
     bool have_byTime =      not (m_byHourSet.isEmpty() and
                                  m_byMinuteSet.isEmpty() and
                                  m_bySecondSet.isEmpty() );
@@ -365,7 +366,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                             if( have_byDay )    // BYMONTH + BYMONTHDAY + BYDAY
                             {
                                 int weekDay = d.dayOfWeek();
-                                if(  m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) )
+                                if(  daysetContainsDay(m_byDaySet, static_cast<WeekDay>(weekDay) ) )
                                     yearTargetList.append( dt );
                             }
                             else                // BYMONTH + BYMONTHDAY without BYDAY
@@ -389,7 +390,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                         {
                             int weekDay = d.dayOfWeek();
                             DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                            if( m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) and
+                            if( daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) and
                                 validateDateTime( dt ) )
                                 yearTargetList.append( dt );
                             d = d.addDays( 1 );
@@ -426,7 +427,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                     if( have_byDay )        // BYMONTHDAY + BYDAY
                     {
                         int weekDay = dt.date().dayOfWeek();
-                        if( m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) )
+                        if( daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) )
                             continue;
                     }
 
@@ -445,7 +446,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                 for( DateTime dt : tempList )
                 {
                     int weekDay = dt.date().dayOfWeek();
-                    if( not ( m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) and
+                    if( not ( daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) and
                               validateDateTime( dt ) ) )
                         continue;
                     yearTargetList.append( dt );
@@ -483,7 +484,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                     if( have_byDay )        // BYYEARDAY + BYDAY
                     {
                         int weekDay = dt.date().dayOfWeek();
-                        if ( m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) )
+                        if ( daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) )
                             yearTargetList.append( dt );
 
                     }
@@ -496,75 +497,74 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         {
             QDate start( runner.date().year(), 1, 1 );
             QDate end( runner.date().year(), 12, 31 );
-            QDate d;
-            for( WeekDay weekDay : m_byDayMap.uniqueKeys() )
+
+            for( const std::pair<WeekDay, int> dayItem : m_byDaySet )
             {
-                QList<int> relDays = m_byDayMap.values( weekDay );
-                for( const int relDay : relDays )
+                WeekDay weekDay = dayItem.first;
+                const int relDay = dayItem.second;
+                QDate d;
+
+                if( relDay == 0 )
                 {
-                    if( relDay == 0 )
+                    // example: all mondays
+                    d = start;
+                    while( d <= end )
                     {
-                        // example: all mondays
-                        d = start;
-                        while( d <= end )
+                        if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            if( d.dayOfWeek() == static_cast<int>(weekDay) )
-                            {
-                                DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                                if( validateDateTime( dt) )
-                                    yearTargetList.append( dt );
-                                d = d.addDays( 7 );
-                            }
-                            else
-                                d = d.addDays( 1 );
+                            DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
+                            if( validateDateTime( dt) )
+                                yearTargetList.append( dt );
+                            d = d.addDays( 7 );
                         }
+                        else
+                            d = d.addDays( 1 );
                     }
-                    else if( relDay > 0 )
+                }
+                else if( relDay > 0 )
+                {
+                    int dCount = 0;
+                    d = start;
+                    while( d <= end )
                     {
-                        int dCount = 0;
-                        d = start;
-                        while( d <= end )
+                        if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            if( d.dayOfWeek() == static_cast<int>(weekDay) )
+                            dCount++;
+                            DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
+                            if( dCount == relDay and validateDateTime( dt ) )
                             {
-                                dCount++;
-                                DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                                if( dCount == relDay and validateDateTime( dt ) )
-                                {
-                                    yearTargetList.append( dt );
-                                    break;
-                                }
-                                d = d.addDays( 7 );
+                                yearTargetList.append( dt );
+                                break;
                             }
-                            else
-                                d = d.addDays( 1 );
+                            d = d.addDays( 7 );
                         }
+                        else
+                            d = d.addDays( 1 );
                     }
-                    else // relDay < 0
+                }
+                else // relDay < 0
+                {
+                    int dCount = 0;
+                    d = end;
+                    while( d >= start )
                     {
-                        int dCount = 0;
-                        d = end;
-                        while( d >= start )
+                        if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            if( d.dayOfWeek() == static_cast<int>(weekDay) )
+                            dCount++;
+                            DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
+                            if( dCount == relDay and validateDateTime( dt ) )
                             {
-                                dCount++;
-                                DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                                if( dCount == relDay and validateDateTime( dt ) )
-                                {
-                                    yearTargetList.append( dt );
-                                    break;
-                                }
-                                d = d.addDays( -7 );
+                                yearTargetList.append( dt );
+                                break;
                             }
-                            else
-                                d = d.addDays( -1 );
+                            d = d.addDays( -7 );
                         }
+                        else
+                            d = d.addDays( -1 );
                     }
                 }
             }
         }
-
         // Expand BYHOUR, BYMINUTE and BYSECOND
         if( have_byTime )
         {
@@ -637,7 +637,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
     DateTime runner = inDtStart;
     bool have_byMonth =     not m_byMonthSet.isEmpty();
     bool have_byMonthDay =  not m_byMonthDaySet.isEmpty();
-    bool have_byDay =       not m_byDayMap.isEmpty();
+    bool have_byDay =       m_byDaySet.size() > 0;
     bool have_byTime =      not (m_byHourSet.isEmpty() and
                                  m_byMinuteSet.isEmpty() and
                                  m_bySecondSet.isEmpty() );
@@ -671,7 +671,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
                 if( have_byDay )        // limit BYDAY, because BYMONTHDAY is present
                 {
                     int weekDay = dt.date().dayOfWeek();
-                    if( not m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) )
+                    if( not daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) )
                         continue;
                 }
                 if( validateDateTime( dt ) )
@@ -680,71 +680,72 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesMonthly( const Date
         }
         else if( have_byDay )           // expand BYDAY
         {
-            for( WeekDay weekDay : m_byDayMap.uniqueKeys() )
+
+            QDate start( runner.date().year(), runner.date().month(), 1 );
+            QDate end( start.year(), start.month(), start.daysInMonth() );
+
+            for( const std::pair<WeekDay, int> dayItem : m_byDaySet )
             {
-                QList<int> relDays = m_byDayMap.values( weekDay );
-                QDate start( runner.date().year(), runner.date().month(), 1 );
-                QDate end( start.year(), start.month(), start.daysInMonth() );
+                WeekDay weekDay = dayItem.first;
+                const int relDay = dayItem.second;
                 QDate d;
-                for( const int relDay : relDays )
+
+                if( relDay == 0)
                 {
-                    if( relDay == 0)
+                    d = start;
+                    while( d <= end )
                     {
-                        d = start;
-                        while( d <= end )
+                        if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            if( d.dayOfWeek() == static_cast<int>(weekDay) )
-                            {
-                                DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                                if( validateDateTime( dt ) )
-                                    monthTargetList.append( dt );
-                                d = d.addDays( 7 );
-                            }
-                            else
-                                d = d.addDays( 1 );
+                            DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
+                            if( validateDateTime( dt ) )
+                                monthTargetList.append( dt );
+                            d = d.addDays( 7 );
                         }
+                        else
+                            d = d.addDays( 1 );
                     }
-                    else if( relDay > 0 )
+                }
+                else if( relDay > 0 )
+                {
+                    d = start;
+                    int dCount = 0;
+                    while( d <= end )
                     {
-                        d = start;
-                        int dCount = 0;
-                        while( d <= end )
+                        if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            if( d.dayOfWeek() == static_cast<int>(weekDay) )
+                            dCount++;
+                            DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
+                            if( dCount == relDay and validateDateTime( dt ) )
                             {
-                                dCount++;
-                                DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                                if( dCount == relDay and validateDateTime( dt ) )
-                                {
-                                    monthTargetList.append( dt );
-                                    break;
-                                }
-                                d = d.addDays( 7 );
+                                monthTargetList.append( dt );
+                                break;
                             }
-                            else
-                                d = d.addDays( 1 );
+                            d = d.addDays( 7 );
                         }
+                        else
+                            d = d.addDays( 1 );
                     }
-                    else    // relDay < 0
+                }
+                else    // relDay < 0
+                {
+                    d = end;
+                    int dCount = 0;
+                    while( d >= start )
                     {
-                        d = end;
-                        int dCount = 0;
-                        while( d >= start )
+                        if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            if( d.dayOfWeek() == static_cast<int>(weekDay) )
+                            dCount--;
+                            DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
+                            if( dCount == relDay and validateDateTime( dt ) )
                             {
-                                dCount--;
-                                DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
-                                if( dCount == relDay and validateDateTime( dt ) )
-                                {
-                                    monthTargetList.append( dt );
-                                    break;
-                                }
-                                d = d.addDays( -7 );
+                                monthTargetList.append( dt );
+                                break;
                             }
-                            else
-                                d = d.addDays( -1 );
+                            d = d.addDays( -7 );
                         }
+                        else
+                            d = d.addDays( -1 );
                     }
                 }
             }
@@ -822,7 +823,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateT
     DateTime runner = inDtStart;
 
     bool have_byMonth =     not m_byMonthSet.isEmpty();
-    bool have_byDay =       not m_byDayMap.isEmpty();
+    bool have_byDay =       m_byDaySet.size() > 0;
     bool have_byTime =      not (m_byHourSet.isEmpty() and
                                  m_byMinuteSet.isEmpty() and
                                  m_bySecondSet.isEmpty() );
@@ -852,7 +853,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesWeekly( const DateT
             for( int i = 0; i < 7; i++ )
             {
                 int weekDay = d.dayOfWeek();
-                if( m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) )
+                if( daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) )
                 {
                     DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
                     if( validateDateTime( dt ) )
@@ -954,7 +955,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
     DateTime runner = inDtStart;
     bool have_byMonth =     not m_byMonthSet.isEmpty();
     bool have_byMonthDay =  not m_byMonthDaySet.isEmpty();
-    bool have_byDay =       not m_byDayMap.isEmpty();
+    bool have_byDay =       m_byDaySet.size() > 0;
     bool have_byTime =      not (m_byHourSet.isEmpty() and
                                  m_byMinuteSet.isEmpty() and
                                  m_bySecondSet.isEmpty() );
@@ -1017,7 +1018,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesDaily( const DateTi
         if( have_byDay )        // limit BYDAY
         {
             int weekDay = runner.date().dayOfWeek();
-            if( not m_byDayMap.contains( static_cast<WeekDay>(weekDay) ) )
+            if( not daysetContainsDay( m_byDaySet, static_cast<WeekDay>(weekDay) ) )
             {
                 runner = runner.addDays( m_interval );
                 if( inDtLast.date() < runner.date() )
@@ -1309,9 +1310,9 @@ void Appointment::makeDateList( const QString inElementsString, const QString in
 }
 
 
-void Appointment::makeDaymap( const QString inElementsString, QMultiMap<AppointmentRecurrence::WeekDay, int> &outMap )
+void Appointment::makeDayset( const QString inElementsString, std::set<std::pair<AppointmentRecurrence::WeekDay, int>> &outSet )
 {
-    outMap.clear();
+    outSet.clear();
     bool ok = false;
     QRegularExpression re( "([+-]?\\d*)(\\D*)" );
     AppointmentRecurrence::WeekDay weekDay = AppointmentRecurrence::WD_MO;
@@ -1334,7 +1335,7 @@ void Appointment::makeDaymap( const QString inElementsString, QMultiMap<Appointm
         else if( dString == "FR" )  weekDay = AppointmentRecurrence::WD_FR;
         else if( dString == "SA" )  weekDay = AppointmentRecurrence::WD_SA;
         else                        weekDay = AppointmentRecurrence::WD_SU;
-        outMap.insert( weekDay, value );
+        outSet.insert( std::make_pair( weekDay, value ) );
     }
 }
 
@@ -1382,34 +1383,35 @@ void Appointment::makeStringsFromDateList( const QList<DateTime> &inList, QStrin
 }
 
 
-void Appointment::makeStringFromDaymap( const QMultiMap<AppointmentRecurrence::WeekDay, int> inMap, QString &outString )
+void Appointment::makeStringFromDayset( const std::set<std::pair<AppointmentRecurrence::WeekDay, int>> inSet, QString &outString )
 {
     outString = "";
-    int count = inMap.count();
+    int count = inSet.size();
     int num = 0;
-    for( const AppointmentRecurrence::WeekDay wd : inMap.uniqueKeys() )
+    for( const std::pair<AppointmentRecurrence::WeekDay, int> dayItem : inSet )
     {
-        QString k;
-        switch( wd )
+        QString weekDayAbbrev;
+        AppointmentRecurrence::WeekDay weekDay = dayItem.first;
+        int relDay = dayItem.second;
+        switch( weekDay )
         {
-            case AppointmentRecurrence::WD_MO:  k = "MO"; break;
-            case AppointmentRecurrence::WD_TU:  k = "TU"; break;
-            case AppointmentRecurrence::WD_WE:  k = "WE"; break;
-            case AppointmentRecurrence::WD_TH:  k = "TH"; break;
-            case AppointmentRecurrence::WD_FR:  k = "FR"; break;
-            case AppointmentRecurrence::WD_SA:  k = "SA"; break;
-            case AppointmentRecurrence::WD_SU:  k = "SU"; break;
+            case AppointmentRecurrence::WD_MO:  weekDayAbbrev = "MO"; break;
+            case AppointmentRecurrence::WD_TU:  weekDayAbbrev = "TU"; break;
+            case AppointmentRecurrence::WD_WE:  weekDayAbbrev = "WE"; break;
+            case AppointmentRecurrence::WD_TH:  weekDayAbbrev = "TH"; break;
+            case AppointmentRecurrence::WD_FR:  weekDayAbbrev = "FR"; break;
+            case AppointmentRecurrence::WD_SA:  weekDayAbbrev = "SA"; break;
+            case AppointmentRecurrence::WD_SU:  weekDayAbbrev = "SU"; break;
         }
-        for( const int v : inMap.values( wd ) )
-        {
-            num++;
-            QString s;
-            if( num != count )
-                // strings are (-1MO), (0TU) and so on.
-                s = QString( "%1%2,").arg( v ).arg( k );
-            else
-                s = QString( "%1%2").arg( v ).arg( k );
-        }
+
+        num++;
+        QString s;
+        if( num != count )
+            // strings are (-1MO), (0TU) and so on.
+            s = QString( "%1%2,").arg( relDay ).arg( weekDayAbbrev );
+        else
+            s = QString( "%1%2").arg( relDay ).arg( weekDayAbbrev );
+        outString += s;
     }
 }
 
