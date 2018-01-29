@@ -184,13 +184,12 @@ bool AppointmentDialog::modified() const
                 m_ui->rec_misc_repeat_intervalnumber->value() == 1 ) );
         same = same and static_cast<int>(m_storedOrigAppointment->m_appRecurrence->m_startWeekday) ==
                m_ui->rec_misc_weekstartday->currentData().toInt(&ok);
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthSet == m_monthsMonthNo;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberSet == m_weeksByWeekNo;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthSet == m_appointment->m_appRecurrence->m_byMonthSet;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberSet == m_appointment->m_appRecurrence->m_byWeekNumberSet;
         same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDaySet == m_daysByYearDay;
         same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDaySet == m_daysByMonthDay;
 
-        // @fixme: m_byDayMap missing
-
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byDaySet == m_weekDaysDaysByDay;
         same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosSet == m_setPos;
     }
     else
@@ -235,7 +234,8 @@ void AppointmentDialog::reset()
     m_ui->basic_repeattype_combo->setCurrentIndex( 0 );
 
     // Page Recurrence
-    resetRecurrencePage();
+    if( m_appointment and m_appointment->m_haveRecurrence )
+        resetRecurrencePage();
 
     // Page Alarm
     // ...
@@ -255,7 +255,7 @@ void AppointmentDialog::reset( const QDate date )
 
 void AppointmentDialog::resetRecurrencePage()
 {
-    m_monthsMonthNo.clear();
+    m_appointment->m_appRecurrence->m_byMonthSet.clear();
     m_ui->rec_bymonth_jan->setChecked( false );
     m_ui->rec_bymonth_feb->setChecked( false );
     m_ui->rec_bymonth_mar->setChecked( false );
@@ -424,6 +424,11 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_byday_daynumber->setEnabled( true );
             m_ui->rec_page_misc->setEnabled( true );
             m_ui->rec_misc_repeat_intervalnumber->setSuffix( " years" );
+            if( not m_appointment->m_haveRecurrence )
+            {
+                m_appointment->m_haveRecurrence = true;
+                m_appointment->m_appRecurrence = new AppointmentRecurrence();
+            }
         break;
         case MONTHLY:
             m_ui->rec_page_bymonth->setEnabled( true );
@@ -434,6 +439,11 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_byday_daynumber->setEnabled( true );
             m_ui->rec_page_misc->setEnabled( true );
             m_ui->rec_misc_repeat_intervalnumber->setSuffix( " months" );
+            if( not m_appointment->m_haveRecurrence )
+            {
+                m_appointment->m_haveRecurrence = true;
+                m_appointment->m_appRecurrence = new AppointmentRecurrence();
+            }
         break;
         case WEEKLY:
             m_ui->rec_page_bymonth->setEnabled( true );
@@ -444,6 +454,11 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_byday_daynumber->setEnabled( false );
             m_ui->rec_page_misc->setEnabled( true );
             m_ui->rec_misc_repeat_intervalnumber->setSuffix( " weeks" );
+            if( not m_appointment->m_haveRecurrence )
+            {
+                m_appointment->m_haveRecurrence = true;
+                m_appointment->m_appRecurrence = new AppointmentRecurrence();
+            }
         break;
         case DAILY:
             m_ui->rec_page_bymonth->setEnabled( true );
@@ -454,6 +469,11 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_byday_daynumber->setEnabled( false );
             m_ui->rec_page_misc->setEnabled( true );
             m_ui->rec_misc_repeat_intervalnumber->setSuffix( " days" );
+            if( not m_appointment->m_haveRecurrence )
+            {
+                m_appointment->m_haveRecurrence = true;
+                m_appointment->m_appRecurrence = new AppointmentRecurrence();
+            }
         break;
         default:
             m_ui->rec_page_bymonth->setDisabled( true );
@@ -464,16 +484,22 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
             m_ui->rec_page_misc->setDisabled( true );
             m_ui->tab_recurrence->setEnabled( true );   // disable tab
             m_ui->rec_misc_repeat_intervalnumber->setSuffix( "" );
+            if( m_appointment->m_haveRecurrence )
+            {
+                m_appointment->m_haveRecurrence = false;
+                delete m_appointment->m_appRecurrence;
+            }
     }
 }
 
 
 void AppointmentDialog::slotMonthClicked( int id, bool checked )
 {
+    Q_ASSERT( m_appointment->m_haveRecurrence );
     if( checked )
-        m_monthsMonthNo.insert( id );
+        m_appointment->m_appRecurrence->m_byMonthSet.insert( id );
     else
-        m_monthsMonthNo.remove( id );
+        m_appointment->m_appRecurrence->m_byMonthSet.remove( id );
 }
 
 
@@ -482,9 +508,9 @@ void AppointmentDialog::slotAddWeekNoClicked()
     int weekNumber = m_ui->rec_byweekno_weeknumber->value();
     if( weekNumber == 0 )
         return; // "0" does not make sense
-    if( m_weeksByWeekNo.contains( weekNumber) )
+    if( m_appointment->m_appRecurrence->m_byWeekNumberSet.contains( weekNumber) )
         return; // already in the set
-    m_weeksByWeekNo.insert( weekNumber );
+    m_appointment->m_appRecurrence->m_byWeekNumberSet.insert( weekNumber );
     QListWidgetItem* item = new QListWidgetItem( QString( "Week %1").arg( weekNumber) );
     item->setData( Qt::UserRole, weekNumber );
     m_ui->rec_byweekno_list->addItem( item );
@@ -501,7 +527,7 @@ void AppointmentDialog::slotRemoveWeekNoClicked()
     {
         int weekNumber = item->data( Qt::UserRole ).toInt( &ok );
         // remove from set
-        m_weeksByWeekNo.remove( weekNumber );
+        m_appointment->m_appRecurrence->m_byWeekNumberSet.remove( weekNumber );
         // remove the item from QListWidget
         int itemRow = m_ui->rec_byweekno_list->row( item );
         delete m_ui->rec_byweekno_list->takeItem( itemRow );
@@ -606,6 +632,7 @@ void AppointmentDialog::slotRemoveDayDayClicked()
     for( const QListWidgetItem* item : itemList )
     {
         std::pair<int,int> dayElem  = item->data( Qt::UserRole ).value<std::pair<int,int>>();
+        // funny c++: we really have to make a pair, just to get rid of the set element:
         m_weekDaysDaysByDay.erase(
                     std::make_pair( static_cast<AppointmentRecurrence::WeekDay>(dayElem.first), dayElem.second ) );
         int itemRow = m_ui->rec_byday_list->row( item );

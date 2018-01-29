@@ -138,8 +138,8 @@ private:
     bool        m_isNewAppointment;
 
     // recurrence part
-    QSet<int>   m_monthsMonthNo;    // Recurrence, ByMonth, Set of months
-    QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
+    // @fixme: move to m_appointment...
+    //QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
     QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
     QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
     std::set<std::pair<AppointmentRecurrence::WeekDay, int>> m_weekDaysDaysByDay; // Recurrence, ByDays, pair<WeekDay, DayNum>
