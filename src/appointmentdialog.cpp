@@ -585,25 +585,13 @@ void AppointmentDialog::slotAddDayDayClicked()
             return;
     }
 
-
-    QPair<int, int> value = QPair<int,int>( weekDay, dayNumber );
-    qDebug() << "1. " << value;
-    m_weekDaysDaysByDay2.insert( value );
-    QVariant v = QVariant::fromValue( value );
-    qDebug() << "2. " << v;
-    QPair<int,int> value2  = v.value<QPair<int,int>>();
-    qDebug() << "3. " << value2.first;
-
-
-    // numeric value to store
-    int data = weekDay * 1000 + 500 + dayNumber;
-
+    QPair<int, int> data = QPair<int,int>( weekDay, dayNumber );
     if( m_weekDaysDaysByDay.contains( data ) )
         return;
     m_weekDaysDaysByDay.insert( data );
     QString text = dayNumber == 0 ? weekDayName : QString( "%1. %2" ).arg( dayNumber ).arg( weekDayName );
     QListWidgetItem* item = new QListWidgetItem( text );
-    item->setData( Qt::UserRole, data );
+    item->setData( Qt::UserRole, QVariant::fromValue( data ) );
     m_ui->rec_byday_list->addItem( item );
 }
 
@@ -613,10 +601,10 @@ void AppointmentDialog::slotRemoveDayDayClicked()
     QList<QListWidgetItem*> itemList = m_ui->rec_byday_list->selectedItems();
     if( itemList.count() == 0 )
         return;
-    bool ok;
     for( const QListWidgetItem* item : itemList )
     {
-        int data = item->data( Qt::UserRole ).toInt( &ok );
+
+        QPair<int,int> data  = item->data( Qt::UserRole ).value<QPair<int,int>>();
         m_weekDaysDaysByDay.remove( data );
         int itemRow = m_ui->rec_byday_list->row( item );
         delete m_ui->rec_byday_list->takeItem( itemRow );

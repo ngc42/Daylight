@@ -64,6 +64,7 @@ QString Parameter::contentToString() const
             for( int i : m_contentIntSet )
                 ret.append( QString( "%1," ).arg(i) );
         }
+            break;
         case PST_STRING:        ret += m_content;   break;
         case PST_DATETIME:      ret += m_contentDateTime.toString(); break;
         case PST_STRINGLIST:
