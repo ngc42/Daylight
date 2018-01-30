@@ -203,6 +203,20 @@ bool AppointmentDialog::modified() const
 }
 
 
+void  AppointmentDialog::deleteAppointment()
+{
+    if( m_appointment->m_haveAlarm )
+    {
+        while( not m_appointment->m_appAlarms.isEmpty() )
+            delete m_appointment->m_appAlarms.first();
+    }
+    if( m_appointment->m_haveRecurrence )
+        delete m_appointment->m_appRecurrence;
+    delete m_appointment->m_appBasics;
+    delete m_appointment;
+}
+
+
 void AppointmentDialog::setUpTimezones()
 {
     QTimeZone systemTz = QTimeZone::systemTimeZone();
@@ -339,7 +353,12 @@ void AppointmentDialog::createNewAppointment()
     m_isNewAppointment = true;
     m_appointment = new Appointment();
     m_appointment->generateUid();
-    m_sequence = 0;     // start with a fresh sequence
+    m_appointment->m_appRecurrence = nullptr;
+    m_appointment->m_haveAlarm = false;
+    m_appointment->m_haveRecurrence = false;
+    m_appointment->m_appBasics = new AppointmentBasics();
+    m_appointment->m_appBasics->m_uid = m_appointment->m_uid;
+    m_appointment->m_appBasics->m_sequence = 0;     // start with a fresh sequence
     setUserCalendarIndexById( 0 );
 }
 
@@ -349,9 +368,10 @@ void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
     m_isNewAppointment = false;
     m_storedOrigAppointment = apmData;
     m_appointment = new Appointment();
+    m_appointment->m_appBasics = new AppointmentBasics();
     m_appointment->m_uid = apmData->m_uid;
     m_appointment->m_userCalendarId = apmData->m_userCalendarId;
-    m_sequence = apmData->m_appBasics->m_sequence;
+    m_appointment->m_appBasics->m_sequence = apmData->m_appBasics->m_sequence;
 
     // gui part
     m_ui->basic_title_le->setText( apmData->m_appBasics->m_summary );
@@ -367,6 +387,12 @@ void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
 }
 
 
+void AppointmentDialog::increaseSequence()
+{
+    m_appointment->m_appBasics->m_sequence++;
+}
+
+
 void AppointmentDialog::setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 )
 {
     int index_iana1 = m_ui->basic_tz_start_combo->findText( iana1 );
@@ -376,24 +402,17 @@ void AppointmentDialog::setTimezoneIndexesByIanaId( const QByteArray iana1, cons
 }
 
 
-void AppointmentDialog::collectAppointmentData()
+void AppointmentDialog::collectAppointmentDataFromBasicPage()
 {
     bool ok = false;
-    AppointmentBasics* basics = new AppointmentBasics();
-    basics->m_uid = m_appointment->m_uid;
-    basics->m_sequence = m_sequence;
     // @fixme: missing timezones
-    basics->m_dtStart = m_ui->basic_datetime_startInterval->dateTime();
-    basics->m_dtEnd = m_ui->basic_datetime_endInterval->dateTime();
-    basics->m_summary = m_ui->basic_title_le->text();
-    basics->m_description = m_ui->basic_description->toPlainText();
-    basics->m_busyFree = m_ui->basic_busy_check->isChecked() ?
+    m_appointment->m_appBasics->m_dtStart = m_ui->basic_datetime_startInterval->dateTime();
+    m_appointment->m_appBasics->m_dtEnd = m_ui->basic_datetime_endInterval->dateTime();
+    m_appointment->m_appBasics->m_summary = m_ui->basic_title_le->text();
+    m_appointment->m_appBasics->m_description = m_ui->basic_description->toPlainText();
+    m_appointment->m_appBasics->m_busyFree = m_ui->basic_busy_check->isChecked() ?
                 AppointmentBasics::BUSY : AppointmentBasics::FREE;
-    m_appointment->m_appBasics = basics;
     m_appointment->m_userCalendarId = m_ui->basic_select_calendar_combo->currentData().toInt( &ok );
-    m_appointment->m_appRecurrence = nullptr;
-    m_appointment->m_haveAlarm = false;
-    m_appointment->m_haveRecurrence = false;
 }
 
 

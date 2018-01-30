@@ -20,14 +20,10 @@
 #include "appointmentmanager.h"
 #include "usercalendar.h"
 
-#include <utility>
-#include <set>
-
 #include <QButtonGroup>
 #include <QDateTime>
 #include <QDialog>
 #include <QSet>
-
 
 namespace Ui {
     class AppointmentDialog;
@@ -83,8 +79,10 @@ public:
 
     Appointment* appointment() { return m_appointment; }
 
-    /* Deletes a newly created appointment. Used, if this dialog is cancelled. */
-    void deleteAppointment() { delete m_appointment; }
+    /* Deletes a newly created appointment. Used, if this dialog is cancelled or an
+     * in-use appointment wasn't modified
+     */
+    void deleteAppointment();
 
     // timezones as strings in the form.
     void setUpTimezones();
@@ -107,14 +105,16 @@ public:
     void createNewAppointment();
     void setAppointmentValues( const Appointment* apmData );
 
+    // modified in-use-appointment, increse sequence number
+    void increaseSequence();
+
     // set up timezone-Combos with existing iana ids.
     void setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 );
 
-    /* we are close to finish: Here, we collect the user input and create
-     * a new appointment out of it.
+    /* we are close to finish: Here, we collect the user input from the basic page.
      * @fixme: missing m_sequence, use modified() for it.
      */
-    void collectAppointmentData();
+    void collectAppointmentDataFromBasicPage();
 
 private:
     Ui::AppointmentDialog*  m_ui;
@@ -131,9 +131,6 @@ private:
     // used to calculate m_sequence
     // Set by setAppointmentValues
     const Appointment*  m_storedOrigAppointment;
-
-    // @fixme: need to notify about changes
-    int         m_sequence;
 
     // false, if we modify an existing appointment
     bool        m_isNewAppointment;

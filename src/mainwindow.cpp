@@ -618,20 +618,29 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
         qDebug() << "MainWindow::slotAppointmentDlgFinished -> rejected";
         return;
     }
-    // an in-use appointment, which was not modified:
-    if( not ( m_appointmentDialog->modified() or m_appointmentDialog->isNewAppointment() ) )
-    {
-        m_appointmentDialog->hide();
-        qDebug() << "MainWindow::slotAppointmentDlgFinished -> not modified";
-        return;
-    }
-
-    // returncode == QDialog::Accepted
 
     // collect user data
-    m_appointmentDialog->collectAppointmentData();
+    m_appointmentDialog->collectAppointmentDataFromBasicPage();
+
+    if( not m_appointmentDialog->isNewAppointment() )
+    {   // an already in use appointment
+
+        if( m_appointmentDialog->modified() )
+        {
+            // which was modified, so increase sequence number
+            m_appointmentDialog->increaseSequence();
+        }
+        else
+        {
+            // nothing to do: user just wants so see the appointment in a dialog.
+            m_appointmentDialog->deleteAppointment();
+            m_appointmentDialog->hide();
+            qDebug() << "MainWindow::slotAppointmentDlgFinished -> not modified";
+            return;
+        }
+    }
+
     Appointment* a = m_appointmentDialog->appointment();
-    // make events
     a->makeEvents();
     a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
 
