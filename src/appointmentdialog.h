@@ -106,7 +106,8 @@ public:
      */
     void createNewAppointment();
     void setAppointmentValues( const Appointment* apmData );
-    // set up timezone-Combos with existing iana ids
+
+    // set up timezone-Combos with existing iana ids.
     void setTimezoneIndexesByIanaId( const QByteArray iana1, const QByteArray iana2 );
 
     /* we are close to finish: Here, we collect the user input and create
@@ -136,14 +137,6 @@ private:
 
     // false, if we modify an existing appointment
     bool        m_isNewAppointment;
-
-    // recurrence part
-    // @fixme: move to m_appointment...
-    //QSet<int>   m_weeksByWeekNo;    // Recurrence, ByWeekNo, Set of weeks
-    QSet<int>   m_daysByYearDay;    // Recurrence, ByYearDays, Set of days
-    QSet<int>   m_daysByMonthDay;   // Recurrence, ByYearDays, Set of days
-    std::set<std::pair<AppointmentRecurrence::WeekDay, int>> m_weekDaysDaysByDay; // Recurrence, ByDays, pair<WeekDay, DayNum>
-    QSet<int>   m_setPos;           // Recurrence, ByDays, <WeekDay * 1000 + 500 + DayNum>
 
     RepeatRestrictionType repeatRestriction() const;
 

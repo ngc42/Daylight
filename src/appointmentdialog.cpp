@@ -186,11 +186,11 @@ bool AppointmentDialog::modified() const
                m_ui->rec_misc_weekstartday->currentData().toInt(&ok);
         same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthSet == m_appointment->m_appRecurrence->m_byMonthSet;
         same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberSet == m_appointment->m_appRecurrence->m_byWeekNumberSet;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDaySet == m_daysByYearDay;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDaySet == m_daysByMonthDay;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDaySet == m_appointment->m_appRecurrence->m_byYearDaySet;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDaySet == m_appointment->m_appRecurrence->m_byMonthDaySet;
 
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byDaySet == m_weekDaysDaysByDay;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosSet == m_setPos;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_byDaySet == m_appointment->m_appRecurrence->m_byDaySet;
+        same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosSet == m_appointment->m_appRecurrence->m_bySetPosSet;
     }
     else
     {
@@ -540,9 +540,9 @@ void AppointmentDialog::slotAddYearDayClicked()
     int dayNumber = m_ui->rec_byyearday_daynumber->value();
     if( dayNumber == 0 )
         return;
-    if( m_daysByYearDay.contains( dayNumber) )
+    if( m_appointment->m_appRecurrence->m_byYearDaySet.contains( dayNumber) )
         return;
-    m_daysByYearDay.insert( dayNumber );
+    m_appointment->m_appRecurrence->m_byYearDaySet.insert( dayNumber );
     QListWidgetItem* item = new QListWidgetItem( QString( "Day in Year %1" ).arg( dayNumber) );
     item->setData( Qt::UserRole, dayNumber );
     m_ui->rec_byyearday_list->addItem( item );
@@ -558,7 +558,7 @@ void AppointmentDialog::slotRemoveYearDayClicked()
     for( const QListWidgetItem* item : itemList )
     {
         int dayNumber = item->data( Qt::UserRole ).toInt(&ok);
-        m_daysByYearDay.remove( dayNumber );
+        m_appointment->m_appRecurrence->m_byYearDaySet.remove( dayNumber );
         int itemRow = m_ui->rec_byyearday_list->row( item );
         delete m_ui->rec_byyearday_list->takeItem( itemRow );
     }
@@ -570,9 +570,9 @@ void AppointmentDialog::slotAddMonthDayClicked()
     int dayNumber = m_ui->rec_bymonthday_daynumber->value();
     if( dayNumber == 0 )
         return;
-    if( m_daysByMonthDay.contains( dayNumber) )
+    if( m_appointment->m_appRecurrence->m_byMonthDaySet.contains( dayNumber) )
         return;
-    m_daysByMonthDay.insert( dayNumber );
+    m_appointment->m_appRecurrence->m_byMonthDaySet.insert( dayNumber );
     QListWidgetItem* item = new QListWidgetItem( QString( "Day in Month %1" ).arg( dayNumber) );
     item->setData( Qt::UserRole, dayNumber );
     m_ui->rec_bymonthday_list->addItem( item );
@@ -588,7 +588,7 @@ void AppointmentDialog::slotRemoveMonthDayClicked()
     for( const QListWidgetItem* item : itemList )
     {
         int dayNumber = item->data( Qt::UserRole ).toInt( &ok );
-        m_daysByMonthDay.remove( dayNumber );
+        m_appointment->m_appRecurrence->m_byMonthDaySet.remove( dayNumber );
         int itemRow = m_ui->rec_bymonthday_list->row( item );
         delete m_ui->rec_bymonthday_list->takeItem( itemRow );
     }
@@ -614,9 +614,9 @@ void AppointmentDialog::slotAddDayDayClicked()
 
     std::pair<AppointmentRecurrence::WeekDay, int> dayElem =
             std::make_pair( static_cast<AppointmentRecurrence::WeekDay>(weekDay), dayNumber );
-    if( m_weekDaysDaysByDay.find( dayElem ) != m_weekDaysDaysByDay.end() )
+    if( m_appointment->m_appRecurrence->m_byDaySet.find( dayElem ) != m_appointment->m_appRecurrence->m_byDaySet.end() )
         return;
-    m_weekDaysDaysByDay.insert( dayElem );
+    m_appointment->m_appRecurrence->m_byDaySet.insert( dayElem );
     QString text = dayNumber == 0 ? weekDayName : QString( "%1. %2" ).arg( dayNumber ).arg( weekDayName );
     QListWidgetItem* item = new QListWidgetItem( text );
     item->setData( Qt::UserRole, QVariant::fromValue( std::make_pair(weekDay, dayNumber) ) );
@@ -633,11 +633,11 @@ void AppointmentDialog::slotRemoveDayDayClicked()
     {
         std::pair<int,int> dayElem  = item->data( Qt::UserRole ).value<std::pair<int,int>>();
         // funny c++: we really have to make a pair, just to get rid of the set element:
-        m_weekDaysDaysByDay.erase(
+        m_appointment->m_appRecurrence->m_byDaySet.erase(
                     std::make_pair( static_cast<AppointmentRecurrence::WeekDay>(dayElem.first), dayElem.second ) );
         int itemRow = m_ui->rec_byday_list->row( item );
         delete m_ui->rec_byday_list->takeItem( itemRow );
-        qDebug() << m_weekDaysDaysByDay.size();
+        qDebug() << m_appointment->m_appRecurrence->m_byDaySet.size();
     }
 }
 
@@ -667,9 +667,9 @@ void AppointmentDialog::slotAddSetposClicked()
     int posNumber = m_ui->rec_misc_setpos_posnumber->value();
     if( posNumber == 0 )
         return;
-    if( m_setPos.contains( posNumber) )
+    if( m_appointment->m_appRecurrence->m_bySetPosSet.contains( posNumber) )
         return;
-    m_setPos.insert( posNumber );
+    m_appointment->m_appRecurrence->m_bySetPosSet.insert( posNumber );
     QListWidgetItem* item = new QListWidgetItem( QString( "Setpos %1").arg( posNumber) );
     item->setData( Qt::UserRole, posNumber );
     m_ui->rec_misc_setpos_list->addItem( item );
@@ -685,7 +685,7 @@ void AppointmentDialog::slotRemoveSetposClicked()
     for( const QListWidgetItem* item : itemList )
     {
         int posNumber = item->data( Qt::UserRole ).toInt( &ok );
-        m_setPos.remove( posNumber );
+        m_appointment->m_appRecurrence->m_bySetPosSet.remove( posNumber );
         int itemRow = m_ui->rec_misc_setpos_list->row( item );
         delete m_ui->rec_misc_setpos_list->takeItem( itemRow );
     }

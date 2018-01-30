@@ -1,6 +1,5 @@
 
 
-- QMap und QMultiMap replace with std::set< std::pair<> >
 - Parameter::IcalWeekDayType and AppointmentRecurrence::WeekDay should be the same.
 - AppointmentAlarm should be a QVector inside of Appointment, not a QList
 

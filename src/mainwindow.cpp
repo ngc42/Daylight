@@ -590,7 +590,7 @@ void MainWindow::slotAppointmentDlgStart(const QDate &date)
 
 /* User wants to reconfigure an appointment. Take the data from this appointment
  * and show the appointmet dialog with the given data.
- * Communicate over appointment id with slotAppointmentDlgFinished(). */
+ */
 void MainWindow::slotReconfigureAppointment( QString appointmentId )
 {
     qDebug() << "MainWindow::slotReconfigureAppointment";
@@ -618,7 +618,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
         qDebug() << "MainWindow::slotAppointmentDlgFinished -> rejected";
         return;
     }
-    // an in-use appointment,
+    // an in-use appointment, which was not modified:
     if( not ( m_appointmentDialog->modified() or m_appointmentDialog->isNewAppointment() ) )
     {
         m_appointmentDialog->hide();
