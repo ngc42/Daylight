@@ -25,8 +25,6 @@ EventPool::EventPool()
 
 void EventPool::addAppointment( Appointment* inApp )
 {
-    qDebug() << "add appointment with calid = " << inApp->m_userCalendarId << inApp->m_uid << inApp->m_eventVector.isEmpty();
-
     // empty Appointments should not exist
     if( inApp->m_eventVector.isEmpty() )
         return;

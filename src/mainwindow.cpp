@@ -622,6 +622,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     // collect user data
     m_appointmentDialog->collectAppointmentDataFromBasicPage();
 
+
     if( not m_appointmentDialog->isNewAppointment() )
     {   // an already in use appointment
 
@@ -641,7 +642,20 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     }
 
     Appointment* a = m_appointmentDialog->appointment();
+    if( a->m_haveRecurrence )
+        qDebug() << "HAVE Recurrence";
+    qDebug() << a->m_appBasics->m_dtStart.toDtString()  << a->m_appBasics->m_dtEnd.toDtString();
+
+    qDebug() << "--------- BEGIN Events ----------- ";
+
     a->makeEvents();
+
+    for( Event e : a->m_eventVector )
+    {
+        qDebug() << " Event: " << e.m_startDt.toDtString();
+    }
+    qDebug() << "--------- END Events ----------- ";
+
     a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
 
     if( m_appointmentDialog->isNewAppointment() )

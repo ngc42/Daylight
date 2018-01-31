@@ -248,8 +248,7 @@ void AppointmentDialog::reset()
     m_ui->basic_repeattype_combo->setCurrentIndex( 0 );
 
     // Page Recurrence
-    if( m_appointment and m_appointment->m_haveRecurrence )
-        resetRecurrencePage();
+    resetRecurrencePage();
 
     // Page Alarm
     // ...
@@ -257,6 +256,8 @@ void AppointmentDialog::reset()
     // Disable Pages Recurrence and Alarm
     m_ui->tab_recurrence->setDisabled( true );
     m_ui->tab_alarm->setDisabled( true );
+
+    m_ui->tabWidget->setCurrentIndex( 0 );
 }
 
 
@@ -269,7 +270,6 @@ void AppointmentDialog::reset( const QDate date )
 
 void AppointmentDialog::resetRecurrencePage()
 {
-    m_appointment->m_appRecurrence->m_byMonthSet.clear();
     m_ui->rec_bymonth_jan->setChecked( false );
     m_ui->rec_bymonth_feb->setChecked( false );
     m_ui->rec_bymonth_mar->setChecked( false );
@@ -360,6 +360,7 @@ void AppointmentDialog::createNewAppointment()
     m_appointment->m_appBasics->m_uid = m_appointment->m_uid;
     m_appointment->m_appBasics->m_sequence = 0;     // start with a fresh sequence
     setUserCalendarIndexById( 0 );
+
 }
 
 
@@ -448,6 +449,8 @@ void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
                 m_appointment->m_haveRecurrence = true;
                 m_appointment->m_appRecurrence = new AppointmentRecurrence();
             }
+            m_appointment->m_appRecurrence->m_frequency = AppointmentRecurrence::RFT_YEARLY;
+            qDebug() << " AppointmentDialog::slotIndexChangedRecurrenceFrequency ( YEARLY )";
         break;
         case MONTHLY:
             m_ui->rec_page_bymonth->setEnabled( true );

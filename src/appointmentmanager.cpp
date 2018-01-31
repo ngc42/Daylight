@@ -229,6 +229,8 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDates( const DateTime in
     else
         lastDt.readDateTime( "21001231", true );
 
+    qDebug() << "AppointmentRecurrence::recurrenceStartDates " << m_frequency << inDtStart.toDtString() ;
+
     if( m_frequency == RFT_SIMPLE_YEARLY )
         return recurrenceStartDatesSimpleYearly( inDtStart, lastDt );
     if( m_frequency == RFT_SIMPLE_MONTHLY )
@@ -1443,6 +1445,9 @@ void Appointment::makeEvents()
 
         qint64 seconds = m_appBasics->m_dtStart.secsTo( m_appBasics->m_dtEnd );
         QVector<DateTime> list = m_appRecurrence->recurrenceStartDates( m_appBasics->m_dtStart );
+
+        qDebug() << "Appointment::makeEvents() " << list.count();
+
 
         for( const DateTime dt : list )
         {

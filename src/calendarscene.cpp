@@ -277,7 +277,6 @@ void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
         if( e.sameDay() )
         {
             dayList.append(e);
-            qDebug() << "CalendarScene::setAppointmentsForYear - appended";
         }
         else
             nextList.append(e);
