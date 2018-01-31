@@ -229,8 +229,6 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDates( const DateTime in
     else
         lastDt.readDateTime( "21001231", true );
 
-    qDebug() << "AppointmentRecurrence::recurrenceStartDates " << m_frequency << inDtStart.toDtString() ;
-
     if( m_frequency == RFT_SIMPLE_YEARLY )
         return recurrenceStartDatesSimpleYearly( inDtStart, lastDt );
     if( m_frequency == RFT_SIMPLE_MONTHLY )

@@ -621,7 +621,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
 
     // collect user data
     m_appointmentDialog->collectAppointmentDataFromBasicPage();
-
+    m_appointmentDialog->collectAppointmentDataFromRecurrencePage();
 
     if( not m_appointmentDialog->isNewAppointment() )
     {   // an already in use appointment
