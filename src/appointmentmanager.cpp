@@ -1444,8 +1444,8 @@ void Appointment::makeEvents()
         qint64 seconds = m_appBasics->m_dtStart.secsTo( m_appBasics->m_dtEnd );
         QVector<DateTime> list = m_appRecurrence->recurrenceStartDates( m_appBasics->m_dtStart );
 
-        qDebug() << "Appointment::makeEvents() " << list.count();
-
+        m_minYear = list.constLast().date().year();
+        m_maxYear = list.constFirst().date().year();
 
         for( const DateTime dt : list )
         {

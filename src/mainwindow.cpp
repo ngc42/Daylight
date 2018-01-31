@@ -647,13 +647,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     qDebug() << a->m_appBasics->m_dtStart.toDtString()  << a->m_appBasics->m_dtEnd.toDtString();
 
     qDebug() << "--------- BEGIN Events ----------- ";
-
     a->makeEvents();
-
-    /*for( Event e : a->m_eventVector )
-    {
-        qDebug() << " Event: " << e.m_startDt.toDtString();
-    }*/
     qDebug() << "--------- END Events ----------- ";
 
     a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
