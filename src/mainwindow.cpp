@@ -650,10 +650,10 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
 
     a->makeEvents();
 
-    for( Event e : a->m_eventVector )
+    /*for( Event e : a->m_eventVector )
     {
         qDebug() << " Event: " << e.m_startDt.toDtString();
-    }
+    }*/
     qDebug() << "--------- END Events ----------- ";
 
     a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
@@ -661,7 +661,10 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     if( m_appointmentDialog->isNewAppointment() )
     {
         // write to db
+        qDebug() << "--------- BEGIN STORE ----------- ";
         m_storage->storeAppointment( (*a) );
+        qDebug() << "--------- END STORE ----------- ";
+
         // push to eventpool
         m_eventPool->addAppointment( a );
     }

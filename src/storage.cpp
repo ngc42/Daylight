@@ -164,8 +164,8 @@ void Storage::storeAppointment( const Appointment &apmData )
         QSqlQuery iRec(m_db);
         iRec.prepare("INSERT INTO recurrences VALUES(:uid, :frequency, :count, :interval, :until, :untiltz, "
                      ":startwd, :exdates, :exdatestz, :fixeddates, :fixeddatestz, "
-                     ":bywnlist, :byydlist, :bymdlist, :bydmap,"
-                     ":byhlist, :bymlist, :byslist)");
+                     ":bymonthlist, :bywnlist, :byydlist, :bymdlist, :bydmap,"
+                     ":byhlist, :bymlist, :byslist, :bysetposlist)");
         iRec.bindValue(":uid", apmData.m_uid);
         iRec.bindValue(":frequency", static_cast<int>(apmData.m_appRecurrence->m_frequency) );
         iRec.bindValue(":count", apmData.m_appRecurrence->m_count );
@@ -181,6 +181,8 @@ void Storage::storeAppointment( const Appointment &apmData )
         iRec.bindValue(":fixeddates", dtString );
         iRec.bindValue(":fixeddatestz", tzString );
         QString listString;
+        Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_byMonthSet, listString );
+        iRec.bindValue(":bymonthlist", listString );
         Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_byWeekNumberSet, listString );
         iRec.bindValue(":bywnlist", listString );
         Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_byYearDaySet, listString );
@@ -195,6 +197,8 @@ void Storage::storeAppointment( const Appointment &apmData )
         iRec.bindValue(":bymlist", listString );
         Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_bySecondSet, listString );
         iRec.bindValue(":byslist", listString );
+        Appointment::makeStringFromIntSet( apmData.m_appRecurrence->m_bySetPosSet, listString );
+        iRec.bindValue(":bysetposlist", listString );
         iRec.exec();
     }
 
