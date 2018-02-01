@@ -61,6 +61,9 @@ public:
      * We can also modify an existing appointment by clicking on an appointment
      */
     void createNewAppointment();
+
+    // same as above for in-use appointments.
+    // @fixme: missing Alarm
     void setAppointmentValues( const Appointment* apmData );
 
     // modified in-use-appointment, increse sequence number

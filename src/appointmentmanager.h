@@ -40,6 +40,9 @@ struct AppointmentBasics
     };
     // === Methods ===
     AppointmentBasics();
+    AppointmentBasics( const AppointmentBasics &other );
+
+    bool operator==(const AppointmentBasics &other ) const;
 
     // For debugging purpose
     QString contententToString() const;
@@ -69,6 +72,9 @@ struct AppointmentAlarm
 
     // Constructor: all dato set to 0
     AppointmentAlarm();
+    AppointmentAlarm( const AppointmentAlarm &other );
+
+    bool operator==(const AppointmentAlarm &other ) const;
 
     // for debugging
     QString contentToString() const;
@@ -109,6 +115,10 @@ public:
     // === Methods ===
 
     AppointmentRecurrence( QObject *parent = Q_NULLPTR );
+
+    // just partially, because we do not handle QObject
+    void getAPartialCopy( const AppointmentRecurrence &other );
+    bool isPartiallyEqual( const AppointmentRecurrence &other ) const;
 
     // for debugging
     QString     contentToString() const;

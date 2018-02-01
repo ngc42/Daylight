@@ -119,15 +119,31 @@ void AppointmentDialog::createNewAppointment()
 
 void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
 {
+    // Dialog Management
     m_isNewAppointment = false;
     m_storedOrigAppointment = apmData;
+
+    // Appointment
     m_appointment = new Appointment();
-    m_appointment->m_appBasics = new AppointmentBasics();
-    m_appointment->m_uid = apmData->m_uid;
     m_appointment->m_userCalendarId = apmData->m_userCalendarId;
-    m_appointment->m_appBasics->m_sequence = apmData->m_appBasics->m_sequence;
+    m_appointment->m_uid = apmData->m_uid;
+    m_appointment->m_haveRecurrence = apmData->m_haveRecurrence;
+    m_appointment->m_haveAlarm = apmData->m_haveAlarm;
+
+    // AppointmentBasic
+    m_appointment->m_appBasics = new AppointmentBasics( *apmData->m_appBasics );
+
+    // AppointmentRecurrence
+    if( m_appointment->m_haveRecurrence )
+    {
+        m_appointment->m_appRecurrence = new AppointmentRecurrence();
+        m_appointment->m_appRecurrence->getAPartialCopy( *apmData->m_appRecurrence );
+    }
+
 
     // gui part
+
+    // Basic page
     m_ui->basic_title_le->setText( apmData->m_appBasics->m_summary );
     setUserCalendarIndexById( apmData->m_userCalendarId );
     m_ui->basic_datetime_startInterval->setDateTime( apmData->m_appBasics->m_dtStart );
@@ -138,6 +154,34 @@ void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
     m_ui->basic_busy_check->setChecked(
                 apmData->m_appBasics->m_busyFree == AppointmentBasics::BUSY );
     m_ui->basic_description->setPlainText( apmData->m_appBasics->m_description );
+    if( not apmData->m_haveRecurrence )
+        m_ui->basic_repeattype_combo->setCurrentIndex( NO_RECURRENCE );
+    else
+    {
+        switch( apmData->m_appRecurrence->m_frequency )
+        {
+            case AppointmentRecurrence::RFT_SIMPLE_YEARLY:
+            case AppointmentRecurrence::RFT_YEARLY:
+                m_ui->basic_repeattype_combo->setCurrentIndex( YEARLY );
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_MONTHLY:
+            case AppointmentRecurrence::RFT_MONTHLY:
+                m_ui->basic_repeattype_combo->setCurrentIndex( MONTHLY );
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_WEEKLY:
+            case AppointmentRecurrence::RFT_WEEKLY:
+                m_ui->basic_repeattype_combo->setCurrentIndex( WEEKLY );
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_DAILY:
+            case AppointmentRecurrence::RFT_DAILY:
+                m_ui->basic_repeattype_combo->setCurrentIndex( DAILY );
+            break;
+            default:
+                qDebug() << "ERR: unimplemented Selector in AppointmentDialog::setAppointmentValues()";
+                Q_ASSERT( false );
+            break;
+        }
+    }
 }
 
 

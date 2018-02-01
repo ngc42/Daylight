@@ -34,6 +34,30 @@ AppointmentBasics::AppointmentBasics()
 }
 
 
+AppointmentBasics::AppointmentBasics( const AppointmentBasics &other )
+{
+    m_uid = other.m_uid;
+    m_sequence = other.m_sequence;
+    m_dtStart = other.m_dtStart;
+    m_dtEnd = other.m_dtEnd;
+    m_summary = other.m_summary;
+    m_description = other.m_description;
+    m_busyFree = other.m_busyFree;
+}
+
+
+bool AppointmentBasics::operator==(const AppointmentBasics &other ) const
+{
+    return m_uid == other.m_uid and
+            m_sequence == other.m_sequence and
+            m_dtStart == other.m_dtStart and
+            m_dtEnd == other.m_dtEnd and
+            m_summary == other.m_summary and
+            m_description == other.m_description and
+            m_busyFree == other.m_busyFree;
+}
+
+
 QString AppointmentBasics::contententToString() const
 {
     QString a( "{AppointmentBasics: [%1][%2 - %3][%4][%5]}\n" );
@@ -54,6 +78,22 @@ AppointmentAlarm::AppointmentAlarm()
       m_repeatNumber(0),
       m_pauseSecs(0)
 {
+}
+
+
+AppointmentAlarm::AppointmentAlarm( const AppointmentAlarm &other )
+{
+    m_alarmSecs = other.m_alarmSecs;
+    m_repeatNumber = other.m_repeatNumber;
+    m_pauseSecs = other.m_repeatNumber;
+}
+
+
+bool AppointmentAlarm::operator==(const AppointmentAlarm &other ) const
+{
+    return m_alarmSecs == other.m_alarmSecs and
+            m_repeatNumber == other.m_repeatNumber and
+            m_pauseSecs == other.m_pauseSecs;
 }
 
 
@@ -83,6 +123,53 @@ AppointmentRecurrence::AppointmentRecurrence( QObject* parent )
 {
 }
 
+
+void AppointmentRecurrence::getAPartialCopy( const AppointmentRecurrence &other)
+{
+    m_haveCount = other.m_haveCount;
+    m_haveInterval = other.m_haveInterval;
+    m_haveUntil = other.m_haveUntil;
+    m_frequency = other.m_frequency;
+    m_count = other.m_count;
+    m_interval = other.m_interval;
+    m_until = other.m_until;
+    m_startWeekday = other.m_startWeekday;
+    m_exceptionDates = other.m_exceptionDates;
+    m_fixedDates = other.m_fixedDates;
+    m_byMonthSet = other.m_byMonthSet;
+    m_byWeekNumberSet = other.m_byWeekNumberSet;
+    m_byYearDaySet = other.m_byYearDaySet;
+    m_byMonthDaySet = other.m_byMonthDaySet;
+    m_byDaySet = other.m_byDaySet;
+    m_byHourSet = other.m_byHourSet;
+    m_byMinuteSet = other.m_byMinuteSet;
+    m_bySecondSet = other.m_bySecondSet;
+    m_bySetPosSet = other.m_bySetPosSet;
+}
+
+
+bool AppointmentRecurrence::isPartiallyEqual( const AppointmentRecurrence &other ) const
+{
+    return m_haveCount == other.m_haveCount and
+            m_haveInterval == other.m_haveInterval and
+            m_haveUntil == other.m_haveUntil and
+            m_frequency == other.m_frequency and
+            m_count == other.m_count and
+            m_interval == other.m_interval and
+            m_until == other.m_until and
+            m_startWeekday == other.m_startWeekday and
+            m_exceptionDates == other.m_exceptionDates and
+            m_fixedDates == other.m_fixedDates and
+            m_byMonthSet == other.m_byMonthSet and
+            m_byWeekNumberSet == other.m_byWeekNumberSet and
+            m_byYearDaySet == other.m_byYearDaySet and
+            m_byMonthDaySet == other.m_byMonthDaySet and
+            m_byDaySet == other.m_byDaySet and
+            m_byHourSet == other.m_byHourSet and
+            m_byMinuteSet == other.m_byMinuteSet and
+            m_bySecondSet == other.m_bySecondSet and
+            m_bySetPosSet == other.m_bySetPosSet;
+}
 
 QString AppointmentRecurrence::contentToString() const
 {
@@ -1275,6 +1362,10 @@ void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
 Appointment::Appointment( QObject* parent )
     :
       QObject(parent),
+      m_minYear(100000),    // just a big number and we hope, the author does not live long enough ;-)
+      m_maxYear(0),
+      m_userCalendarId(0),
+      m_uid(""),
       m_haveRecurrence( false ),
       m_haveAlarm( false )
 {
