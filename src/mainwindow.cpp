@@ -599,7 +599,6 @@ void MainWindow::slotReconfigureAppointment( QString appointmentId )
 
     if( m_eventPool->haveAppointment( appointmentId ) )
     {
-        m_appointmentDialog->reset();
         m_appointmentDialog->userWantsModifyAppointment( m_eventPool->appointment( appointmentId) );
         m_appointmentDialog->show();
     }
@@ -639,7 +638,11 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
 
     Appointment* a = m_appointmentDialog->appointment();
     if( a->m_haveRecurrence )
+    {
         qDebug() << "HAVE Recurrence";
+        qDebug() << a->m_haveRecurrence << a->m_appRecurrence->m_byMonthSet;
+
+    }
     qDebug() << a->m_appBasics->m_dtStart.toDtString()  << a->m_appBasics->m_dtEnd.toDtString();
 
     qDebug() << "--------- BEGIN Events ----------- ";

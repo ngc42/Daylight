@@ -343,15 +343,15 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 Appointment::makeDateList( qApmRecurrence.value(9).toString(),
                                                      qApmRecurrence.value(10).toString(),
                                                      apmRecurrence->m_fixedDates );
-                Appointment::makeIntSet( qApmRecurrence.value(12).toString(), apmRecurrence->m_byMonthSet );
-                Appointment::makeIntSet( qApmRecurrence.value(13).toString(), apmRecurrence->m_byWeekNumberSet );
-                Appointment::makeIntSet( qApmRecurrence.value(14).toString(), apmRecurrence->m_byYearDaySet );
-                Appointment::makeIntSet( qApmRecurrence.value(15).toString(), apmRecurrence->m_byMonthDaySet );
-                Appointment::makeDayset( qApmRecurrence.value(16).toString(), apmRecurrence->m_byDaySet );
-                Appointment::makeIntSet( qApmRecurrence.value(17).toString(), apmRecurrence->m_byHourSet );
-                Appointment::makeIntSet( qApmRecurrence.value(18).toString(), apmRecurrence->m_byMinuteSet );
-                Appointment::makeIntSet( qApmRecurrence.value(19).toString(), apmRecurrence->m_bySecondSet );
-                Appointment::makeIntSet( qApmRecurrence.value(20).toString(), apmRecurrence->m_bySetPosSet );
+                Appointment::makeIntSet( qApmRecurrence.value(11).toString(), apmRecurrence->m_byMonthSet );
+                Appointment::makeIntSet( qApmRecurrence.value(12).toString(), apmRecurrence->m_byWeekNumberSet );
+                Appointment::makeIntSet( qApmRecurrence.value(13).toString(), apmRecurrence->m_byYearDaySet );
+                Appointment::makeIntSet( qApmRecurrence.value(14).toString(), apmRecurrence->m_byMonthDaySet );
+                Appointment::makeDayset( qApmRecurrence.value(15).toString(), apmRecurrence->m_byDaySet );
+                Appointment::makeIntSet( qApmRecurrence.value(16).toString(), apmRecurrence->m_byHourSet );
+                Appointment::makeIntSet( qApmRecurrence.value(17).toString(), apmRecurrence->m_byMinuteSet );
+                Appointment::makeIntSet( qApmRecurrence.value(18).toString(), apmRecurrence->m_bySecondSet );
+                Appointment::makeIntSet( qApmRecurrence.value(19).toString(), apmRecurrence->m_bySetPosSet );
                 apmData->m_appRecurrence = apmRecurrence;
             }
 

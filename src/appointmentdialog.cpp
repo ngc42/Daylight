@@ -131,7 +131,7 @@ void AppointmentDialog::userWantsModifyAppointment( const Appointment* apmData )
     m_appointment->m_haveRecurrence = apmData->m_haveRecurrence;
     m_appointment->m_haveAlarm = apmData->m_haveAlarm;
 
-    qDebug() << apmData->m_haveRecurrence << apmData->m_appRecurrence->m_byMonthSet;
+    qDebug() << "userWantsModifyAppointment: " << apmData->m_haveRecurrence << apmData->m_appRecurrence->m_byMonthSet;
 
     // AppointmentBasic
     m_appointment->m_appBasics = new AppointmentBasics( *apmData->m_appBasics );
@@ -142,6 +142,9 @@ void AppointmentDialog::userWantsModifyAppointment( const Appointment* apmData )
         m_appointment->m_appRecurrence = new AppointmentRecurrence();
         m_appointment->m_appRecurrence->getAPartialCopy( *apmData->m_appRecurrence );
     }
+
+
+    reset();
 
     // Basic Page
     setAppointmentDataToBasicPage( apmData );
