@@ -599,6 +599,7 @@ void MainWindow::slotReconfigureAppointment( QString appointmentId )
 
     if( m_eventPool->haveAppointment( appointmentId ) )
     {
+        m_appointmentDialog->reset();
         m_appointmentDialog->userWantsModifyAppointment( m_eventPool->appointment( appointmentId) );
         m_appointmentDialog->show();
     }
@@ -619,26 +620,21 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
         return;
     }
 
-    // collect user data
-    m_appointmentDialog->collectAppointmentDataFromBasicPage();
-    m_appointmentDialog->collectAppointmentDataFromRecurrencePage();
+    m_appointmentDialog->collectAppointmentDataFromUi();
 
-    if( not m_appointmentDialog->isNewAppointment() )
-    {   // an already in use appointment
-
-        if( m_appointmentDialog->modified() )
-        {
-            // which was modified, so increase sequence number
+    if( m_appointmentDialog->modified()  )
+    {
+        if( not m_appointmentDialog->isNewAppointment() )
+            // in-use modified appointment, so increase sequence number
             m_appointmentDialog->increaseSequence();
-        }
-        else
-        {
-            // nothing to do: user just wants so see the appointment in a dialog.
-            m_appointmentDialog->deleteAppointment();
-            m_appointmentDialog->hide();
-            qDebug() << "MainWindow::slotAppointmentDlgFinished -> not modified";
-            return;
-        }
+    }
+    else
+    {
+        // nothing to do: user just wants so see the appointment in a dialog.
+        m_appointmentDialog->deleteAppointment();
+        m_appointmentDialog->hide();
+        qDebug() << "MainWindow::slotAppointmentDlgFinished -> not modified";
+        return;
     }
 
     Appointment* a = m_appointmentDialog->appointment();

@@ -29,7 +29,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_basic">
       <attribute name="title">
@@ -274,8 +274,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>239</width>
-            <height>99</height>
+            <width>439</width>
+            <height>273</height>
            </rect>
           </property>
           <attribute name="label">
@@ -373,8 +373,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>284</width>
-            <height>120</height>
+            <width>439</width>
+            <height>273</height>
            </rect>
           </property>
           <attribute name="label">
@@ -418,8 +418,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>281</width>
-            <height>120</height>
+            <width>439</width>
+            <height>273</height>
            </rect>
           </property>
           <attribute name="label">
@@ -466,8 +466,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>273</width>
-            <height>120</height>
+            <width>439</width>
+            <height>273</height>
            </rect>
           </property>
           <attribute name="label">
@@ -511,8 +511,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>368</width>
-            <height>120</height>
+            <width>439</width>
+            <height>273</height>
            </rect>
           </property>
           <attribute name="label">
@@ -561,7 +561,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-69</y>
             <width>425</width>
             <height>342</height>
            </rect>

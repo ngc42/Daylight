@@ -33,7 +33,9 @@ namespace Ui {
 /* AppointmentDialog shows up a dialog, where a user can set up a new appointment or modify an existing one.
  *  the Dialog is startet in the MainWindow.
  * Reconfiguring an appointment involves calling setAppointmentValues().
- * UI-parts of the dialog are in appointmentdialog.ui. */
+ * UI-parts of the dialog are in appointmentdialog.ui.
+ * @fixme: Missing: Alarm, AppointmentRecurrence->fixedDates, AppointmentRecurrence->exceptionDates
+ */
 class AppointmentDialog : public QDialog
 {
     Q_OBJECT
@@ -78,14 +80,8 @@ public:
      */
     bool isNewAppointment() const { return m_userWantsNewAppointment; }
 
-    // Here, we collect the user input from the basic page.
-    void collectAppointmentDataFromBasicPage();
-
-    /* Most parts of recurrence data are directly handled by slots. Especially, when nothing has
-     * changed - except frequency -, no slots are called and we are left with some uninitialised
-     * values.
-     * @fixme: missing selector for some (unimplemented) recurrence frequency */
-    void collectAppointmentDataFromRecurrencePage();
+    // user input from dialog pages
+    void collectAppointmentDataFromUi();
 
     /* Returns true if
      *  - m_userWantsNewAppointment is true
@@ -142,6 +138,16 @@ private:
     void setDefaultBasicInterval( const QDate date );
     void setDefaultBasicInterval( const QDateTime dateTime );
 
+    void setAppointmentDataToBasicPage( const Appointment* apmData );
+    void setAppointmentDataToRecurrencePage( const Appointment* apmData );
+
+
+    void collectAppointmentDataFromBasicPage();
+    /* Most parts of recurrence data are directly handled by slots. Especially, when nothing has
+     * changed - except frequency -, no slots are called and we are left with some uninitialised
+     * values.
+     * @fixme: missing selector for some (unimplemented) recurrence frequency */
+    void collectAppointmentDataFromRecurrencePage();
 
 signals:
 private slots:
