@@ -69,6 +69,7 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     // signals basic tab
     connect( m_ui->basic_repeattype_combo, SIGNAL(currentIndexChanged(int)),
              this, SLOT(slotIndexChangedRecurrenceFrequency(int)) );
+
     // signals recurrence tab
     connect( m_repeatByMonthButtonGroup, SIGNAL(buttonToggled(int,bool)),
              this, SLOT(slotMonthClicked(int, bool)) );
@@ -211,6 +212,48 @@ void AppointmentDialog::collectAppointmentDataFromBasicPage()
     m_appointment->m_appBasics->m_busyFree = m_ui->basic_busy_check->isChecked() ?
                 AppointmentBasics::BUSY : AppointmentBasics::FREE;
     m_appointment->m_userCalendarId = m_ui->basic_select_calendar_combo->currentData().toInt( &ok );
+
+    // recurrence interval
+    if( m_appointment->m_haveRecurrence )
+    {
+        bool complex_recurrence = m_appointment->m_appRecurrence->m_byMonthSet.count() > 0;
+        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byWeekNumberSet.count() > 0;
+        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byYearDaySet.count() > 0;
+        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byMonthDaySet.count() > 0;
+        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byDaySet.size() > 0;
+        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_bySetPosSet.count() > 0;
+
+        switch( m_appointment->m_appRecurrence->m_frequency )
+        {
+            case AppointmentRecurrence::RFT_SIMPLE_YEARLY:
+            case AppointmentRecurrence::RFT_YEARLY:
+                m_appointment->m_appRecurrence->m_frequency =
+                        complex_recurrence ? AppointmentRecurrence::RFT_YEARLY :
+                                             AppointmentRecurrence::RFT_SIMPLE_YEARLY;
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_MONTHLY:
+            case AppointmentRecurrence::RFT_MONTHLY:
+                m_appointment->m_appRecurrence->m_frequency =
+                        complex_recurrence ? AppointmentRecurrence::RFT_MONTHLY :
+                                             AppointmentRecurrence::RFT_SIMPLE_MONTHLY;
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_WEEKLY:
+            case AppointmentRecurrence::RFT_WEEKLY:
+                m_appointment->m_appRecurrence->m_frequency =
+                        complex_recurrence ? AppointmentRecurrence::RFT_WEEKLY :
+                                             AppointmentRecurrence::RFT_SIMPLE_WEEKLY;
+            break;
+            case AppointmentRecurrence::RFT_SIMPLE_DAILY:
+            case AppointmentRecurrence::RFT_DAILY:
+                m_appointment->m_appRecurrence->m_frequency =
+                        complex_recurrence ? AppointmentRecurrence::RFT_DAILY :
+                                             AppointmentRecurrence::RFT_SIMPLE_DAILY;
+            break;
+            default:
+                qDebug() << "ERR: unimplemented Selector in AppointmentDialog::collectAppointmentDataFromRecurrencePage()";
+                Q_ASSERT( false );
+        }
+    }
 }
 
 
@@ -218,45 +261,17 @@ void AppointmentDialog::collectAppointmentDataFromRecurrencePage()
 {
     if( not m_appointment->m_haveRecurrence )
         return;
-    bool ok;
 
-    bool complex_recurrence = m_appointment->m_appRecurrence->m_byMonthSet.count() > 0;
-    complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byWeekNumberSet.count() > 0;
-    complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byYearDaySet.count() > 0;
-    complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byMonthDaySet.count() > 0;
-    complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byDaySet.size() > 0;
-    complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_bySetPosSet.count() > 0;
+    /* Most of the tabs are handled by individual slots for their
+     * Widgets:
+     *  ByMonth-Tab
+     *  ByWeekNo-Tab
+     *  ByYearDay-Tab
+     *  ByMonthDay-Tab
+     *  ByDay-Tab
+     */
 
-    switch( m_appointment->m_appRecurrence->m_frequency )
-    {
-        case AppointmentRecurrence::RFT_SIMPLE_YEARLY:
-        case AppointmentRecurrence::RFT_YEARLY:
-            m_appointment->m_appRecurrence->m_frequency =
-                    complex_recurrence ? AppointmentRecurrence::RFT_YEARLY :
-                                         AppointmentRecurrence::RFT_SIMPLE_YEARLY;
-        break;
-        case AppointmentRecurrence::RFT_SIMPLE_MONTHLY:
-        case AppointmentRecurrence::RFT_MONTHLY:
-            m_appointment->m_appRecurrence->m_frequency =
-                    complex_recurrence ? AppointmentRecurrence::RFT_MONTHLY :
-                                         AppointmentRecurrence::RFT_SIMPLE_MONTHLY;
-        break;
-        case AppointmentRecurrence::RFT_SIMPLE_WEEKLY:
-        case AppointmentRecurrence::RFT_WEEKLY:
-            m_appointment->m_appRecurrence->m_frequency =
-                    complex_recurrence ? AppointmentRecurrence::RFT_WEEKLY :
-                                         AppointmentRecurrence::RFT_SIMPLE_WEEKLY;
-        break;
-        case AppointmentRecurrence::RFT_SIMPLE_DAILY:
-        case AppointmentRecurrence::RFT_DAILY:
-            m_appointment->m_appRecurrence->m_frequency =
-                    complex_recurrence ? AppointmentRecurrence::RFT_DAILY :
-                                         AppointmentRecurrence::RFT_SIMPLE_DAILY;
-        break;
-        default:
-            qDebug() << "ERR: unimplemented Selector in AppointmentDialog::collectAppointmentDataFromRecurrencePage()";
-            Q_ASSERT( false );
-    }
+    // Misc-Tab:
 
     m_appointment->m_appRecurrence->m_interval = m_ui->rec_misc_repeat_intervalnumber->value();
 
@@ -276,6 +291,7 @@ void AppointmentDialog::collectAppointmentDataFromRecurrencePage()
         break;
     }
 
+    bool ok = true;
     m_appointment->m_appRecurrence->m_startWeekday =
              static_cast<AppointmentRecurrence::WeekDay>(m_ui->rec_misc_weekstartday->currentData().toInt(&ok));
 }
