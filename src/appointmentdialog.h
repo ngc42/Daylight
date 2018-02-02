@@ -60,11 +60,11 @@ public:
      *  day.
      * We can also modify an existing appointment by clicking on an appointment
      */
-    void createNewAppointment();
+    void userWantsNewAppointment();
 
     // same as above for in-use appointments.
     // @fixme: missing Alarm
-    void setAppointmentValues( const Appointment* apmData );
+    void userWantsModifyAppointment( const Appointment* apmData );
 
     // modified in-use-appointment, increse sequence number
     void increaseSequence();
@@ -76,7 +76,7 @@ public:
      *  returns false.
      * The dialog was then startet with setAppointmentValues(ExistingAppointment).
      */
-    bool isNewAppointment() const { return m_isNewAppointment; }
+    bool isNewAppointment() const { return m_userWantsNewAppointment; }
 
     // Here, we collect the user input from the basic page.
     void collectAppointmentDataFromBasicPage();
@@ -84,16 +84,14 @@ public:
     /* Most parts of recurrence data are directly handled by slots. Especially, when nothing has
      * changed - except frequency -, no slots are called and we are left with some uninitialised
      * values.
-     * @fixme: missing selector for (unimplemented) recurrence frequency */
+     * @fixme: missing selector for some (unimplemented) recurrence frequency */
     void collectAppointmentDataFromRecurrencePage();
 
-    /* Finds out, if the data here differs from m_storedOrigAppointment.
-     * This is only applicable, if setAppointmentValues was used to store an
-     * used appointment, in this case, m_isNewAppointment is false.
-     * - returns false, if user has not modified anything
-     * - returns false, if m_isNewAppointment is true
-     * - else returns true
-     * @fixme: does not check recurrences (partially included)
+    /* Returns true if
+     *  - m_userWantsNewAppointment is true
+     *  - m_m_storedOrigAppointment != m_appointment
+     * Does not write/compare UI-data into the fields,
+     *  so call 'collectAppointmenDataFrom...()' before!
      * @fixme: does not check alarm
      */
     bool modified() const;
@@ -126,15 +124,15 @@ private:
     QDateTime               m_dtSaveEnd;
 
     // the new-to-create aappointment
-    Appointment*        m_appointment;
+    Appointment*            m_appointment;
 
     // Original appointment to compare to m_appointment
     // used to calculate m_sequence
     // Set by setAppointmentValues
-    const Appointment*  m_storedOrigAppointment;
+    const Appointment*      m_storedOrigAppointment;
 
     // false, if we modify an existing appointment
-    bool        m_isNewAppointment;
+    bool                    m_userWantsNewAppointment;
 
     QString appointmentId() const { return m_appointment->m_uid; }
     RecurrenceFrequencyType recurrence() const;

@@ -102,9 +102,9 @@ AppointmentDialog::~AppointmentDialog()
 }
 
 
-void AppointmentDialog::createNewAppointment()
+void AppointmentDialog::userWantsNewAppointment()
 {
-    m_isNewAppointment = true;
+    m_userWantsNewAppointment = true;
     m_appointment = new Appointment();
     m_appointment->generateUid();
     m_appointment->m_appRecurrence = nullptr;
@@ -117,10 +117,10 @@ void AppointmentDialog::createNewAppointment()
 }
 
 
-void AppointmentDialog::setAppointmentValues( const Appointment* apmData )
+void AppointmentDialog::userWantsModifyAppointment( const Appointment* apmData )
 {
     // Dialog Management
-    m_isNewAppointment = false;
+    m_userWantsNewAppointment = false;
     m_storedOrigAppointment = apmData;
 
     // Appointment
@@ -283,94 +283,25 @@ void AppointmentDialog::collectAppointmentDataFromRecurrencePage()
 
 bool AppointmentDialog::modified() const
 {
-    if( m_isNewAppointment )
-        return false;
-    // find out, if this appointment was modified by the user.
-    bool ok;
-    bool same = true;
-    same = same and ( m_storedOrigAppointment->m_userCalendarId ==
-                      m_ui->basic_select_calendar_combo->currentData().toInt( &ok ) );
+    // a new appointment is always modified
+    if( m_userWantsNewAppointment ) return true;
 
-    if( not same )  return true;
-    // check appointment basic
-    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtStart == m_ui->basic_datetime_startInterval->dateTime() );
-    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtStart.timeZone().id() ==
-            m_ui->basic_tz_start_combo->currentText() );
-    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtEnd == m_ui->basic_datetime_endInterval->dateTime() );
-    same = same and ( m_storedOrigAppointment->m_appBasics->m_dtEnd.timeZone().id() ==
-            m_ui->basic_tz_end_combo->currentText() );
-    same = same and ( m_storedOrigAppointment->m_appBasics->m_summary == m_ui->basic_title_le->text() );
-    same = same and ( m_storedOrigAppointment->m_appBasics->m_description == m_ui->basic_description->toPlainText() );
-    same = same and ( (m_storedOrigAppointment->m_appBasics->m_busyFree == AppointmentBasics::BUSY ) ==
-                      m_ui->basic_busy_check->isChecked() );
+    // check some appointment data
+    if( not m_storedOrigAppointment->isPartiallyEqual( *m_appointment) ) return true;
 
-    if( not same )  return true;
-    // check recurrence
-    RecurrenceFrequencyType currentRecurrence = recurrence();
+    // check appointment basic data
+    if( not ( *m_storedOrigAppointment->m_appBasics == *m_appointment->m_appBasics ) ) return true;
 
+    // check some recurrence data
     if( m_storedOrigAppointment->m_haveRecurrence )
     {
-        switch( m_storedOrigAppointment->m_appRecurrence->m_frequency )
-        {
-            case AppointmentRecurrence::RFT_SIMPLE_YEARLY:
-            case AppointmentRecurrence::RFT_YEARLY:
-                same = same and ( currentRecurrence == YEARLY );
-            break;
-            case AppointmentRecurrence::RFT_SIMPLE_MONTHLY:
-            case AppointmentRecurrence::RFT_MONTHLY:
-                same = same and ( currentRecurrence == MONTHLY );
-            break;
-            case AppointmentRecurrence::RFT_SIMPLE_WEEKLY:
-            case AppointmentRecurrence::RFT_WEEKLY:
-                same = same and ( currentRecurrence == WEEKLY );
-            break;
-            case AppointmentRecurrence::RFT_SIMPLE_DAILY:
-            case AppointmentRecurrence::RFT_DAILY:
-                same = same and ( currentRecurrence == DAILY );
-            break;
-            default:
-                same = false;
-        }
-
-        if( m_storedOrigAppointment->m_appRecurrence->m_haveCount )
-        {
-            same = same and
-                   repeatRestriction() == REPEAT_COUNT and
-                   m_storedOrigAppointment->m_appRecurrence->m_count == m_ui->rec_misc_repeat_countnumber->value();
-        }
-        else
-        {
-            if( m_storedOrigAppointment->m_appRecurrence->m_haveUntil )
-                same = same and
-                       repeatRestriction() == REPEAT_UNTIL and
-                       m_storedOrigAppointment->m_appRecurrence->m_until == m_ui->rec_misc_repeat_untildate->dateTime();
-            else
-                same = same and repeatRestriction() == REPEAT_FOREVER;
-        }
-
-        same = same and (
-               ( m_storedOrigAppointment->m_appRecurrence->m_haveInterval and
-                 m_storedOrigAppointment->m_appRecurrence->m_interval == m_ui->rec_misc_repeat_intervalnumber->value() ) or
-               ( not m_storedOrigAppointment->m_appRecurrence->m_haveInterval and
-                m_ui->rec_misc_repeat_intervalnumber->value() == 1 ) );
-        same = same and static_cast<int>(m_storedOrigAppointment->m_appRecurrence->m_startWeekday) ==
-               m_ui->rec_misc_weekstartday->currentData().toInt(&ok);
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthSet == m_appointment->m_appRecurrence->m_byMonthSet;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byWeekNumberSet == m_appointment->m_appRecurrence->m_byWeekNumberSet;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byYearDaySet == m_appointment->m_appRecurrence->m_byYearDaySet;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byMonthDaySet == m_appointment->m_appRecurrence->m_byMonthDaySet;
-
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_byDaySet == m_appointment->m_appRecurrence->m_byDaySet;
-        same = same and m_storedOrigAppointment->m_appRecurrence->m_bySetPosSet == m_appointment->m_appRecurrence->m_bySetPosSet;
-    }
-    else
-    {
-        same = same and currentRecurrence == NO_RECURRENCE;
+        if( not m_storedOrigAppointment->m_appRecurrence->isPartiallyEqual( *m_appointment->m_appRecurrence ) )
+            return true;
     }
 
     // @fixme: Alarm missing
 
-    return not same;
+    return false;
 }
 
 

@@ -1373,6 +1373,15 @@ Appointment::Appointment( QObject* parent )
 }
 
 
+bool Appointment::isPartiallyEqual( const Appointment &other ) const
+{
+    return m_userCalendarId == other.m_userCalendarId and
+            m_uid == other.m_uid and
+            m_haveRecurrence == other.m_haveRecurrence and
+            m_haveAlarm == other.m_haveAlarm;
+}
+
+
 void Appointment::generateUid()
 {
     QDateTime dt = QDateTime::currentDateTime().toUTC();

@@ -583,7 +583,7 @@ void MainWindow::slotAppointmentDlgStart(const QDate &date)
     if(uciList.count() == 0)
         return;
     m_appointmentDialog->setUserCalendarInfos(uciList);
-    m_appointmentDialog->createNewAppointment();
+    m_appointmentDialog->userWantsNewAppointment();
     m_appointmentDialog->show();
 }
 
@@ -599,7 +599,7 @@ void MainWindow::slotReconfigureAppointment( QString appointmentId )
 
     if( m_eventPool->haveAppointment( appointmentId ) )
     {
-        m_appointmentDialog->setAppointmentValues( m_eventPool->appointment( appointmentId) );
+        m_appointmentDialog->userWantsModifyAppointment( m_eventPool->appointment( appointmentId) );
         m_appointmentDialog->show();
     }
 }
