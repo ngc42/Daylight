@@ -188,7 +188,6 @@ public:
 
     // for check, if we have received this (default: false)
     bool    m_haveCount;
-    bool    m_haveInterval;
     bool    m_haveUntil;
 
     RecurrenceFrequencyType     m_frequency;

@@ -331,11 +331,19 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 qApmRecurrence.first();
                 AppointmentRecurrence* apmRecurrence = new AppointmentRecurrence();
 
-
                 apmRecurrence->m_frequency  = static_cast<AppointmentRecurrence::RecurrenceFrequencyType>(qApmRecurrence.value(1).toInt(&ok));
                 apmRecurrence->m_count      = qApmRecurrence.value(2).toString().toInt(&ok);
                 apmRecurrence->m_interval   = qApmRecurrence.value(3).toString().toInt(&ok);
                 apmRecurrence->m_until      = DateTime::string2DateTime( qApmRecurrence.value(4).toString(), qApmRecurrence.value(5).toString());
+
+                // max one of them is true
+                apmRecurrence->m_haveCount = false;
+                apmRecurrence->m_haveUntil = false;
+                if( apmRecurrence->m_count > 0 )
+                    apmRecurrence->m_haveCount = true;
+                else if( apmRecurrence->m_until.isValid() )
+                    apmRecurrence->m_haveUntil = true;
+
                 apmRecurrence->m_startWeekday = static_cast<AppointmentRecurrence::WeekDay>(qApmRecurrence.value(6).toInt(&ok));
                 Appointment::makeDateList( qApmRecurrence.value(7).toString(),
                                                      qApmRecurrence.value(8).toString(),

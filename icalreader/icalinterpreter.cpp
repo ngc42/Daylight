@@ -239,7 +239,6 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
         else if( p->m_type == Parameter::RR_INTERVAL )
         {
             outAppRecurrence->m_interval = p->m_contentInteger;
-            outAppRecurrence->m_haveInterval = true;
         }
         else if( p->m_type == Parameter::RR_BYDAY )
         {

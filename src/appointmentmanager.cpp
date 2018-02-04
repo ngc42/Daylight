@@ -114,7 +114,6 @@ AppointmentRecurrence::AppointmentRecurrence( QObject* parent )
     :
       QObject( parent ),
       m_haveCount(false),
-      m_haveInterval(false),
       m_haveUntil(false),
       m_frequency(RFT_SIMPLE_YEARLY),
       m_count(0),
@@ -127,7 +126,6 @@ AppointmentRecurrence::AppointmentRecurrence( QObject* parent )
 void AppointmentRecurrence::getAPartialCopy( const AppointmentRecurrence &other)
 {
     m_haveCount = other.m_haveCount;
-    m_haveInterval = other.m_haveInterval;
     m_haveUntil = other.m_haveUntil;
     m_frequency = other.m_frequency;
     m_count = other.m_count;
@@ -151,7 +149,6 @@ void AppointmentRecurrence::getAPartialCopy( const AppointmentRecurrence &other)
 bool AppointmentRecurrence::isPartiallyEqual( const AppointmentRecurrence &other ) const
 {
     return m_haveCount == other.m_haveCount and
-            m_haveInterval == other.m_haveInterval and
             m_haveUntil == other.m_haveUntil and
             m_frequency == other.m_frequency and
             m_count == other.m_count and
@@ -499,7 +496,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
         else if( have_byMonthDay )          // EXPAND BYMONTHDAY
         {
             // for every month of this year...
-            for( int month = 1; month < 12; month++ )
+            for( int month = 1; month <= 12; month++ )
             {
                 QDate start( runner.date().year(), month, 1 );
                 QDate end( runner.date().year(), month, start.daysInMonth() );
@@ -637,7 +634,7 @@ QVector<DateTime> AppointmentRecurrence::recurrenceStartDatesYearly( const DateT
                     {
                         if( d.dayOfWeek() == static_cast<int>(weekDay) )
                         {
-                            dCount++;
+                            dCount--;
                             DateTime dt( d, runner.time(), runner.timeZone(), runner.isDate() );
                             if( dCount == relDay and validateDateTime( dt ) )
                             {

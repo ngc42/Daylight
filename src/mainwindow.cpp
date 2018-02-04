@@ -640,7 +640,8 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     if( a->m_haveRecurrence )
     {
         qDebug() << "HAVE Recurrence";
-        qDebug() << a->m_haveRecurrence << a->m_appRecurrence->m_byMonthSet;
+        qDebug() << a->m_haveRecurrence << a->m_appRecurrence->contentToString();
+
 
     }
     qDebug() << a->m_appBasics->m_dtStart.toDtString()  << a->m_appBasics->m_dtEnd.toDtString();

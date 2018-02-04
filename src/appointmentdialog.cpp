@@ -477,10 +477,7 @@ void AppointmentDialog::setAppointmentDataToRecurrencePage( const Appointment* a
     int index = m_ui->rec_misc_weekstartday->findData( static_cast<int>(rec->m_startWeekday) );
     m_ui->rec_misc_weekstartday->setCurrentIndex( index );
 
-    if( rec->m_haveInterval )
-    {
-        m_ui->rec_misc_repeat_intervalnumber->setValue( rec->m_interval );
-    }
+    m_ui->rec_misc_repeat_intervalnumber->setValue( rec->m_interval );
 
     if( rec->m_haveCount )
     {
@@ -522,11 +519,11 @@ void AppointmentDialog::collectAppointmentDataFromBasicPage()
     if( m_appointment->m_haveRecurrence )
     {
         bool complex_recurrence = m_appointment->m_appRecurrence->m_byMonthSet.count() > 0;
-        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byWeekNumberSet.count() > 0;
-        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byYearDaySet.count() > 0;
-        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byMonthDaySet.count() > 0;
-        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_byDaySet.size() > 0;
-        complex_recurrence = complex_recurrence and m_appointment->m_appRecurrence->m_bySetPosSet.count() > 0;
+        complex_recurrence = complex_recurrence or m_appointment->m_appRecurrence->m_byWeekNumberSet.count() > 0;
+        complex_recurrence = complex_recurrence or m_appointment->m_appRecurrence->m_byYearDaySet.count() > 0;
+        complex_recurrence = complex_recurrence or m_appointment->m_appRecurrence->m_byMonthDaySet.count() > 0;
+        complex_recurrence = complex_recurrence or m_appointment->m_appRecurrence->m_byDaySet.size() > 0;
+        complex_recurrence = complex_recurrence or m_appointment->m_appRecurrence->m_bySetPosSet.count() > 0;
 
         switch( m_appointment->m_appRecurrence->m_frequency )
         {
@@ -585,14 +582,20 @@ void AppointmentDialog::collectAppointmentDataFromRecurrencePage()
         case REPEAT_FOREVER:
             m_appointment->m_appRecurrence->m_count = 0;            // forever
             m_appointment->m_appRecurrence->m_until = DateTime();   // invalid
+            m_appointment->m_appRecurrence->m_haveCount = false;
+            m_appointment->m_appRecurrence->m_haveUntil = false;
         break;
         case REPEAT_COUNT:
             m_appointment->m_appRecurrence->m_count = m_ui->rec_misc_repeat_countnumber->value();
             m_appointment->m_appRecurrence->m_until = DateTime();   // invalid
+            m_appointment->m_appRecurrence->m_haveCount = true;
+            m_appointment->m_appRecurrence->m_haveUntil = false;
         break;
         case REPEAT_UNTIL:
             m_appointment->m_appRecurrence->m_count = 0;
             m_appointment->m_appRecurrence->m_until = m_ui->rec_misc_repeat_untildate->dateTime();
+            m_appointment->m_appRecurrence->m_haveCount = false;
+            m_appointment->m_appRecurrence->m_haveUntil = true;
         break;
     }
 
