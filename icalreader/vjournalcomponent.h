@@ -17,9 +17,9 @@
 #ifndef VJOURNALCOMPONENT_H
 #define VJOURNALCOMPONENT_H
 
-#include <QList>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 #include "property.h"
 
@@ -40,7 +40,7 @@ struct VJournalComponent
 
     // === Data ===
 
-    QList<Property*>    m_properties;
+    QVector<Property*>    m_properties;
 };
 
 #endif // VJOURNALCOMPONENT_H

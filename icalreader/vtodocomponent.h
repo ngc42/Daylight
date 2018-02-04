@@ -17,9 +17,9 @@
 #ifndef VTODOCOMPONENT_H
 #define VTODOCOMPONENT_H
 
-#include <QList>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 #include "property.h"
 #include "valarmcomponent.h"
@@ -48,10 +48,10 @@ struct VTodoComponent
 
     // === Data ===
 
-    QList<Property*>        m_properties;
+    QList<Property*>            m_properties;
     // parse parameters for VTodo or VAlarm
-    ReadComponent           m_activeComponent;
-    QList<VAlarmComponent*> m_vAlarmComponents;
+    ReadComponent               m_activeComponent;
+    QVector<VAlarmComponent*>   m_vAlarmComponents;
 };
 
 #endif // VTODOCOMPONENT_H

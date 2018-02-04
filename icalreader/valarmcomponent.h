@@ -17,8 +17,8 @@
 #ifndef VALARMCOMPONENT_H
 #define VALARMCOMPONENT_H
 
-#include <QList>
 #include <QString>
+#include <QVector>
 
 #include "property.h"
 
@@ -40,7 +40,7 @@ struct VAlarmComponent
 
     // === Data ===
 
-    QList<Property*>    m_properties;
+    QVector<Property*>  m_properties;
 };
 
 #endif // VALARMCOMPONENT_H

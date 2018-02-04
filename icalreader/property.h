@@ -17,9 +17,9 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 
-#include <QList>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 #include "datetime.h"
 #include "parameter.h"
@@ -35,7 +35,7 @@ struct Property
         PST_ACTION,     // this is an action
         PST_INT,        // this parameter is an int
         PST_STRINGLIST, // ... a QStringList
-        PST_DATETIMELIST,   // a list of datetimes
+        PST_DATETIMEVECTOR, // a vector of datetimes
         PST_DURATION,   // a duration
         PST_STATUSCODE, // Status Codes for PT_STATUS
         PST_TRANSPARENCY,   // for PT_TRANSP
@@ -135,7 +135,7 @@ struct Property
     IcalActionType      m_contentAction;        // as an action
     int                 m_contentInteger;       // as int
     QStringList         m_contentStringList;    // as a list of strings
-    QList<DateTime>     m_contentDateTimeList;  // a list of DateTimes
+    QVector<DateTime>   m_contentDateTimeVector;// a vector of DateTimes
     struct {
         bool minus;
         int weeks;
@@ -148,7 +148,7 @@ struct Property
     double              m_contentDoubleTuple[2]; // Tuple of float for GEO
 
     // List of parameters
-    QList<Parameter>    m_parameters; // attached parameters
+    QVector<Parameter>    m_parameters; // attached parameters
 };
 
 #endif // PROPERTY_H

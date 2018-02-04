@@ -17,9 +17,9 @@
 #ifndef VFREEBUSYCOMPONENT_H
 #define VFREEBUSYCOMPONENT_H
 
-#include <QList>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 #include "property.h"
 
@@ -41,7 +41,7 @@ struct VFreeBusyComponent
 
     // === Data ===
 
-    QList<Property*>    m_properties;
+    QVector<Property*>    m_properties;
 };
 
 #endif // VFREEBUSYCOMPONENT_H

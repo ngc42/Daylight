@@ -174,10 +174,10 @@ void Storage::storeAppointment( const Appointment &apmData )
         iRec.bindValue(":until", dtString );
         iRec.bindValue(":untiltz", tzString );
         iRec.bindValue(":startwd", static_cast<int>(apmData.m_appRecurrence->m_startWeekday) );
-        Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_exceptionDates, dtString, tzString );
+        Appointment::makeStringsFromDateVector( apmData.m_appRecurrence->m_exceptionDates, dtString, tzString );
         iRec.bindValue(":exdates", dtString );
         iRec.bindValue(":exdatestz", tzString );
-        Appointment::makeStringsFromDateList( apmData.m_appRecurrence->m_fixedDates, dtString, tzString );
+        Appointment::makeStringsFromDateVector( apmData.m_appRecurrence->m_fixedDates, dtString, tzString );
         iRec.bindValue(":fixeddates", dtString );
         iRec.bindValue(":fixeddatestz", tzString );
         QString listString;
@@ -350,10 +350,10 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                     apmRecurrence->m_haveUntil = true;
 
                 apmRecurrence->m_startWeekday = static_cast<AppointmentRecurrence::WeekDay>(qApmRecurrence.value(6).toInt(&ok));
-                Appointment::makeDateList( qApmRecurrence.value(7).toString(),
+                Appointment::makeDateVector( qApmRecurrence.value(7).toString(),
                                                      qApmRecurrence.value(8).toString(),
                                                      apmRecurrence->m_exceptionDates );
-                Appointment::makeDateList( qApmRecurrence.value(9).toString(),
+                Appointment::makeDateVector( qApmRecurrence.value(9).toString(),
                                                      qApmRecurrence.value(10).toString(),
                                                      apmRecurrence->m_fixedDates );
                 Appointment::makeIntSet( qApmRecurrence.value(11).toString(), apmRecurrence->m_byMonthSet );

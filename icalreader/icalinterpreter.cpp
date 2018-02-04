@@ -116,7 +116,7 @@ void IcalInterpreter::readEvent( const VEventComponent* &inVEventComponent,
             if( p->m_storageType == Property::PST_DATETIME )
                 outAppRecurrence->m_exceptionDates.append( p->m_contentDateTime );
             else // PST_DATETIMELIST
-                outAppRecurrence->m_exceptionDates.append( p->m_contentDateTimeList );
+                outAppRecurrence->m_exceptionDates.append( p->m_contentDateTimeVector );
             continue;
         }
         if( p->m_type == Property::PT_RDATE )

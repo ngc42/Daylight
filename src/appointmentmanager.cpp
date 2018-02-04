@@ -1389,9 +1389,9 @@ void Appointment::generateUid()
 }
 
 
-void Appointment::makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList )
+void Appointment::makeDateVector( const QString inElementsString, const QString inTimeZone, QVector<DateTime> &outVector )
 {
-    outList.clear();
+    outVector.clear();
     for( const QString s : inElementsString.split( ',', QString::SkipEmptyParts ) )
     {
         DateTime dt;
@@ -1402,7 +1402,7 @@ void Appointment::makeDateList( const QString inElementsString, const QString in
             if( tz.isValid() )
                 dt.setTimeZone(tz);
         }
-        outList.append( dt );
+        outVector.append( dt );
     }
 }
 
@@ -1448,14 +1448,14 @@ void Appointment::makeIntSet( const QString inElementsString, QSet<int> &outSet 
 }
 
 
-void Appointment::makeStringsFromDateList( const QList<DateTime> &inList, QString &outDtString, QString &outTzString )
+void Appointment::makeStringsFromDateVector( const QVector<DateTime> &inVector, QString &outDtString, QString &outTzString )
 {
-    int count = inList.count();
+    int count = inVector.count();
     int num = 0;
     bool have_tz = false;
     outDtString = "";
     outTzString = "";
-    for( const DateTime dt : inList )
+    for( const DateTime dt : inVector )
     {
         QString s;
         num++;

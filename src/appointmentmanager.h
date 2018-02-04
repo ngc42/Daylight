@@ -195,8 +195,8 @@ public:
     int                         m_interval;
     DateTime                    m_until;
     WeekDay                     m_startWeekday;
-    QList<DateTime>             m_exceptionDates;
-    QList<DateTime>             m_fixedDates;
+    QVector<DateTime>           m_exceptionDates;
+    QVector<DateTime>           m_fixedDates;
     QSet<int>                   m_byMonthSet;
     QSet<int>                   m_byWeekNumberSet;
     QSet<int>                   m_byYearDaySet;
@@ -284,11 +284,11 @@ public:
     void generateUid();
 
     // helper methods
-    static void makeDateList( const QString inElementsString, const QString inTimeZone, QList<DateTime> &outList );
+    static void makeDateVector( const QString inElementsString, const QString inTimeZone, QVector<DateTime> &outVector );
     static void makeDayset( const QString inElementsString, std::set<std::pair<AppointmentRecurrence::WeekDay, int>> &outSet );
-    static void makeIntSet( const QString inElementsString, QSet<int> &outList );
+    static void makeIntSet( const QString inElementsString, QSet<int> &outSet );
 
-    static void makeStringsFromDateList( const QList<DateTime> &inList, QString &outDtString, QString &outTzString );
+    static void makeStringsFromDateVector( const QVector<DateTime> &inVector, QString &outDtString, QString &outTzString );
     static void makeStringFromDayset( const std::set<std::pair<AppointmentRecurrence::WeekDay, int>> inSet, QString &outString );
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
 

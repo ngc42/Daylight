@@ -55,9 +55,9 @@ QString Property::contentToString() const
                 s = s.append( v ).append( ',' );
         }
         break;
-        case PST_DATETIMELIST:
+        case PST_DATETIMEVECTOR:
         {
-            for( const DateTime dt : m_contentDateTimeList )
+            for( const DateTime dt : m_contentDateTimeVector )
                 s = s.append( dt.toString() ).append( ',' );
         }
         break;
@@ -199,12 +199,12 @@ bool Property::readProperty( const QString inProp )
                 if( dt.readDateTime( s ) )
                 {
                     qDebug() << " read DT-List : " << s << " res= " << dt.toString();
-                    m_contentDateTimeList.append( dt );
+                    m_contentDateTimeVector.append( dt );
                 }
                 else
                     return false;
             }
-            m_storageType = Property::PST_DATETIMELIST;
+            m_storageType = Property::PST_DATETIMEVECTOR;
             return true;
         }
         DateTime dt;

@@ -17,9 +17,9 @@
 #ifndef STANDARDDAYLIGHTCOMPONENT_H
 #define STANDARDDAYLIGHTCOMPONENT_H
 
-#include <QList>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 #include "property.h"
 
@@ -39,7 +39,7 @@ struct StandardDaylightComponent
 
     // === Data ===
 
-    QList<Property*>    m_properties;
+    QVector<Property*>  m_properties;
 };
 
 #endif // STANDARDDAYLIGHTCOMPONENT_H

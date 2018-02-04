@@ -17,9 +17,9 @@
 #ifndef VTIMEZONECOMPONENT_H
 #define VTIMEZONECOMPONENT_H
 
-#include <QList>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 #include "property.h"
 #include "standarddaylightcomponent.h"
@@ -48,11 +48,11 @@ struct VTimezoneComponent
 
     // === Data ===
 
-    QList<Property*>                    m_properties;
+    QVector<Property*>                  m_properties;
     // parse parameters for Standard or Daylight
     ReadComponent                       m_activeComponent;
-    QList<StandardDaylightComponent*>   m_StandardComponents;
-    QList<StandardDaylightComponent*>   m_DaylightComponents;
+    QVector<StandardDaylightComponent*> m_StandardComponents;
+    QVector<StandardDaylightComponent*> m_DaylightComponents;
 
 };
 
