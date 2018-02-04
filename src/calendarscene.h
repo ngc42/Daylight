@@ -29,15 +29,12 @@
 enum class CalendarShow {SHOW_UNKNOWN, SHOW_YEAR, SHOW_MONTH, SHOW_3WEEKS, SHOW_WEEK, SHOW_DAY};
 
 
-
 /* CalendarScene is created in MainWindow. The purpose is to display the various ways of Calendars
  * with their days, which contain the appointments.
  * CalendarScene creates all the dates for every view and holds the current selected date.
  * The current show is started by SettingsData::m_last_view in main window and controlled by menu/toolbar
  * actions over slots like slotShowYear() and friends.
- * Each time, an appointment is created/modified or a usercalendar was modified, CalendarScene receives appointments
- * from AppointmentPool and has to dispatch all these in setAppointmentFor{Year, Month, ....}.
- * There are no own signals. Signals are taken from DayIn{Year, Month, ...}Item and forwarded to MainWindow. */
+ */
 class CalendarScene : public QGraphicsScene
 {
     Q_OBJECT

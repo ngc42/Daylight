@@ -70,6 +70,7 @@ public:
         }
         return *this;
     }
+
     DateTime &operator=( const QDateTime &other )
     {
         setDate( other.date() );

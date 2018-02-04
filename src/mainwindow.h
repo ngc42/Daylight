@@ -117,6 +117,7 @@ public slots:
     void slotAppointmentDlgStart(const QDate &date = QDate::currentDate());
     void slotReconfigureAppointment(QString appointmentId); // user clicks on an appointment, configure AppointmentDlg and start
     void slotAppointmentDlgFinished(int returncode);
+    void slotDeleteAppointment( QString appointmentId );
 };
 
 

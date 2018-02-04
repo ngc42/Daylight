@@ -112,10 +112,7 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(m_appointmentDialog, SIGNAL(finished(int)), this, SLOT(slotAppointmentDlgFinished(int)));
     connect(m_ui->actionAddAppointment, SIGNAL(triggered()), this, SLOT(slotAppointmentDlgStart()));
     connect(m_scene, SIGNAL(signalReconfigureAppointment(QString)), this, SLOT(slotReconfigureAppointment(QString)));
-#ifdef XXX
-
-    connect(m_scene, SIGNAL(signalDeleteAppointment(int)), this, SLOT(slotDeleteAppointment(int)), Qt::QueuedConnection);
-#endif
+    connect(m_scene, SIGNAL(signalDeleteAppointment(QString)), this, SLOT(slotDeleteAppointment(QString)), Qt::QueuedConnection);
 
     // user calendars
     connect(m_ui->actionAddUserCalendar, SIGNAL(triggered()), this, SLOT(slotAddUserCalendarDlg()));
@@ -665,4 +662,13 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     m_appointmentDialog->showHideProgressBar( true );
     showAppointments( m_settingsManager->startDate() );
     m_appointmentDialog->hide();
+}
+
+
+void MainWindow::slotDeleteAppointment( QString appointmentId )
+{
+    m_scene->removeAllEvents();
+    m_eventPool->removeAppointmentWithEventsById( appointmentId );
+    m_storage->removeAppointment( appointmentId );
+    showAppointments( m_settingsManager->startDate() );
 }
