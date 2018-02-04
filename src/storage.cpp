@@ -202,6 +202,7 @@ void Storage::storeAppointment( const Appointment &apmData )
         iRec.exec();
     }
 
+    m_db.transaction();
     QSqlQuery iEve(m_db);
     int countAppointments = apmData.m_eventVector.count() - 1;
     int currentCount = 0;
@@ -219,6 +220,7 @@ void Storage::storeAppointment( const Appointment &apmData )
         iEve.exec();
         emit sigStoreEvent(0, currentCount++, countAppointments );
     }
+    m_db.commit();
 }
 
 
