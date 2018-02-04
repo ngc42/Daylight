@@ -17,6 +17,7 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#include <QObject>
 #include <QSqlDatabase>
 #include <QVector>
 
@@ -28,8 +29,10 @@
 /* This is the only storage class at the moment. It stores appointments and user calendars in a
  *  SQLITE database.
  */
-struct Storage
+class Storage : public QObject
 {
+
+    Q_OBJECT
 
 public:
     explicit Storage();
@@ -52,6 +55,9 @@ public:
 
 private:
     QSqlDatabase m_db;
+
+signals:
+    void sigStoreEvent(int first, int current, int count );
 };
 
 #endif // STORAGE_H

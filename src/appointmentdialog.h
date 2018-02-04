@@ -23,6 +23,7 @@
 #include <QButtonGroup>
 #include <QDateTime>
 #include <QDialog>
+#include <QProgressBar>
 #include <QSet>
 
 namespace Ui {
@@ -111,6 +112,9 @@ public:
     void setUserCalendarInfos( QList<UserCalendarInfo*> &uciList );
     void setUserCalendarIndexById( const int usercalendarId );
 
+    // ProgressBar
+    void showHideProgressBar( bool showIt );
+
 private:
     Ui::AppointmentDialog*  m_ui;
     QButtonGroup*           m_repeatByMonthButtonGroup;
@@ -150,6 +154,12 @@ private:
     void collectAppointmentDataFromRecurrencePage();
 
 signals:
+
+public slots:
+
+    // Progress bar
+    void slotUpdateProgress( int first, int current, int last );
+
 private slots:
     // page basic
 
@@ -177,6 +187,10 @@ private slots:
     void slotRemoveSetposClicked();
 
     // page alarm
+
+    // Dialog Result ( we do not want to hide the dialog be sing default accept()... methods)
+    void slotSetAccepted();
+    void slotSetRejected();
 };
 
 #endif // APPOINTMENTDIALOG_H

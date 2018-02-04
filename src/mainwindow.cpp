@@ -615,7 +615,6 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
         if( m_appointmentDialog->isNewAppointment() )
             m_appointmentDialog->deleteAppointment();
         m_appointmentDialog->hide();
-        qDebug() << "MainWindow::slotAppointmentDlgFinished -> rejected";
         return;
     }
 
@@ -632,45 +631,38 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
         // nothing to do: user just wants so see the appointment in a dialog.
         m_appointmentDialog->deleteAppointment();
         m_appointmentDialog->hide();
-        qDebug() << "MainWindow::slotAppointmentDlgFinished -> not modified";
         return;
     }
 
     Appointment* a = m_appointmentDialog->appointment();
-    if( a->m_haveRecurrence )
-    {
-        qDebug() << "HAVE Recurrence";
-        qDebug() << a->m_haveRecurrence << a->m_appRecurrence->contentToString();
 
-
-    }
-    qDebug() << a->m_appBasics->m_dtStart.toDtString()  << a->m_appBasics->m_dtEnd.toDtString();
-
-    qDebug() << "--------- BEGIN Events ----------- ";
+    connect( a, SIGNAL(sigTickEvent(int,int,int)),
+             m_appointmentDialog, SLOT(slotUpdateProgress(int, int, int)) );
+    m_appointmentDialog->showHideProgressBar( true );
     a->makeEvents();
-    qDebug() << "--------- END Events ----------- ";
+    disconnect( a, SIGNAL(sigTickEvent(int,int,int)),
+             m_appointmentDialog, SLOT(slotUpdateProgress(int, int, int)) );
 
     a->setEventColor( m_userCalendarPool->color( a->m_userCalendarId ) );
 
+    connect( m_storage, SIGNAL(sigStoreEvent(int,int,int)),
+             m_appointmentDialog, SLOT(slotUpdateProgress(int, int, int)) );
     if( m_appointmentDialog->isNewAppointment() )
     {
-        // write to db
-        qDebug() << "--------- BEGIN STORE ----------- ";
-        m_storage->storeAppointment( (*a) );
-        qDebug() << "--------- END STORE ----------- ";
 
-        // push to eventpool
+        m_storage->storeAppointment( (*a) );
         m_eventPool->addAppointment( a );
     }
     else
     {
         m_scene->removeAllEvents();
-        // write to db
         m_storage->updateAppointment( (*a) );
-        // push to eventpool
         m_eventPool->updateAppointment( a );
     }
-    // show
+    connect( m_storage, SIGNAL(sigStoreEvent(int,int,int)),
+             m_appointmentDialog, SLOT(slotUpdateProgress(int, int, int)) );
+
+    m_appointmentDialog->showHideProgressBar( true );
     showAppointments( m_settingsManager->startDate() );
     m_appointmentDialog->hide();
 }

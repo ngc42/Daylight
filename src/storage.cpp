@@ -203,6 +203,8 @@ void Storage::storeAppointment( const Appointment &apmData )
     }
 
     QSqlQuery iEve(m_db);
+    int countAppointments = apmData.m_eventVector.count() - 1;
+    int currentCount = 0;
     for( const Event e : apmData.m_eventVector )
     {
         iEve.prepare("INSERT INTO events VALUES(:uid, :text, :start, :end, :timezone, :is_alarm)");
@@ -215,6 +217,7 @@ void Storage::storeAppointment( const Appointment &apmData )
         iEve.bindValue(":timezone", tzString );
         iEve.bindValue(":is_alarm", e.m_isAlarmEvent );
         iEve.exec();
+        emit sigStoreEvent(0, currentCount++, countAppointments );
     }
 }
 

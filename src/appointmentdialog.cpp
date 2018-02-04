@@ -42,7 +42,6 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_nov, 11 );
     m_repeatByMonthButtonGroup->addButton( m_ui->rec_bymonth_dec, 12 );
 
-
     m_repeatRestrictionButtonGroup = new QButtonGroup( m_ui->rec_misc_repeat_groupbox );
     m_repeatRestrictionButtonGroup->addButton( m_ui->rec_misc_repeat_forever, REPEAT_FOREVER );
     m_repeatRestrictionButtonGroup->addButton( m_ui->rec_misc_repeat_count, REPEAT_COUNT );
@@ -53,7 +52,6 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     m_ui->basic_repeattype_combo->addItem( "monthly", MONTHLY );
     m_ui->basic_repeattype_combo->addItem( "weekly", WEEKLY );
     m_ui->basic_repeattype_combo->addItem( "daily", DAILY );
-
 
     // it starts on monday and iterates over all weekdays
     QDate d(2018, 1, 1);
@@ -92,7 +90,12 @@ AppointmentDialog::AppointmentDialog( QWidget* parent ) :
     connect( m_ui->rec_misc_setpos_add, SIGNAL(clicked()), this, SLOT(slotAddSetposClicked()) );
     connect( m_ui->rec_misc_setpos_remove, SIGNAL(clicked()), this, SLOT(slotRemoveSetposClicked()) );
 
+    // Dialog result
+    connect( m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(slotSetAccepted()) );
+    connect( m_ui->buttonBox, SIGNAL(rejected()), this, SLOT(slotSetRejected()) );
+
     reset();
+    showHideProgressBar( false );
 }
 
 
@@ -131,8 +134,6 @@ void AppointmentDialog::userWantsModifyAppointment( const Appointment* apmData )
     m_appointment->m_haveRecurrence = apmData->m_haveRecurrence;
     m_appointment->m_haveAlarm = apmData->m_haveAlarm;
 
-    qDebug() << "userWantsModifyAppointment: " << apmData->m_haveRecurrence << apmData->m_appRecurrence->m_byMonthSet;
-
     // AppointmentBasic
     m_appointment->m_appBasics = new AppointmentBasics( *apmData->m_appBasics );
 
@@ -143,13 +144,9 @@ void AppointmentDialog::userWantsModifyAppointment( const Appointment* apmData )
         m_appointment->m_appRecurrence->getAPartialCopy( *apmData->m_appRecurrence );
     }
 
-
+    // AppointmentData
     reset();
-
-    // Basic Page
     setAppointmentDataToBasicPage( apmData );
-
-    // Recurrence Page
     if( m_appointment->m_haveRecurrence )
         setAppointmentDataToRecurrencePage( apmData );
 
@@ -289,6 +286,15 @@ void AppointmentDialog::setUserCalendarIndexById( const int usercalendarId )
         index = m_ui->basic_select_calendar_combo->findData( 0 );
     }
     m_ui->basic_select_calendar_combo->setCurrentIndex( index );
+}
+
+
+void AppointmentDialog::showHideProgressBar( bool showIt )
+{
+    if( showIt )
+        m_ui->progressBar->show();
+    else
+        m_ui->progressBar->hide();
 }
 
 
@@ -605,6 +611,13 @@ void AppointmentDialog::collectAppointmentDataFromRecurrencePage()
 }
 
 
+void AppointmentDialog::slotUpdateProgress( int first, int current, int last )
+{
+    m_ui->progressBar->setRange( first, last );
+    m_ui->progressBar->setValue( current );
+}
+
+
 void AppointmentDialog::slotIndexChangedRecurrenceFrequency( int index )
 {
     // these tabs and pages are enabled/disabled according to
@@ -840,7 +853,6 @@ void AppointmentDialog::slotRemoveDayDayClicked()
                     std::make_pair( static_cast<AppointmentRecurrence::WeekDay>(dayElem.first), dayElem.second ) );
         int itemRow = m_ui->rec_byday_list->row( item );
         delete m_ui->rec_byday_list->takeItem( itemRow );
-        qDebug() << m_appointment->m_appRecurrence->m_byDaySet.size();
     }
 }
 
@@ -894,4 +906,16 @@ void AppointmentDialog::slotRemoveSetposClicked()
         int itemRow = m_ui->rec_misc_setpos_list->row( item );
         delete m_ui->rec_misc_setpos_list->takeItem( itemRow );
     }
+}
+
+
+void AppointmentDialog::slotSetAccepted()
+{
+    emit finished( QDialog::Accepted );
+}
+
+
+void AppointmentDialog::slotSetRejected()
+{
+    emit finished( QDialog::Rejected  );
 }
