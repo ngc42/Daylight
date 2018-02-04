@@ -67,22 +67,22 @@ void IcalInterpreter::readEvent( const VEventComponent* &inVEventComponent,
         if( p->m_type == Property::PT_DTEND )
         {
             outAppBasics->m_dtEnd = p->m_contentDateTime;
-            Parameter* pp;
+            Parameter pp;
             if( p->getParameterByType( Parameter::TZIDPARAM, pp ) )
             {
-                if( pp->m_contentTimeZone.isValid() )
-                    outAppBasics->m_dtEnd.setTimeZone( pp->m_contentTimeZone );
+                if( pp.m_contentTimeZone.isValid() )
+                    outAppBasics->m_dtEnd.setTimeZone( pp.m_contentTimeZone );
             }
             continue;
         }
         if( p->m_type == Property::PT_DTSTART )
         {
             outAppBasics->m_dtStart = p->m_contentDateTime;
-            Parameter* pp;
+            Parameter pp;
             if( p->getParameterByType( Parameter::TZIDPARAM, pp ) )
             {
-                if( pp->m_contentTimeZone.isValid() )
-                    outAppBasics->m_dtStart.setTimeZone( pp->m_contentTimeZone );
+                if( pp.m_contentTimeZone.isValid() )
+                    outAppBasics->m_dtStart.setTimeZone( pp.m_contentTimeZone );
             }
             continue;
         }
@@ -162,11 +162,11 @@ void IcalInterpreter::readAlarm( const VAlarmComponent* inVAlarmComponent,
                 outAppAlarm->m_alarmSecs = p->durationToSeconds();
             else
             {
-                Parameter* pp;
+                Parameter pp;
                 if( p->getParameterByType( Parameter::TRIGRELPARAM, pp ) )
                 {
                     outAppAlarm->m_alarmSecs = p->durationToSeconds();
-                    if( pp->m_contentTriggerRelParam == Parameter::TRP_END )
+                    if( pp.m_contentTriggerRelParam == Parameter::TRP_END )
                         outAppAlarm->m_alarmSecs +=
                                 inAppBasics->m_dtStart.secsTo( (inAppBasics->m_dtEnd ) );
                     // No need to check for Parameter::TRP_START
@@ -174,13 +174,13 @@ void IcalInterpreter::readAlarm( const VAlarmComponent* inVAlarmComponent,
                 }
                 else if( p->getParameterByType( Parameter::VALUETYPEPARAM, pp ) )
                 {
-                    if( pp->m_contentValueType == Parameter::VT_DATE_TIME )
+                    if( pp.m_contentValueType == Parameter::VT_DATE_TIME )
                     {
                         DateTime dtAlarm;
-                        dtAlarm = pp->m_contentDateTime;
+                        dtAlarm = pp.m_contentDateTime;
                         outAppAlarm->m_alarmSecs = inAppBasics->m_dtStart.secsTo( dtAlarm );
                     }
-                    if( pp->m_contentValueType == Parameter::VT_DURATION )
+                    if( pp.m_contentValueType == Parameter::VT_DURATION )
                     {
                         outAppAlarm->m_alarmSecs = p->durationToSeconds();
                     }
@@ -204,11 +204,11 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
     // This is more or less just stupid translation between
     // Ical-consts and appointment const with just different names.
     // More, we limit shortest recurrence to daily.
-    for( const Parameter* p : inRecurrenceProperty->m_parameters )
+    for( const Parameter p : inRecurrenceProperty->m_parameters )
     {
-        if( p->m_type == Parameter::RR_FREQ )
+        if( p.m_type == Parameter::RR_FREQ )
         {
-            switch( p->m_contentFrequency )
+            switch( p.m_contentFrequency )
             {
                 case Parameter::F_DAILY:
                     outAppRecurrence->m_frequency = AppointmentRecurrence::RFT_DAILY;
@@ -226,24 +226,24 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
                 break;
             }
         }
-        else if( p->m_type == Parameter::RR_UNTIL )
+        else if( p.m_type == Parameter::RR_UNTIL )
         {
-            outAppRecurrence->m_until = p->m_contentDateTime;
+            outAppRecurrence->m_until = p.m_contentDateTime;
             outAppRecurrence->m_haveUntil = true;
         }
-        else if( p->m_type == Parameter::RR_COUNT )
+        else if( p.m_type == Parameter::RR_COUNT )
         {
-            outAppRecurrence->m_count = p->m_contentInteger;
+            outAppRecurrence->m_count = p.m_contentInteger;
             outAppRecurrence->m_haveCount = true;
         }
-        else if( p->m_type == Parameter::RR_INTERVAL )
+        else if( p.m_type == Parameter::RR_INTERVAL )
         {
-            outAppRecurrence->m_interval = p->m_contentInteger;
+            outAppRecurrence->m_interval = p.m_contentInteger;
         }
-        else if( p->m_type == Parameter::RR_BYDAY )
+        else if( p.m_type == Parameter::RR_BYDAY )
         {
             numberOfByRules++;
-            for( const std::pair<Parameter::IcalWeekDayType, int> day : p->m_contentDaySet )
+            for( const std::pair<Parameter::IcalWeekDayType, int> day : p.m_contentDaySet )
             {
                 Parameter::IcalWeekDayType wd = day.first;
                 AppointmentRecurrence::WeekDay weekDay = AppointmentRecurrence::WeekDay::WD_MO;
@@ -276,50 +276,50 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
                 outAppRecurrence->m_byDaySet.insert( std::make_pair( weekDay, day.second ) );
             }
         }
-        else if( p->m_type == Parameter::RR_BYMONTHDAY )
+        else if( p.m_type == Parameter::RR_BYMONTHDAY )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byMonthDaySet = p->m_contentIntSet;
+            outAppRecurrence->m_byMonthDaySet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYYEARDAY )
+        else if( p.m_type == Parameter::RR_BYYEARDAY )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byYearDaySet = p->m_contentIntSet;
+            outAppRecurrence->m_byYearDaySet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYWEEKNO )
+        else if( p.m_type == Parameter::RR_BYWEEKNO )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byWeekNumberSet = p->m_contentIntSet;
+            outAppRecurrence->m_byWeekNumberSet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYMONTH )
+        else if( p.m_type == Parameter::RR_BYMONTH )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byMonthSet = p->m_contentIntSet;
+            outAppRecurrence->m_byMonthSet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYHOUR )
+        else if( p.m_type == Parameter::RR_BYHOUR )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byHourSet = p->m_contentIntSet;
+            outAppRecurrence->m_byHourSet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYMINUTE )
+        else if( p.m_type == Parameter::RR_BYMINUTE )
         {
             numberOfByRules++;
-            outAppRecurrence->m_byMinuteSet = p->m_contentIntSet;
+            outAppRecurrence->m_byMinuteSet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYSECOND )
+        else if( p.m_type == Parameter::RR_BYSECOND )
         {
             numberOfByRules++;
-            outAppRecurrence->m_bySecondSet = p->m_contentIntSet;
+            outAppRecurrence->m_bySecondSet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_BYSETPOS )
+        else if( p.m_type == Parameter::RR_BYSETPOS )
         {
             numberOfByRules++;
-            outAppRecurrence->m_bySetPosSet = p->m_contentIntSet;
+            outAppRecurrence->m_bySetPosSet = p.m_contentIntSet;
         }
-        else if( p->m_type == Parameter::RR_WKST)
+        else if( p.m_type == Parameter::RR_WKST)
         {
             numberOfByRules++;
-            switch( p->m_contentWeekDay )
+            switch( p.m_contentWeekDay )
             {
                 case Parameter::IcalWeekDayType::WD_MO:
                     outAppRecurrence->m_startWeekday = AppointmentRecurrence::WeekDay::WD_MO;
@@ -378,12 +378,12 @@ bool IcalInterpreter::eventHasUsableRRuleOrNone( const VEventComponent* inVEvent
     {
         if( p->m_type == Property::PT_RRULE )
         {
-            Parameter* param;
+            Parameter param;
             bool found = p->getParameterByType( Parameter::RR_FREQ, param );
-            if( found and ( param->m_contentFrequency == Parameter::F_SECONDLY or
-                param->m_contentFrequency == Parameter::F_MINUTELY or
-                param->m_contentFrequency == Parameter::F_HOURLY or
-                param->m_contentFrequency == Parameter::F_NO_FREQUENCY ) )
+            if( found and ( param.m_contentFrequency == Parameter::F_SECONDLY or
+                param.m_contentFrequency == Parameter::F_MINUTELY or
+                param.m_contentFrequency == Parameter::F_HOURLY or
+                param.m_contentFrequency == Parameter::F_NO_FREQUENCY ) )
                 return false;
         }
     }

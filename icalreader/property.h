@@ -99,7 +99,7 @@ struct Property
     bool        readProperty( const QString inProp );
 
     // get a parameter by typename, return the property. true if found.
-    bool        getParameterByType( const Parameter::IcalParameterType inSearchType, Parameter* &outParam ) const;
+    bool        getParameterByType( const Parameter::IcalParameterType inSearchType, Parameter &outParam ) const;
 
     // convert duation to seconds
     qint64      durationToSeconds() const;
@@ -148,7 +148,7 @@ struct Property
     double              m_contentDoubleTuple[2]; // Tuple of float for GEO
 
     // List of parameters
-    QList<Parameter*>   m_parameters; // attached parameters
+    QList<Parameter>    m_parameters; // attached parameters
 };
 
 #endif // PROPERTY_H

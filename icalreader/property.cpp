@@ -89,10 +89,10 @@ QString Property::contentToString() const
 
     if( m_parameters.isEmpty() )
         return s.append( "[no param])\n");
-    for( Parameter* p : m_parameters )
+    for( Parameter p : m_parameters )
     {
         QString description( "{" );
-        description = description.append( p->contentToString() ).append("}");
+        description = description.append( p.contentToString() ).append("}");
         s = s.append( description );
     }
     return s.append( ")\n" );
@@ -112,8 +112,8 @@ bool Property::readProperty( const QString inProp )
     // fill the parameters
     for( QString ps : parameterList )
     {
-        Parameter *p = new Parameter();
-        if( not p->readParameter( ps ) )
+        Parameter p = Parameter();
+        if( not p.readParameter( ps ) )
         {
             m_hasErrors = true;
             return false;
@@ -441,12 +441,12 @@ bool Property::readProperty( const QString inProp )
 }
 
 
-bool Property::getParameterByType( const Parameter::IcalParameterType inSearchType,
-                                   Parameter* &outParam ) const
+bool Property::getParameterByType(const Parameter::IcalParameterType inSearchType,
+                                   Parameter& outParam ) const
 {
     if( m_parameters.empty() ) return false;
-    for( Parameter* param : m_parameters )
-        if( param->m_type == inSearchType )
+    for( Parameter param : m_parameters )
+        if( param.m_type == inSearchType )
         {
             outParam = param;
             return true;
@@ -481,8 +481,8 @@ bool Property::validate()
     if( m_type == PT_RRULE )
     {
         bool ret = true;
-        for( const Parameter* param : m_parameters )
-            ret = ret and param->validate();
+        for( const Parameter param : m_parameters )
+            ret = ret and param.validate();
         return ret;
     }
     return true;
