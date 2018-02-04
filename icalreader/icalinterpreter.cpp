@@ -36,7 +36,7 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
         for( const VEventComponent* component : inIcal.m_vEventComponents )
         {
             AppointmentBasics *basic = nullptr;
-            QList<AppointmentAlarm*> alarmList;
+            QVector<AppointmentAlarm*> alarmList;
             AppointmentRecurrence *recurrence = nullptr;
             if( eventHasUsableRRuleOrNone( component ) ) // usable for our appointment structure?
             {
@@ -49,9 +49,9 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
 }
 
 
-void IcalInterpreter::readEvent( const VEventComponent* &inVEventComponent,
+void IcalInterpreter::readEvent(const VEventComponent* &inVEventComponent,
                 AppointmentBasics* &outAppBasics,
-                QList<AppointmentAlarm*> &outAppAlarmList,
+                QVector<AppointmentAlarm*>& outAppAlarmVector,
                 AppointmentRecurrence* &outAppRecurrence )
 {
     outAppBasics = new AppointmentBasics();
@@ -140,7 +140,7 @@ void IcalInterpreter::readEvent( const VEventComponent* &inVEventComponent,
     {
         AppointmentAlarm *appAlarm = new AppointmentAlarm();
         readAlarm( alarm, outAppBasics, appAlarm );
-        outAppAlarmList.append( appAlarm );
+        outAppAlarmVector.append( appAlarm );
     }
 }
 
@@ -391,22 +391,22 @@ bool IcalInterpreter::eventHasUsableRRuleOrNone( const VEventComponent* inVEvent
 }
 
 
-void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
+void IcalInterpreter::makeAppointment(AppointmentBasics* &inAppBasics,
                                        AppointmentRecurrence* &inAppRecurrence,
-                                       QList<AppointmentAlarm*> &inAppAlarmList )
+                                       QVector<AppointmentAlarm*> &inAppAlarmVector )
 {
     Appointment* t = new Appointment();
     t->m_appBasics = inAppBasics;
-    qDebug() << " IcalInterpreter::makeAppointment num alarm " << inAppAlarmList.count();
+    qDebug() << " IcalInterpreter::makeAppointment num alarm " << inAppAlarmVector.count();
     t->m_appRecurrence = inAppRecurrence;
-    t->m_appAlarms = inAppAlarmList;
+    t->m_appAlarms = inAppAlarmVector;
 
     // fill up appointment
     t->m_minYear = 1000000;             // just a big number
     t->m_maxYear = 0;                   // just a small number
     t->m_userCalendarId = 0;            // here, we don't know
     t->m_uid = t->m_appBasics->m_uid;   // just forwarded
-    t->m_haveAlarm = not inAppAlarmList.isEmpty();
+    t->m_haveAlarm = not inAppAlarmVector.isEmpty();
 
     if( inAppRecurrence )
         t->m_haveRecurrence = true;

@@ -24,7 +24,6 @@
 
 #include <QColor>
 #include <QDebug>
-#include <QList>
 #include <QSet>
 #include <QString>
 #include <QTimeZone>
@@ -80,7 +79,7 @@ struct AppointmentAlarm
     QString contentToString() const;
 
     // generates a list of alarm times base on appointment start times.
-    QList<DateTime*> alarmTime( const QList<DateTime> &inAppointmentTime );
+    QVector<DateTime*> alarmTime( const QVector<DateTime> &inAppointmentTime );
 
     // === Data ===
     qint64  m_alarmSecs;        // first or only alarm in seconds rel. to DTSTART
@@ -136,7 +135,6 @@ public:
     QVector<DateTime> recurrenceStartDatesWeekly( const DateTime inDtStart, const DateTime inDtLast );
     QVector<DateTime> recurrenceStartDatesDaily( const DateTime inDtStart, const DateTime inDtLast );
 
-
     /* weekExpand()
      * creates a list of dates in the given week.
      * a week starts with firstDayOfWeek()
@@ -150,7 +148,7 @@ public:
      *  filled up by inRefDateTime.
      */
     void        timeExpand(const DateTime inRefDateTime, const QSet<int> inHourSet, const QSet<int> inMinSet,
-                           const QSet<int> inSecSet, QVector<QTime> &outTimeList);
+                           const QSet<int> inSecSet, QVector<QTime> &outTimeVector);
 
     /* firstDayOfWeek()
      * Tries to calculate the first day in the first week and then adds the number of
@@ -171,7 +169,7 @@ public:
     bool        validateDateTime( const DateTime inRefTime ) const ;
 
     // sorts the list in place.
-    void        sortDaytimeList( QVector<DateTime> &inoutSortList );
+    void        sortDaytimeList( QVector<DateTime> &inoutSortVector );
 
     bool daysetContainsDay( const std::set<std::pair<WeekDay, int>> inStdSet,
                             const WeekDay inWeekday ) const
@@ -297,7 +295,7 @@ public:
 
     AppointmentBasics*          m_appBasics;
     AppointmentRecurrence*      m_appRecurrence;
-    QList<AppointmentAlarm*>    m_appAlarms;
+    QVector<AppointmentAlarm*>  m_appAlarms;
     // years
     QSet<int>                   m_yearsInQuestion;  // all the years
     int                         m_minYear;          // start of first event

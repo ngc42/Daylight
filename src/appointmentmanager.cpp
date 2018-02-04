@@ -1207,7 +1207,7 @@ void AppointmentRecurrence::weekExpand( const DateTime inRefDateTime, const int 
 
 
 void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QSet<int> inHourSet, const QSet<int> inMinSet,
-                           const QSet<int> inSecSet, QVector<QTime> &outTimeList)
+                           const QSet<int> inSecSet, QVector<QTime> &outTimeVector)
 {
     QTime refTime = inRefDateTime.time();
 
@@ -1248,7 +1248,7 @@ void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QSet<
     //   missing seconds
     if( inSecSet.isEmpty() )
     {
-        outTimeList = t_min;
+        outTimeVector = t_min;
         return;
     }
     for( const QTime t : t_min )
@@ -1256,7 +1256,7 @@ void AppointmentRecurrence::timeExpand(const DateTime inRefDateTime, const QSet<
         for( const int s : inSecSet )
         {
             QTime elem( t.hour(), t.minute(), s );
-            outTimeList.append( elem );
+            outTimeVector.append( elem );
         }
     }
 }
@@ -1296,18 +1296,18 @@ bool AppointmentRecurrence::validateDateTime( const DateTime inRefTime ) const
 }
 
 
-void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
+void AppointmentRecurrence::sortDaytimeList(QVector<DateTime> &inoutSortVector )
 {
-    int count = inoutSortList.count();
+    int count = inoutSortVector.count();
     if( count < 2 )
         return;
     if( count == 2 )
     {
-        if( inoutSortList.at(0) > inoutSortList.at(1) )
+        if( inoutSortVector.at(0) > inoutSortVector.at(1) )
         {
-            DateTime tmp = inoutSortList.at(0);
-            inoutSortList[0] = inoutSortList.at(1);
-            inoutSortList[1] = tmp;
+            DateTime tmp = inoutSortVector.at(0);
+            inoutSortVector[0] = inoutSortVector.at(1);
+            inoutSortVector[1] = tmp;
         }
         return;
     }
@@ -1318,11 +1318,11 @@ void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
     // bigger distance
     while( bindex < count )
     {
-        if( inoutSortList.at( index ) > inoutSortList.at( bindex ) )
+        if( inoutSortVector.at( index ) > inoutSortVector.at( bindex ) )
         {
-            tmp = inoutSortList.at( index );
-            inoutSortList[ index ] = inoutSortList[ bindex ];
-            inoutSortList[ bindex ] = tmp;
+            tmp = inoutSortVector.at( index );
+            inoutSortVector[ index ] = inoutSortVector[ bindex ];
+            inoutSortVector[ bindex ] = tmp;
         }
         index++;
         bindex++;
@@ -1338,12 +1338,12 @@ void AppointmentRecurrence::sortDaytimeList( QVector<DateTime> &inoutSortList )
         bindex = 1;
         while( bindex < count )
         {
-            if( inoutSortList.at( index ) > inoutSortList.at( bindex ) )
+            if( inoutSortVector.at( index ) > inoutSortVector.at( bindex ) )
             {
                 swapped = true;
-                tmp = inoutSortList.at( index );
-                inoutSortList[ index ] = inoutSortList[ bindex ];
-                inoutSortList[ bindex ] = tmp;
+                tmp = inoutSortVector.at( index );
+                inoutSortVector[ index ] = inoutSortVector[ bindex ];
+                inoutSortVector[ bindex ] = tmp;
             }
             index++;
             bindex++;

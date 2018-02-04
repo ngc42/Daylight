@@ -38,7 +38,7 @@ public:
 private:
     void readEvent( const VEventComponent* &inVEventComponent,
                     AppointmentBasics* &outAppBasics,
-                    QList<AppointmentAlarm*> &outAppAlarmList,
+                    QVector<AppointmentAlarm*> &outAppAlarmVector,
                     AppointmentRecurrence* &outAppRecurrence );
 
     void readAlarm( const VAlarmComponent* inVAlarmComponent,
@@ -55,9 +55,9 @@ private:
     bool eventHasUsableRRuleOrNone( const VEventComponent* inVEventComponent );
 
     /* make an appointment and signal it to the outside world */
-    void makeAppointment( AppointmentBasics* &inAppBasics,
+    void makeAppointment(AppointmentBasics* &inAppBasics,
                           AppointmentRecurrence* &inAppRecurrence,
-                          QList<AppointmentAlarm*> &inAppAlarmList );
+                          QVector<AppointmentAlarm*>& inAppAlarmVector );
 
 signals:
     void sigTickEvent( const int min, const int current, const int max );
