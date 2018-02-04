@@ -14,8 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "vtimezonecomponent.h"
 #include <QDebug>
+
+#include "vtimezonecomponent.h"
 
 
 VTimezoneComponent::VTimezoneComponent()
@@ -28,12 +29,12 @@ VTimezoneComponent::VTimezoneComponent()
 QString VTimezoneComponent::contentToString() const
 {
     QString s( "{VTimezone:" );
-    for( const Property* p : m_properties )
-        s = s.append( p->contentToString() );
-    for( const StandardDaylightComponent* sc : m_StandardComponents )
-        s = s.append( sc->contentToString() );
-    for( const StandardDaylightComponent* dc : m_DaylightComponents )
-        s = s.append( dc->contentToString() );
+    for( const Property p : m_properties )
+        s = s.append( p.contentToString() );
+    for( const StandardDaylightComponent sc : m_StandardComponents )
+        s = s.append( sc.contentToString() );
+    for( const StandardDaylightComponent dc : m_DaylightComponents )
+        s = s.append( dc.contentToString() );
     return s.append( "}\n" );
 }
 
@@ -43,7 +44,7 @@ void VTimezoneComponent::readContentLine( const QString inContent )
     if( inContent.startsWith( "BEGIN:STANDARD", Qt::CaseInsensitive ) )
     {
         m_activeComponent = IN_STANDARD;
-        StandardDaylightComponent* component = new StandardDaylightComponent();
+        StandardDaylightComponent component = StandardDaylightComponent();
         m_StandardComponents.append( component );
         return;
     }
@@ -51,7 +52,7 @@ void VTimezoneComponent::readContentLine( const QString inContent )
     if( inContent.startsWith( "BEGIN:DAYLIGHT", Qt::CaseInsensitive ) )
     {
         m_activeComponent = IN_DAYLIGHT;
-        StandardDaylightComponent* component = new StandardDaylightComponent();
+        StandardDaylightComponent component = StandardDaylightComponent();
         m_DaylightComponents.append( component );
         return;
     }
@@ -65,29 +66,29 @@ void VTimezoneComponent::readContentLine( const QString inContent )
 
     if( m_activeComponent == IN_VTIMEZONE )
     {
-        Property *p = new Property();
-        if( p->readProperty( inContent ) )
+        Property p = Property();
+        if( p.readProperty( inContent ) )
             m_properties.append( p );
         return;
     }
 
     if( m_activeComponent == IN_STANDARD )
     {
-        m_StandardComponents.last()->readContentLine( inContent );
+        m_StandardComponents.last().readContentLine( inContent );
         return;
     }
 
     // m_activeComponent == IN_DAYLIGHT
-    m_DaylightComponents.last()->readContentLine( inContent );
+    m_DaylightComponents.last().readContentLine( inContent );
 }
 
 
 bool VTimezoneComponent::validate()
 {
     int count_tzid = 0;     // MUST 1
-    for( const Property* prop : m_properties )
+    for( const Property prop : m_properties )
     {
-        if( prop->m_type == Property::PT_TZID )
+        if( prop.m_type == Property::PT_TZID )
             count_tzid++;
     }
     bool ret = ( ( m_StandardComponents.count() > 0 ) or ( m_DaylightComponents.count() > 0 ) )

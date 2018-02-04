@@ -14,10 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "icalinterpreter.h"
-#include "parameter.h"
 
 #include <QDebug>
+
+#include "icalinterpreter.h"
+#include "parameter.h"
 
 
 IcalInterpreter::IcalInterpreter( QObject *parent )
@@ -33,7 +34,7 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
     {
         int count = inIcal.m_vEventComponents.count();
         int num = 1;
-        for( const VEventComponent* component : inIcal.m_vEventComponents )
+        for( const VEventComponent component : inIcal.m_vEventComponents )
         {
             AppointmentBasics *basic = nullptr;
             QVector<AppointmentAlarm*> alarmList;
@@ -49,7 +50,7 @@ void IcalInterpreter::readIcal( const ICalBody &inIcal )
 }
 
 
-void IcalInterpreter::readEvent(const VEventComponent* &inVEventComponent,
+void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
                 AppointmentBasics* &outAppBasics,
                 QVector<AppointmentAlarm*>& outAppAlarmVector,
                 AppointmentRecurrence* &outAppRecurrence )
@@ -57,36 +58,36 @@ void IcalInterpreter::readEvent(const VEventComponent* &inVEventComponent,
     outAppBasics = new AppointmentBasics();
     bool haveRecurrence = false;
 
-    for( const Property* p : inVEventComponent->m_properties )
+    for( const Property p : inVEventComponent.m_properties )
     {
-        if( p->m_type == Property::PT_DESCRIPTION )
+        if( p.m_type == Property::PT_DESCRIPTION )
         {
-            outAppBasics->m_description = p->m_content;
+            outAppBasics->m_description = p.m_content;
             continue;
         }
-        if( p->m_type == Property::PT_DTEND )
+        if( p.m_type == Property::PT_DTEND )
         {
-            outAppBasics->m_dtEnd = p->m_contentDateTime;
+            outAppBasics->m_dtEnd = p.m_contentDateTime;
             Parameter pp;
-            if( p->getParameterByType( Parameter::TZIDPARAM, pp ) )
+            if( p.getParameterByType( Parameter::TZIDPARAM, pp ) )
             {
                 if( pp.m_contentTimeZone.isValid() )
                     outAppBasics->m_dtEnd.setTimeZone( pp.m_contentTimeZone );
             }
             continue;
         }
-        if( p->m_type == Property::PT_DTSTART )
+        if( p.m_type == Property::PT_DTSTART )
         {
-            outAppBasics->m_dtStart = p->m_contentDateTime;
+            outAppBasics->m_dtStart = p.m_contentDateTime;
             Parameter pp;
-            if( p->getParameterByType( Parameter::TZIDPARAM, pp ) )
+            if( p.getParameterByType( Parameter::TZIDPARAM, pp ) )
             {
                 if( pp.m_contentTimeZone.isValid() )
                     outAppBasics->m_dtStart.setTimeZone( pp.m_contentTimeZone );
             }
             continue;
         }
-        if( p->m_type == Property::PT_RRULE )
+        if( p.m_type == Property::PT_RRULE )
         {
             if( not haveRecurrence )
             {
@@ -96,47 +97,47 @@ void IcalInterpreter::readEvent(const VEventComponent* &inVEventComponent,
             readRecurrence( p, outAppRecurrence );
             continue;
         }
-        if( p->m_type == Property::PT_SUMMARY )
+        if( p.m_type == Property::PT_SUMMARY )
         {
-            outAppBasics->m_summary = p->m_content;
+            outAppBasics->m_summary = p.m_content;
             continue;
         }
-        if( p->m_type == Property::PT_UID )
+        if( p.m_type == Property::PT_UID )
         {
-            outAppBasics->m_uid = p->m_content;
+            outAppBasics->m_uid = p.m_content;
             continue;
         }
-        if( p->m_type == Property::PT_EXDATE )
+        if( p.m_type == Property::PT_EXDATE )
         {
             if( not haveRecurrence )
             {
                 outAppRecurrence = new AppointmentRecurrence();
                 haveRecurrence = true;
             }
-            if( p->m_storageType == Property::PST_DATETIME )
-                outAppRecurrence->m_exceptionDates.append( p->m_contentDateTime );
+            if( p.m_storageType == Property::PST_DATETIME )
+                outAppRecurrence->m_exceptionDates.append( p.m_contentDateTime );
             else // PST_DATETIMELIST
-                outAppRecurrence->m_exceptionDates.append( p->m_contentDateTimeVector );
+                outAppRecurrence->m_exceptionDates.append( p.m_contentDateTimeVector );
             continue;
         }
-        if( p->m_type == Property::PT_RDATE )
+        if( p.m_type == Property::PT_RDATE )
         {
             qDebug() << " FIXME: RDATE unsupported in Appointment";
             continue;
         }
-        if( p->m_type == Property::PT_SEQUENCE )
+        if( p.m_type == Property::PT_SEQUENCE )
         {
-            outAppBasics->m_sequence = p->m_contentInteger;
+            outAppBasics->m_sequence = p.m_contentInteger;
             continue;
         }
-        if( p->m_type == Property::PT_TRANSP )
+        if( p.m_type == Property::PT_TRANSP )
         {
-            outAppBasics->m_busyFree =  p->m_contentTransparency == Property::TT_TRANSPARENT ?
+            outAppBasics->m_busyFree =  p.m_contentTransparency == Property::TT_TRANSPARENT ?
                                 AppointmentBasics::FREE : AppointmentBasics::BUSY;
             continue;
         }
     }
-    for( const VAlarmComponent* alarm : inVEventComponent->m_vAlarmComponents )
+    for( const VAlarmComponent alarm : inVEventComponent.m_vAlarmComponents )
     {
         AppointmentAlarm *appAlarm = new AppointmentAlarm();
         readAlarm( alarm, outAppBasics, appAlarm );
@@ -145,34 +146,34 @@ void IcalInterpreter::readEvent(const VEventComponent* &inVEventComponent,
 }
 
 
-void IcalInterpreter::readAlarm( const VAlarmComponent* inVAlarmComponent,
+void IcalInterpreter::readAlarm( const VAlarmComponent inVAlarmComponent,
                                  const AppointmentBasics* inAppBasics,
                                  AppointmentAlarm* &outAppAlarm )
 {
-    for( const Property *p : inVAlarmComponent->m_properties )
+    for( const Property p : inVAlarmComponent.m_properties )
     {
-        if( p->m_type == Property::PT_REPEAT )
+        if( p.m_type == Property::PT_REPEAT )
         {
-            outAppAlarm->m_repeatNumber = p->m_contentInteger;
+            outAppAlarm->m_repeatNumber = p.m_contentInteger;
             continue;
         }
-        if( p->m_type == Property::PT_TRIGGER )
+        if( p.m_type == Property::PT_TRIGGER )
         {
-            if( p->m_parameters.isEmpty() )
-                outAppAlarm->m_alarmSecs = p->durationToSeconds();
+            if( p.m_parameters.isEmpty() )
+                outAppAlarm->m_alarmSecs = p.durationToSeconds();
             else
             {
                 Parameter pp;
-                if( p->getParameterByType( Parameter::TRIGRELPARAM, pp ) )
+                if( p.getParameterByType( Parameter::TRIGRELPARAM, pp ) )
                 {
-                    outAppAlarm->m_alarmSecs = p->durationToSeconds();
+                    outAppAlarm->m_alarmSecs = p.durationToSeconds();
                     if( pp.m_contentTriggerRelParam == Parameter::TRP_END )
                         outAppAlarm->m_alarmSecs +=
                                 inAppBasics->m_dtStart.secsTo( (inAppBasics->m_dtEnd ) );
                     // No need to check for Parameter::TRP_START
 
                 }
-                else if( p->getParameterByType( Parameter::VALUETYPEPARAM, pp ) )
+                else if( p.getParameterByType( Parameter::VALUETYPEPARAM, pp ) )
                 {
                     if( pp.m_contentValueType == Parameter::VT_DATE_TIME )
                     {
@@ -182,29 +183,29 @@ void IcalInterpreter::readAlarm( const VAlarmComponent* inVAlarmComponent,
                     }
                     if( pp.m_contentValueType == Parameter::VT_DURATION )
                     {
-                        outAppAlarm->m_alarmSecs = p->durationToSeconds();
+                        outAppAlarm->m_alarmSecs = p.durationToSeconds();
                     }
                 }
             }
             continue;
         }
-        if( p->m_type == Property::PT_DURATION )
+        if( p.m_type == Property::PT_DURATION )
         {
-            if( p->m_storageType == Property::PST_DURATION )
-                outAppAlarm->m_pauseSecs = p->durationToSeconds();
+            if( p.m_storageType == Property::PST_DURATION )
+                outAppAlarm->m_pauseSecs = p.durationToSeconds();
         }
     }
 }
 
 
-void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
+void IcalInterpreter::readRecurrence(const Property inRecurrenceProperty,
                                       AppointmentRecurrence* &outAppRecurrence  )
 {
     int numberOfByRules = 0;
     // This is more or less just stupid translation between
     // Ical-consts and appointment const with just different names.
     // More, we limit shortest recurrence to daily.
-    for( const Parameter p : inRecurrenceProperty->m_parameters )
+    for( const Parameter p : inRecurrenceProperty.m_parameters )
     {
         if( p.m_type == Parameter::RR_FREQ )
         {
@@ -371,15 +372,15 @@ void IcalInterpreter::readRecurrence( const Property* inRecurrenceProperty,
 }
 
 
-bool IcalInterpreter::eventHasUsableRRuleOrNone( const VEventComponent* inVEventComponent )
+bool IcalInterpreter::eventHasUsableRRuleOrNone( const VEventComponent inVEventComponent )
 {
     bool ret = true;
-    for( const Property *p : inVEventComponent->m_properties )
+    for( const Property p : inVEventComponent.m_properties )
     {
-        if( p->m_type == Property::PT_RRULE )
+        if( p.m_type == Property::PT_RRULE )
         {
             Parameter param;
-            bool found = p->getParameterByType( Parameter::RR_FREQ, param );
+            bool found = p.getParameterByType( Parameter::RR_FREQ, param );
             if( found and ( param.m_contentFrequency == Parameter::F_SECONDLY or
                 param.m_contentFrequency == Parameter::F_MINUTELY or
                 param.m_contentFrequency == Parameter::F_HOURLY or

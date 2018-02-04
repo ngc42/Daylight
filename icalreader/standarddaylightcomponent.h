@@ -39,7 +39,7 @@ struct StandardDaylightComponent
 
     // === Data ===
 
-    QVector<Property*>  m_properties;
+    QVector<Property>  m_properties;
 };
 
 #endif // STANDARDDAYLIGHTCOMPONENT_H

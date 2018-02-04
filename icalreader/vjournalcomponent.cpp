@@ -26,16 +26,16 @@ VJournalComponent::VJournalComponent()
 QString VJournalComponent::contentToString() const
 {
     QString s( "{VJournal:" );
-    for( const Property* p : m_properties )
-        s = s.append( p->contentToString() );
+    for( const Property p : m_properties )
+        s = s.append( p.contentToString() );
     return s.append( "}\n" );
 }
 
 
 void VJournalComponent::readContentLine( const QString inContent )
 {
-    Property* p = new Property();
-    if( p->readProperty( inContent ) )
+    Property p = Property();
+    if( p.readProperty( inContent ) )
         m_properties.append( p );
 }
 
@@ -44,11 +44,11 @@ bool VJournalComponent::validate()
 {
     int count_uid = 0;          // MUST exact 1
     int count_dtstamp = 0;      // Must exact 1
-    for( Property* &prop : m_properties )
+    for( const Property prop : m_properties )
     {
-        if( prop->m_type == Property::PT_UID )
+        if( prop.m_type == Property::PT_UID )
             count_uid++;
-        else if( prop->m_type == Property::PT_DTSTAMP )
+        else if( prop.m_type == Property::PT_DTSTAMP )
             count_dtstamp++;
     }
     bool ret = ( count_uid == 1 ) and ( count_dtstamp == 1 );

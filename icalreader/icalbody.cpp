@@ -14,9 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "icalbody.h"
 
 #include <QDebug>
+
 
 ICalBody::ICalBody()
     :
@@ -39,35 +41,35 @@ void ICalBody::readContentLine( const QString inContent )
             if( m_currentComponentName.compare( "VEVENT" ) == 0 )
             {
                 m_activeComponent = IN_VEVENT;
-                VEventComponent* component = new VEventComponent();
+                VEventComponent component = VEventComponent();
                 m_vEventComponents.append( component );
                 return;
             }
             if( m_currentComponentName.compare( "VFREEBUSY" ) == 0 )
             {
                 m_activeComponent = IN_VFREEBUSY;
-                VFreeBusyComponent* component = new VFreeBusyComponent();
+                VFreeBusyComponent component = VFreeBusyComponent();
                 m_vFreeBusyComponents.append( component );
                 return;
             }
             if( m_currentComponentName.compare( "VJOURNAL" ) == 0 )
             {
                 m_activeComponent = IN_VJOURNAL;
-                VJournalComponent* component = new VJournalComponent();
+                VJournalComponent component = VJournalComponent();
                 m_vJournalComponents.append( component );
                 return;
             }
             if( m_currentComponentName.compare( "VTODO" ) == 0 )
             {
                 m_activeComponent = IN_VTODO;
-                VTodoComponent* component = new VTodoComponent();
+                VTodoComponent component = VTodoComponent();
                 m_vToDoComponents.append( component );
                 return;
             }
             if( m_currentComponentName.compare( "VTIMEZONE" ) == 0 )
             {
                 m_activeComponent = IN_VTIMEZONE;
-                VTimezoneComponent* component = new VTimezoneComponent();
+                VTimezoneComponent component = VTimezoneComponent();
                 m_vTimezoneComponents.append( component );
                 return;
             }
@@ -108,8 +110,8 @@ void ICalBody::readContentLine( const QString inContent )
     {
         case IN_TOPLEVEL:
         {
-            Property* prop = new Property();
-            prop->readProperty( inContent );
+            Property prop = Property();
+            prop.readProperty( inContent );
             m_properties.append( prop );
         }
         break;
@@ -118,19 +120,19 @@ void ICalBody::readContentLine( const QString inContent )
             // or what we don't understand, like iana compononents
         break;
         case IN_VEVENT:
-            m_vEventComponents.last()->readContentLine( inContent );
+            m_vEventComponents.last().readContentLine( inContent );
         break;
         case IN_VFREEBUSY:
-            m_vFreeBusyComponents.last()->readContentLine( inContent );
+            m_vFreeBusyComponents.last().readContentLine( inContent );
         break;
         case IN_VJOURNAL:
-            m_vJournalComponents.last()->readContentLine( inContent );
+            m_vJournalComponents.last().readContentLine( inContent );
         break;
         case IN_VTODO:
-            m_vToDoComponents.last()->readContentLine( inContent );
+            m_vToDoComponents.last().readContentLine( inContent );
         break;
         case IN_VTIMEZONE:
-            m_vTimezoneComponents.last()->readContentLine( inContent );
+            m_vTimezoneComponents.last().readContentLine( inContent );
         break;
     }
 }
@@ -139,18 +141,18 @@ void ICalBody::readContentLine( const QString inContent )
 QString ICalBody::getContent() const
 {
     QString s( "ICalBody: " );
-    for( const Property* p : m_properties )
-        s = s.append( p->contentToString() );
-    for( const VEventComponent* vec : m_vEventComponents )
-        s = s.append( vec->contentToString() );
-    for( const VFreeBusyComponent* vfbc : m_vFreeBusyComponents )
-        s = s.append( vfbc->contentToString() );
-    for( const VJournalComponent* vjc : m_vJournalComponents )
-        s = s.append( vjc->contentToString() );
-    for( const VTodoComponent* vtc : m_vToDoComponents )
-        s = s.append( vtc->contentToString() );
-    for( const VTimezoneComponent* vtzc : m_vTimezoneComponents )
-        s = s.append( vtzc->contentToString() );
+    for( const Property p : m_properties )
+        s = s.append( p.contentToString() );
+    for( const VEventComponent vec : m_vEventComponents )
+        s = s.append( vec.contentToString() );
+    for( const VFreeBusyComponent vfbc : m_vFreeBusyComponents )
+        s = s.append( vfbc.contentToString() );
+    for( const VJournalComponent vjc : m_vJournalComponents )
+        s = s.append( vjc.contentToString() );
+    for( const VTodoComponent vtc : m_vToDoComponents )
+        s = s.append( vtc.contentToString() );
+    for( const VTimezoneComponent vtzc : m_vTimezoneComponents )
+        s = s.append( vtzc.contentToString() );
     return s;
 }
 
@@ -159,16 +161,16 @@ bool ICalBody::validateIcal()
 {
     qDebug() << "BEGIN VALIDATE";
     bool ret = validateIcalBody();
-    for( VEventComponent* vec : m_vEventComponents )
-        ret = ret and vec->validate();
-    for( VFreeBusyComponent* vfbc : m_vFreeBusyComponents )
-        ret = ret and vfbc->validate();
-    for( VJournalComponent* vjc : m_vJournalComponents )
-        ret = ret and vjc->validate();
-    for( VTimezoneComponent* vtzc : m_vTimezoneComponents )
-        ret = ret and vtzc->validate();
-    for( VTodoComponent* vtc : m_vToDoComponents )
-        ret = ret and vtc->validate();
+    for( VEventComponent vec : m_vEventComponents )
+        ret = ret and vec.validate();
+    for( VFreeBusyComponent vfbc : m_vFreeBusyComponents )
+        ret = ret and vfbc.validate();
+    for( VJournalComponent vjc : m_vJournalComponents )
+        ret = ret and vjc.validate();
+    for( VTimezoneComponent vtzc : m_vTimezoneComponents )
+        ret = ret and vtzc.validate();
+    for( VTodoComponent vtc : m_vToDoComponents )
+        ret = ret and vtc.validate();
     qDebug() << "END VALIDATE";
     return ret;
 }
@@ -181,24 +183,24 @@ bool ICalBody::validateIcalBody()
     bool prod_id_modified = false;  // just a warning
     int count_required_prod_id = 0; // MUST: 1
     bool prop_ok = true;
-    for( Property* &prop : m_properties )
+    for( const Property prop : m_properties )
     {
-        if( prop->m_hasErrors )
+        if( prop.m_hasErrors )
         {
             prop_ok = false;
             break;
         }
-        if( prop->m_type == Property::PT_VERSION )
+        if( prop.m_type == Property::PT_VERSION )
         {
             count_version++;
             continue;
         }
-        if( prop->m_type == Property::PT_CALSCALE )
+        if( prop.m_type == Property::PT_CALSCALE )
         {
             count_calscale++;
             continue;
         }
-        if( prop->m_type == Property::PT_PRODID )
+        if( prop.m_type == Property::PT_PRODID )
         {
             count_required_prod_id++;
             continue;
@@ -211,8 +213,8 @@ bool ICalBody::validateIcalBody()
         qDebug() << " * ProdId modified - OK";
     if( count_required_prod_id == 0 )
     {
-        Property* p = new Property();
-        p->readProperty( "PRODID:-//DAYLIGHT//Modified//EN" );
+        Property p = Property();
+        p.readProperty( "PRODID:-//DAYLIGHT//Modified//EN" );
         m_properties.append( p );
         count_required_prod_id++;
     }

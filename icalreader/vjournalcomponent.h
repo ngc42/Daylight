@@ -40,7 +40,7 @@ struct VJournalComponent
 
     // === Data ===
 
-    QVector<Property*>    m_properties;
+    QVector<Property>    m_properties;
 };
 
 #endif // VJOURNALCOMPONENT_H

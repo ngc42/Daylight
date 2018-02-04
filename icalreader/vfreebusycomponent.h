@@ -41,7 +41,7 @@ struct VFreeBusyComponent
 
     // === Data ===
 
-    QVector<Property*>    m_properties;
+    QVector<Property>    m_properties;
 };
 
 #endif // VFREEBUSYCOMPONENT_H

@@ -48,10 +48,10 @@ struct VTodoComponent
 
     // === Data ===
 
-    QList<Property*>            m_properties;
+    QVector<Property>            m_properties;
     // parse parameters for VTodo or VAlarm
     ReadComponent               m_activeComponent;
-    QVector<VAlarmComponent*>   m_vAlarmComponents;
+    QVector<VAlarmComponent>   m_vAlarmComponents;
 };
 
 #endif // VTODOCOMPONENT_H

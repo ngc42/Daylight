@@ -14,7 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "standarddaylightcomponent.h"
+
 
 StandardDaylightComponent::StandardDaylightComponent()
 {
@@ -24,16 +26,16 @@ StandardDaylightComponent::StandardDaylightComponent()
 QString StandardDaylightComponent::contentToString() const
 {
     QString s( "{StdDay:" );
-    for( const Property* p : m_properties )
-        s = s.append( p->contentToString() );
+    for( const Property p : m_properties )
+        s = s.append( p.contentToString() );
     return s.append( "}\n" );
 }
 
 
 void StandardDaylightComponent::readContentLine( const QString inContent )
 {
-    Property* p = new Property();
-    if( p->readProperty( inContent ) )
+    Property p = Property();
+    if( p.readProperty( inContent ) )
         m_properties.append( p );
 }
 

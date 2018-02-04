@@ -22,6 +22,7 @@
 
 #include "property.h"
 
+
 struct VAlarmComponent
 {
     // === Methods ===
@@ -40,7 +41,7 @@ struct VAlarmComponent
 
     // === Data ===
 
-    QVector<Property*>  m_properties;
+    QVector<Property>  m_properties;
 };
 
 #endif // VALARMCOMPONENT_H

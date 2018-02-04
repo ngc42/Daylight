@@ -43,10 +43,10 @@ struct VEventComponent
 
     // === Data ===
 
-    QVector<Property*>          m_properties;
+    QVector<Property>           m_properties;
     // parse parameters for VEvent or VAlarm
     ReadComponent               m_activeComponent;
-    QVector<VAlarmComponent*>   m_vAlarmComponents;
+    QVector<VAlarmComponent>   m_vAlarmComponents;
 };
 
 #endif // VEVENTCOMPONENT_H

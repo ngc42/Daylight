@@ -48,11 +48,11 @@ struct VTimezoneComponent
 
     // === Data ===
 
-    QVector<Property*>                  m_properties;
+    QVector<Property>                  m_properties;
     // parse parameters for Standard or Daylight
     ReadComponent                       m_activeComponent;
-    QVector<StandardDaylightComponent*> m_StandardComponents;
-    QVector<StandardDaylightComponent*> m_DaylightComponents;
+    QVector<StandardDaylightComponent> m_StandardComponents;
+    QVector<StandardDaylightComponent> m_DaylightComponents;
 
 };
 

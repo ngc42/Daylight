@@ -22,7 +22,6 @@
 #include <QStringList>
 
 #include "property.h"
-
 #include "veventcomponent.h"
 #include "vfreebusycomponent.h"
 #include "vjournalcomponent.h"
@@ -54,14 +53,14 @@ struct ICalBody
     bool validateIcal();
     bool validateIcalBody();
 
-    QList<Property*>            m_properties;
+    QList<Property>             m_properties;
     ReadComponent               m_activeComponent;
     QString                     m_currentComponentName;
-    QList<VEventComponent*>     m_vEventComponents;
-    QList<VFreeBusyComponent*>  m_vFreeBusyComponents;
-    QList<VJournalComponent*>   m_vJournalComponents;
-    QList<VTodoComponent*>      m_vToDoComponents;
-    QList<VTimezoneComponent*>  m_vTimezoneComponents;
+    QList<VEventComponent>      m_vEventComponents;
+    QList<VFreeBusyComponent>   m_vFreeBusyComponents;
+    QList<VJournalComponent>    m_vJournalComponents;
+    QList<VTodoComponent>       m_vToDoComponents;
+    QList<VTimezoneComponent>   m_vTimezoneComponents;
 };
 
 #endif // ICALBODY_H

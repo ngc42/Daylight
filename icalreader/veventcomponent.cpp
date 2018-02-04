@@ -14,9 +14,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "veventcomponent.h"
+
 #include <QDateTime>
 #include <QDebug>
+
+#include "veventcomponent.h"
+
 
 VEventComponent::VEventComponent()
     :
@@ -28,10 +31,10 @@ VEventComponent::VEventComponent()
 QString VEventComponent::contentToString() const
 {
     QString s( "{VEVENT:" );
-    for( const Property* p : m_properties )
-        s = s.append( p->contentToString() );
-    for( const VAlarmComponent* c : m_vAlarmComponents )
-        s = s.append( c->contentToString() );
+    for( const Property p : m_properties )
+        s = s.append( p.contentToString() );
+    for( const VAlarmComponent c : m_vAlarmComponents )
+        s = s.append( c.contentToString() );
     return s.append( "}\n" );
 }
 
@@ -41,7 +44,7 @@ void VEventComponent::readContentLine( const QString inContent )
     if( inContent.startsWith( "BEGIN:VALARM", Qt::CaseInsensitive ) )
     {
         m_activeComponent = IN_VALARM;
-        VAlarmComponent *component = new VAlarmComponent();
+        VAlarmComponent component = VAlarmComponent();
         m_vAlarmComponents.append( component );
         return;
     }
@@ -53,12 +56,12 @@ void VEventComponent::readContentLine( const QString inContent )
 
     if( m_activeComponent == IN_VEVENT )
     {
-        Property *p = new Property();
-        if( p->readProperty( inContent ) )
+        Property p = Property();
+        if( p.readProperty( inContent ) )
             m_properties.append( p );
     }
     else
-        m_vAlarmComponents.last()->readContentLine( inContent );
+        m_vAlarmComponents.last().readContentLine( inContent );
 }
 
 
@@ -68,26 +71,26 @@ bool VEventComponent::validate()
     int count_dtstamp = 0;      // Must 1
     int count_dtstart = 0;      // MUST 1
     int count_dtend_duration = 0;   // < 2
-    for( Property* &prop : m_properties )
+    for( Property &prop : m_properties )
     {
-        if( not prop->validate() )
+        if( not prop.validate() )
             return false;
-        if( prop->m_type == Property::PT_UID )
+        if( prop.m_type == Property::PT_UID )
         {
             count_uid++;
             continue;
         }
-        if( prop->m_type == Property::PT_DTSTAMP )
+        if( prop.m_type == Property::PT_DTSTAMP )
         {
             count_dtstamp++;
             continue;
         }
-        if( prop->m_type == Property::PT_DTSTART )
+        if( prop.m_type == Property::PT_DTSTART )
         {
             count_dtstart++;
             continue;
         }
-        if( prop->m_type == Property::PT_DTEND or prop->m_type == Property::PT_DURATION )
+        if( prop.m_type == Property::PT_DTEND or prop.m_type == Property::PT_DURATION )
         {
             count_dtend_duration++;
             continue;
@@ -96,10 +99,10 @@ bool VEventComponent::validate()
     }
     if( count_uid == 0 )
     {
-        Property* p = new Property();
+        Property p = Property();
         QString u( "UID:DAYLIGHT-Modified-Uid" );
         u = u.append( QDateTime::currentDateTime().toString( "yyyyMMddhhmmss" ) );
-        if( p->readProperty( u ) )
+        if( p.readProperty( u ) )
         {
             m_properties.append( p );
             count_uid++;
@@ -108,10 +111,10 @@ bool VEventComponent::validate()
     }
     if( count_dtstamp == 0 )
     {
-        Property* p = new Property();
+        Property p = Property();
         QString s( "DTSTAMP:" );
         s = s.append( QDateTime::currentDateTime().toString( "yyyyMMddThhmmssZ" ) );
-        if( p->readProperty( s ) )
+        if( p.readProperty( s ) )
         {
             m_properties.append( p );
             count_dtstamp++;
@@ -120,8 +123,8 @@ bool VEventComponent::validate()
     }
 
     bool alarm_ok = true;
-    for( VAlarmComponent* va : m_vAlarmComponents )
-        alarm_ok = alarm_ok and va->validate();
+    for( VAlarmComponent va : m_vAlarmComponents )
+        alarm_ok = alarm_ok and va.validate();
     if( not alarm_ok )
         qDebug() << " * Alarm not ok.";
 

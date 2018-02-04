@@ -36,23 +36,23 @@ public:
     void readIcal( const ICalBody &inIcal );
 
 private:
-    void readEvent( const VEventComponent* &inVEventComponent,
+    void readEvent( const VEventComponent inVEventComponent,
                     AppointmentBasics* &outAppBasics,
                     QVector<AppointmentAlarm*> &outAppAlarmVector,
                     AppointmentRecurrence* &outAppRecurrence );
 
-    void readAlarm( const VAlarmComponent* inVAlarmComponent,
+    void readAlarm( const VAlarmComponent inVAlarmComponent,
                     const AppointmentBasics* inAppBasics,
                     AppointmentAlarm* &outAppAlarm );
 
-    void readRecurrence( const Property* inRecurrenceProperty,
+    void readRecurrence( const Property inRecurrenceProperty,
                     AppointmentRecurrence* &outAppRecurrence );
 
     /* true, if inVEventComponent has NO RRULE,
      * true, if inVEventComponent has RRule with FREQ >= DAILY
      * else false.
      */
-    bool eventHasUsableRRuleOrNone( const VEventComponent* inVEventComponent );
+    bool eventHasUsableRRuleOrNone( const VEventComponent inVEventComponent );
 
     /* make an appointment and signal it to the outside world */
     void makeAppointment(AppointmentBasics* &inAppBasics,
