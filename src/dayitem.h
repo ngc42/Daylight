@@ -17,7 +17,6 @@
 #ifndef DAYITEM_H
 #define DAYITEM_H
 
-#include <QGraphicsObject>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSimpleTextItem>
 #include <QKeyEvent>
@@ -25,6 +24,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QDate>
+
 #include "appointmentmanager.h"
 
 
@@ -71,11 +71,11 @@ public:
     void resize(const qreal width, const qreal height);
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
     QString title() const { return m_title; }
+    QString appointmentId() const { return m_appointmentId; }
     void setShowTitle(const bool show);
 
     QColor m_color;
     int m_userCalendarId;
-
 
 private:
     bool m_dummy;
@@ -142,7 +142,6 @@ signals:
     void signalDeleteAppointment(QString apointmentId);
     void signalDateClicked(const QDate & date);
 
-
 public slots:
     void slotDeleteAppointment( QString appointmentId);
 
@@ -172,7 +171,8 @@ public:
 
     void setAppointmentDaySlots(const QVector<Event> &list);
     void setAppointmentRangeSlot(const int slot, const QVector<Event> &list);
-    void clearAppointments();
+    void removeEvents();
+    void removeEvents( const QString appointmentId );
 
     void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
 
@@ -204,7 +204,8 @@ public:
 
     void setAppointmentRangeSlot(const int slot, const QVector<Event> &list, int weekStart);
     void setAppointments(const QVector<Event> &list);
-    void clearAppointments();
+    void removeEvents();
+    void removeEvents( const QString appointmentId );
 
     void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
 
@@ -236,7 +237,8 @@ public:
 
     void setAppointmentRangeSlot(const int slot, const QVector<Event> &list, int weekStart);
     void setAppointments(const QVector<Event> &list);
-    void clearAppointments();
+    void removeEvents();
+    void removeEvents( const QString appointmentId );
 
     void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
 
@@ -282,7 +284,8 @@ public:
 
     void setAppointmentsFullDay(const QVector<Event> &list);
     void setAppointmentsPartDay(const QVector<Event> &list);
-    void clearAppointments();
+    void removeEvents();
+    void removeEvents( const QString appointmentId );
 
     void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
 
@@ -300,7 +303,5 @@ signals:
 
 public slots:
 };
-
-
 
 #endif // DAYITEM_H

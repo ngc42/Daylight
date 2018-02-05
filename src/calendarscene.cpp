@@ -300,7 +300,7 @@ void CalendarScene::updateSize(const QSize & newSize)
 void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
 {
     for(DayInYearItem* d : m_daysInYearItems)
-        d->clearAppointments();
+        d->removeEvents();
     if(list.isEmpty())
         return;
     QVector<Event> currentList;
@@ -355,7 +355,7 @@ void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
 void CalendarScene::setAppointmentsForMonth(const QVector<Event> &list)
 {
     for(DayInMonthItem* d : m_daysInMonthItems)
-        d->clearAppointments();
+        d->removeEvents();
     if(list.isEmpty())
         return;
     QVector<Event> currentList;
@@ -410,7 +410,7 @@ void CalendarScene::setAppointmentsForMonth(const QVector<Event> &list)
 void CalendarScene::setAppointmentsFor3Weeks(const QVector<Event> & list)
 {
     for(DayInMonthItem* d : m_daysIn3WeeksItems)
-        d->clearAppointments();
+        d->removeEvents();
     if(list.isEmpty())
         return;
     QVector<Event> currentList;
@@ -469,7 +469,7 @@ void CalendarScene::setAppointmentsFor3Weeks(const QVector<Event> & list)
 void CalendarScene::setAppointmentsForWeek(const QVector<Event> & list)
 {
     for(DayInWeekItem* d : m_daysInWeekItems)
-        d->clearAppointments();
+        d->removeEvents();
     if(list.isEmpty())
         return;
     QVector<Event> currentList;
@@ -526,7 +526,7 @@ void CalendarScene::setAppointmentsForWeek(const QVector<Event> & list)
 
 void CalendarScene::setAppointmentsForDay(const QVector<Event> &list)
 {
-    m_dayInDayItem->clearAppointments();
+    m_dayInDayItem->removeEvents();
     if(list.isEmpty()) return;
 
     QVector<Event> fullDayList;
@@ -551,14 +551,28 @@ void CalendarScene::setAppointmentsForDay(const QVector<Event> &list)
 void CalendarScene::removeAllEvents()
 {
     for( DayInYearItem* itm : m_daysInYearItems )
-        itm->clearAppointments();
+        itm->removeEvents();
     for( DayInMonthItem* itm : m_daysInMonthItems )
-        itm->clearAppointments();
+        itm->removeEvents();
     for( DayInMonthItem* itm : m_daysIn3WeeksItems )
-        itm->clearAppointments();
+        itm->removeEvents();
     for( DayInWeekItem* itm : m_daysInWeekItems )
-        itm->clearAppointments();
-    m_dayInDayItem->clearAppointments();
+        itm->removeEvents();
+    m_dayInDayItem->removeEvents();
+}
+
+
+void CalendarScene::removeEventsById( const QString appointmentId )
+{
+    for( DayInYearItem* itm : m_daysInYearItems )
+        itm->removeEvents( appointmentId );
+    for( DayInMonthItem* itm : m_daysInMonthItems )
+        itm->removeEvents( appointmentId );
+    for( DayInMonthItem* itm : m_daysIn3WeeksItems )
+        itm->removeEvents( appointmentId );
+    for( DayInWeekItem* itm : m_daysInWeekItems )
+        itm->removeEvents( appointmentId );
+    m_dayInDayItem->removeEvents( appointmentId );
 }
 
 

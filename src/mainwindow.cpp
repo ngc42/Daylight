@@ -661,7 +661,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     }
     else
     {
-        m_scene->removeAllEvents();
+        m_scene->removeEventsById( a->m_uid );
         m_storage->updateAppointment( (*a) );
         m_eventPool->updateAppointment( a );
     }
@@ -676,7 +676,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
 
 void MainWindow::slotDeleteAppointment( QString appointmentId )
 {
-    m_scene->removeAllEvents();
+    m_scene->removeEventsById( appointmentId );
     m_eventPool->removeAppointmentWithEventsById( appointmentId );
     m_storage->removeAppointment( appointmentId );
     showAppointments( m_settingsManager->startDate() );

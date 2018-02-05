@@ -17,6 +17,7 @@
 #include "dayitem.h"
 #include <QDebug>
 
+
 /***********************************************************
 ********** TooManyEventsItem *************************
 ***********************************************************/
@@ -301,7 +302,7 @@ DayInYearItem::DayInYearItem(const QDate date, QGraphicsItem *parent) :
 
 DayInYearItem::~DayInYearItem()
 {
-    clearAppointments();
+    removeEvents();
     delete m_weekNumberLabel;
     delete m_tooManyItems;
 }
@@ -465,13 +466,31 @@ void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event>
 }
 
 
-void DayInYearItem::clearAppointments()
+void DayInYearItem::removeEvents()
 {
     while( not m_appointmentSlotsDay.isEmpty() )
         delete m_appointmentSlotsDay.takeLast();
     while( not m_appointmentSlotsRange.isEmpty() )
         delete m_appointmentSlotsRange.takeLast();
 
+    m_tooManyItems->hide();
+}
+
+
+void DayInYearItem::removeEvents( const QString appointmentId )
+{
+    for( int i = 0; i < m_appointmentSlotsDay.count(); i++ )
+        if( m_appointmentSlotsDay[i]->appointmentId() == appointmentId )
+        {
+            EventItem* itm = m_appointmentSlotsDay.takeAt( i );
+            delete itm;
+        }
+    for( int i = 0; i < m_appointmentSlotsRange.count(); i++ )
+        if( m_appointmentSlotsRange[i]->appointmentId() == appointmentId )
+        {
+            EventItem* itm = m_appointmentSlotsRange.takeAt( i );
+            delete itm;
+        }
     m_tooManyItems->hide();
 }
 
@@ -512,7 +531,7 @@ DayInMonthItem::DayInMonthItem(const QDate date, QGraphicsItem* parent) :
 
 DayInMonthItem::~DayInMonthItem()
 {
-    clearAppointments();
+    removeEvents();
     delete m_tooManyItems;
 }
 
@@ -634,11 +653,23 @@ void DayInMonthItem::setAppointments(const QVector<Event> &list)
 }
 
 
-void DayInMonthItem::clearAppointments()
+void DayInMonthItem::removeEvents()
 {
-    for(EventItem* itm : m_appointmentSlots)
-        delete itm;
-    m_appointmentSlots.clear();
+    while( not m_appointmentSlots.isEmpty() )
+        delete m_appointmentSlots.takeLast();
+}
+
+
+void DayInMonthItem::removeEvents( const QString appointmentId )
+{
+    for( int i = 0; i < m_appointmentSlots.count(); i++ )
+        if( m_appointmentSlots[i]->appointmentId() == appointmentId )
+        {
+            EventItem* itm = m_appointmentSlots.takeAt( i );
+            delete itm;
+        }
+
+    m_tooManyItems->hide();
 }
 
 
@@ -652,6 +683,8 @@ void DayInMonthItem::eventsHaveNewColor(const int inUsercalendarID, const QColor
             itm->update();
         }
     }
+
+    m_tooManyItems->hide();
 }
 
 
@@ -670,7 +703,7 @@ DayInWeekItem::DayInWeekItem(const QDate date, QGraphicsItem* parent) :
 
 DayInWeekItem::~DayInWeekItem()
 {
-    clearAppointments();
+    removeEvents();
     delete m_tooManyItems;
 }
 
@@ -792,11 +825,23 @@ void DayInWeekItem::setAppointments(const QVector<Event> &list)
 }
 
 
-void DayInWeekItem::clearAppointments()
+void DayInWeekItem::removeEvents()
 {
-    for(EventItem* itm : m_appointmentSlots)
-        delete itm;
-    m_appointmentSlots.clear();
+    while( not m_appointmentSlots.isEmpty() )
+        delete m_appointmentSlots.takeLast();
+}
+
+
+void DayInWeekItem::removeEvents( const QString appointmentId )
+{
+    for( int i = 0; i < m_appointmentSlots.count(); i++ )
+        if( m_appointmentSlots[i]->appointmentId() == appointmentId )
+        {
+            EventItem* itm = m_appointmentSlots.takeAt( i );
+            delete itm;
+        }
+
+    m_tooManyItems->hide();
 }
 
 
@@ -827,7 +872,7 @@ DayInDayItem::DayInDayItem(const QDate date, QGraphicsItem* parent) :
 
 DayInDayItem::~DayInDayItem()
 {
-    clearAppointments();
+    removeEvents();
     delete m_tooManyItems;
 }
 
@@ -1035,14 +1080,30 @@ void DayInDayItem::setAppointmentsPartDay(const QVector<Event> &list)
 }
 
 
-void DayInDayItem::clearAppointments()
+void DayInDayItem::removeEvents()
 {
-    for(EventItem* itm : m_appointmentFullDay)
-        delete itm;
-    m_appointmentFullDay.clear();
-    for(EventItem* itm : m_appointmentPartDay)
-        delete itm;
-    m_appointmentPartDay.clear();
+    while( not m_appointmentFullDay.isEmpty() )
+        delete m_appointmentFullDay.takeLast();
+    while( not m_appointmentPartDay.isEmpty() )
+        delete m_appointmentPartDay.takeLast();
+}
+
+
+void DayInDayItem::removeEvents( const QString appointmentId )
+{
+    for( int i = 0; i < m_appointmentFullDay.count(); i++ )
+        if( m_appointmentFullDay[i]->appointmentId() == appointmentId )
+        {
+            EventItem* itm = m_appointmentFullDay.takeAt( i );
+            delete itm;
+        }
+    for( int i = 0; i < m_appointmentPartDay.count(); i++ )
+        if( m_appointmentPartDay[i]->appointmentId() == appointmentId )
+        {
+            EventItem* itm = m_appointmentPartDay.takeAt( i );
+            delete itm;
+        }
+    m_tooManyItems->hide();
 }
 
 

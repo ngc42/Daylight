@@ -53,6 +53,7 @@ public:
     void setAppointmentsForWeek(const QVector<Event> &list);
     void setAppointmentsForDay(const QVector<Event> &list);
     void removeAllEvents();
+    void removeEventsById( const QString appointmentId );
     void setSettings(const SettingsData & settings);
 
     void eventsHaveNewColor(const int inUsercalendarID, const QColor inCalendarColor );
