@@ -1376,10 +1376,7 @@ Appointment::~Appointment()
     delete m_appBasics;
     if( m_haveRecurrence )  delete m_appRecurrence;
     while( m_appAlarms.count() > 0 )
-    {
-        AppointmentAlarm* alarm = m_appAlarms.first();
-        delete alarm;
-    }
+        delete m_appAlarms.takeFirst();
     m_eventVector.clear();
 }
 

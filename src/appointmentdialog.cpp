@@ -201,16 +201,8 @@ bool AppointmentDialog::modified() const
 }
 
 
-void  AppointmentDialog::deleteAppointment()
+void AppointmentDialog::deleteAppointment()
 {
-    if( m_appointment->m_haveAlarm )
-    {
-        while( not m_appointment->m_appAlarms.isEmpty() )
-            delete m_appointment->m_appAlarms.first();
-    }
-    if( m_appointment->m_haveRecurrence )
-        delete m_appointment->m_appRecurrence;
-    delete m_appointment->m_appBasics;
     delete m_appointment;
 }
 

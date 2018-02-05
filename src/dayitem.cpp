@@ -88,6 +88,8 @@ EventItem::EventItem(Event event, QGraphicsItem *parent) :
 
 EventItem::~EventItem()
 {
+    delete m_deleteThisAppointment;
+    delete m_actionReconfigureAppointment;
 }
 
 
@@ -119,7 +121,6 @@ void EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidge
             QRectF r = QRectF({0, 0}, boundingRect().size() + m);
             painter->drawText(r, s, Qt::AlignVCenter | Qt::AlignLeft);
         }
-
     }
 }
 
