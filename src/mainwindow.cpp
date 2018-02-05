@@ -152,7 +152,16 @@ MainWindow::MainWindow(QWidget* parent) :
 
 MainWindow::~MainWindow()
 {
+    delete m_icalImportDialog;
+    delete m_userCalendarNewDialog;
+    delete m_appointmentDialog;
+    delete m_navigationDialog;
+    delete m_eventPool;
     delete m_scene;
+    delete m_groupCalendarAppearance;
+    delete m_toolbarUserCalendarMenu;
+    delete m_storage;
+    delete m_settingsManager;
     delete m_ui;
 }
 

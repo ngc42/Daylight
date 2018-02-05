@@ -62,6 +62,42 @@ CalendarScene::CalendarScene(const SettingsData & settings, QObject *parent) :
 }
 
 
+CalendarScene::~CalendarScene()
+{
+    while( m_headersWeekday.count() > 0 )
+    {
+        HeaderWeekday* h = m_headersWeekday.takeFirst();
+        delete h;
+    }
+    while( m_headersMonth.count() > 0 )
+    {
+        HeaderMonth* h = m_headersMonth.takeFirst();
+        delete h;
+    }
+    while( m_daysInYearItems.count() > 0 )
+    {
+        DayInYearItem* itm = m_daysInYearItems.takeFirst();
+        delete itm;
+    }
+    while( m_daysInMonthItems.count() > 0 )
+    {
+        DayInMonthItem* itm = m_daysInMonthItems.takeFirst();
+        delete itm;
+    }
+    while( m_daysIn3WeeksItems.count() > 0 )
+    {
+        DayInMonthItem* itm = m_daysIn3WeeksItems.takeFirst();
+        delete itm;
+    }
+    while( m_daysInWeekItems.count() > 0 )
+    {
+        DayInWeekItem* itm = m_daysInWeekItems.takeFirst();
+        delete itm;
+    }
+    delete m_dayInDayItem;
+}
+
+
 void CalendarScene::setDate(const QDate & date, bool update)
 {
     if((date == m_currentBaseDate) and (! update))
@@ -565,19 +601,19 @@ void CalendarScene::createHeader()
 {
     for(int i = 1; i <= 12; i++)
     {
-        HeaderMonth* tmp = new HeaderMonth(i);
+        HeaderMonth* tmp = new HeaderMonth( i );
         tmp->setPos((i-1) * tmp->boundingRect().width(), 0 );
         tmp->hide();
-        addItem(tmp);
-        m_headersMonth.append(tmp);
+        addItem( tmp );
+        m_headersMonth.append( tmp );
     }
 
     for(int i = 1; i <= 7; i++)
     {
-        HeaderWeekday* tmp = new HeaderWeekday(i);
+        HeaderWeekday* tmp = new HeaderWeekday( i );
         tmp->setPos((i-1) * tmp->boundingRect().width(), 0 );
         tmp->hide();
-        addItem(tmp);
+        addItem( tmp );
         m_headersWeekday.append(tmp);
     }
 }
@@ -678,9 +714,9 @@ void CalendarScene::createDays()
 void CalendarScene::hideAllItems()
 {
     // hide all headers
-    for(HeaderWeekday *h : m_headersWeekday)
+    for(HeaderWeekday* h : m_headersWeekday)
         h->hide();
-    for(HeaderMonth *h : m_headersMonth)
+    for(HeaderMonth* h : m_headersMonth)
         h->hide();
     // hide days
     for(DayInYearItem *d : m_daysInYearItems)
@@ -698,10 +734,8 @@ void CalendarScene::hideAllItems()
 void CalendarScene::slotShowYear()
 {
     hideAllItems();
-    for(HeaderMonth *h : m_headersMonth)
-    {
+    for(HeaderMonth* h : m_headersMonth)
         h->show();
-    }
     for(DayInYearItem *d : m_daysInYearItems)
     {
         if(d->date().isValid())
@@ -714,14 +748,10 @@ void CalendarScene::slotShowYear()
 void CalendarScene::slotShowMonth()
 {
     hideAllItems();
-    for(HeaderWeekday *h : m_headersWeekday)
-    {
+    for(HeaderWeekday* h : m_headersWeekday)
         h->show();
-    }
     for(DayInMonthItem *d : m_daysInMonthItems)
-    {
         d->show();
-    }
     m_showView = CalendarShow::SHOW_MONTH;
 }
 
@@ -729,14 +759,10 @@ void CalendarScene::slotShowMonth()
 void CalendarScene::slotShow3Weeks()
 {
     hideAllItems();
-    for(HeaderWeekday *h : m_headersWeekday)
-    {
-        h->show();
-    }
+    for(HeaderWeekday* h : m_headersWeekday)
+       h->show();
     for(DayInMonthItem *d : m_daysIn3WeeksItems)
-    {
         d->show();
-    }
     m_showView = CalendarShow::SHOW_3WEEKS;
 }
 
@@ -744,14 +770,10 @@ void CalendarScene::slotShow3Weeks()
 void CalendarScene::slotShowWeek()
 {
     hideAllItems();
-    for(HeaderWeekday *h : m_headersWeekday)
-    {
+    for(HeaderWeekday* h : m_headersWeekday)
         h->show();
-    }
     for(DayInWeekItem *d : m_daysInWeekItems)
-    {
         d->show();
-    }
     m_showView = CalendarShow::SHOW_WEEK;
 }
 

@@ -41,6 +41,8 @@ class CalendarScene : public QGraphicsScene
 
 public:
     explicit CalendarScene( const SettingsData & settings, QObject* parent = Q_NULLPTR );
+    ~CalendarScene();
+
     void setDate(const QDate & date, bool update = false);
     QDate date() const { return m_currentBaseDate; }
     CalendarShow showView() const { return m_showView; }
@@ -62,17 +64,17 @@ private:
 
     // header items
     void createHeader();
-    QList<HeaderMonth*> m_headersMonth;
-    QList<HeaderWeekday*> m_headersWeekday;
-    QString m_longestMonthName;
-    QString m_longestDayName;
+    QVector<HeaderMonth*>       m_headersMonth;
+    QVector<HeaderWeekday*>     m_headersWeekday;
+    QString                     m_longestMonthName;
+    QString                     m_longestDayName;
 
     // day items
     void createDays();
-    QList<DayInYearItem*> m_daysInYearItems;
-    QList<DayInMonthItem*> m_daysInMonthItems;
-    QList<DayInMonthItem*> m_daysIn3WeeksItems;
-    QList<DayInWeekItem*> m_daysInWeekItems;
+    QVector<DayInYearItem*> m_daysInYearItems;
+    QVector<DayInMonthItem*> m_daysInMonthItems;
+    QVector<DayInMonthItem*> m_daysIn3WeeksItems;
+    QVector<DayInWeekItem*> m_daysInWeekItems;
     DayInDayItem* m_dayInDayItem;
 
     QString m_longestDaylabelTextInYear;

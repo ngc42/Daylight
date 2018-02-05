@@ -1370,6 +1370,20 @@ Appointment::Appointment( QObject* parent )
 }
 
 
+Appointment::~Appointment()
+{
+    qDebug() << "DESTRUCTOR APPOINTMENT";
+    delete m_appBasics;
+    if( m_haveRecurrence )  delete m_appRecurrence;
+    while( m_appAlarms.count() > 0 )
+    {
+        AppointmentAlarm* alarm = m_appAlarms.first();
+        delete alarm;
+    }
+    m_eventVector.clear();
+}
+
+
 bool Appointment::isPartiallyEqual( const Appointment &other ) const
 {
     return m_userCalendarId == other.m_userCalendarId and

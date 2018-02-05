@@ -268,15 +268,11 @@ class Appointment : public QObject
 public:
 
     Appointment( QObject* parent = Q_NULLPTR );
-    ~Appointment()
-    {
-        qDebug() << "DESTRUCTOR APPOINTMENT";
-    }
+    ~Appointment();
 
     /* this does only check SOME values stored here.
      * Especially, no sub-apoitments and nothing, a makeEvents() would generate */
     bool isPartiallyEqual( const Appointment &other ) const;
-
 
     // creates a possible unique UID
     void generateUid();
