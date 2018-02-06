@@ -283,7 +283,7 @@ void MainWindow::slotImportFromFileFinished()
         for( const Appointment* app : ti.thread->m_appointments )
         {
             // @fixme: appointments have an invalid? calendar id.
-            m_storage->updateAppointment( (*app) );
+            m_storage->updateAppointment( app );
         }
     }
     // delete threads
@@ -656,13 +656,13 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
     if( m_appointmentDialog->isNewAppointment() )
     {
 
-        m_storage->storeAppointment( (*a) );
+        m_storage->storeAppointment( a );
         m_eventPool->addAppointment( a );
     }
     else
     {
         m_scene->removeEventsById( a->m_uid );
-        m_storage->updateAppointment( (*a) );
+        m_storage->updateAppointment( a );
         m_eventPool->updateAppointment( a );
     }
     connect( m_storage, SIGNAL(sigStoreEvent(int,int,int)),
