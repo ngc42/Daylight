@@ -185,12 +185,10 @@ void MainWindow::showAppointments(const QDate &date)
     QList<UserCalendarInfo*> showHideItems = m_userCalendarPool->calendarInfos();
     QVector<Event> eventsForYear = m_eventPool->eventsByYear( date.year() );
     QVector<Event> eventsForMonth= m_eventPool->eventsByYearMonth( date.year(), date.month() );
+    QVector<Event> eventsFor3Weeks = m_eventPool->eventsBy3Weeks( date );
 
 
 #if XXX
-    QList<Appointment*> listYear = m_appointmentPool->appointmentForYear(date);
-    QList<Appointment*> listMonth = m_appointmentPool->appointmentForMonth(date, weekStartDay);
-    QList<Appointment*> list3Weeks = m_appointmentPool->appointmentFor3Weeks(date, weekStartDay);
     QList<Appointment*> listWeek = m_appointmentPool->appointmentForWeek(date, weekStartDay);
     QList<Appointment*> listDay = m_appointmentPool->appointmentForDay(date);
 
@@ -230,9 +228,10 @@ void MainWindow::showAppointments(const QDate &date)
     // show the rest
     m_scene->setEventsForYear( eventsForYear );
     m_scene->setEventsForMonth( eventsForMonth );
+    m_scene->setEventsFor3Weeks( eventsFor3Weeks );
+
 
 #ifdef xxx
-    m_scene->setAppointmentsFor3Weeks(list3Weeks);
     m_scene->setAppointmentsForWeek(listWeek);
     m_scene->setAppointmentsForDay(listDay);
 #endif

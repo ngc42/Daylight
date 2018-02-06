@@ -55,6 +55,8 @@ public:
     // Events
     QVector<Event> eventsByYear( const int inYear ) const;
     QVector<Event> eventsByYearMonth( const int inYear, const int inMonth ) const;
+    QVector<Event> eventsBy3Weeks( const QDate date );
+
     QVector<Event> eventsByYearMonthDay( const int inYear, const int inMonth, const int inDay ) const;
     QVector<Event> eventsByYearMonthDayRange( const int inYearS, const int inMonthS, const int inDayS,
                                               const int inYearE, const int inMonthE, const int inDayE ) const;

@@ -171,6 +171,30 @@ QVector<Event> EventPool::eventsByYearMonth( const int inYear, const int inMonth
 }
 
 
+QVector<Event> EventPool::eventsBy3Weeks( const QDate date )
+{
+    QDate firstOfRange = date;
+    // @fixme: explicit week start
+    firstOfRange = firstOfRange.addDays( 1 - firstOfRange.dayOfWeek() - 7 );
+    QDate lastOfRange = firstOfRange.addDays( 20 );
+    QVector<Event> events = m_eventMap.value( date.year() );
+
+    // load other years, if we overlap a year-boundary
+    if( firstOfRange.year() < date.year() )
+        events.append( m_eventMap.value( firstOfRange.year() ) );
+    if( lastOfRange.year() > date.year() )
+        events.append( m_eventMap.value( lastOfRange.year() ) );
+
+    QVector<Event> events3Weeks;
+    for( const Event e : events )
+    {
+        if( e.m_endDt.date() >= firstOfRange and e.m_startDt.date() <= lastOfRange )
+            events3Weeks.append( e );
+    }
+    return events3Weeks;
+}
+
+
 QVector<Event> EventPool::eventsByYearMonthDay( const int inYear, const int inMonth, const int inDay ) const
 {
     QVector<Event> events = m_eventMap.value( inYear );
