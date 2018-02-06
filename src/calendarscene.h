@@ -47,8 +47,10 @@ public:
     QDate date() const { return m_currentBaseDate; }
     CalendarShow showView() const { return m_showView; }
     void updateSize(const QSize & newSize);
-    void setAppointmentsForYear(const QVector<Event>& list);
-    void setAppointmentsForMonth(const QVector<Event> &list);
+
+    void setEventsForYear(const QVector<Event>& list);
+    void setEventsForMonth(const QVector<Event> &list);
+
     void setAppointmentsFor3Weeks(const QVector<Event> &list);
     void setAppointmentsForWeek(const QVector<Event> &list);
     void setAppointmentsForDay(const QVector<Event> &list);

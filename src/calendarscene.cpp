@@ -297,7 +297,7 @@ void CalendarScene::updateSize(const QSize & newSize)
 }
 
 
-void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
+void CalendarScene::setEventsForYear( const QVector<Event> &list )
 {
     for(DayInYearItem* d : m_daysInYearItems)
         d->removeEvents();
@@ -351,49 +351,47 @@ void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
 }
 
 
-void CalendarScene::setAppointmentsForMonth(const QVector<Event> &list)
+void CalendarScene::setEventsForMonth(const QVector<Event> &list)
 {
     for(DayInMonthItem* d : m_daysInMonthItems)
         d->removeEvents();
     if(list.isEmpty())
         return;
-    QVector<Event> currentList;
-    QVector<Event> nextList;
-    QVector<Event> dayList;
+    QVector<Event> rangeItemList;
+    QVector<Event> dayItemList;
     QVector<Event> allDayList;
 
     // dispatch all appointments to day and a range lists
     for(Event e : list)
     {
         if(e.sameDay())
-        {
-            dayList.append(e);
-        }
+            dayItemList.append(e);
         else
-            nextList.append(e);
+            rangeItemList.append(e);
     }
 
     // range items
+    QVector<Event> currentSlotItemList;
     int slotNum = 0;
     QDate endDate;
-    while( ! nextList.isEmpty())
+    while( ! rangeItemList.isEmpty())
     {
-        currentList.append(nextList[0]);
-        endDate = nextList[0].m_endDt.date();
-        nextList.removeAt(0);
+        currentSlotItemList.append(rangeItemList[0]);
+        endDate = rangeItemList[0].m_endDt.date();
+        rangeItemList.removeAt(0);
 
-        for(const Event e : nextList)
+        for(const Event e : rangeItemList)
         {
             if(e.m_startDt.date() > endDate)
             {
-                currentList.append(e);
+                currentSlotItemList.append(e);
                 endDate = e.m_endDt.date();
-                nextList.removeOne(e);
+                rangeItemList.removeOne(e);
             }
         }
         for(DayInMonthItem* d : m_daysInMonthItems)
-            d->setAppointmentRangeSlot(slotNum, currentList, m_weekStartDay);
-        currentList.clear();
+            d->setAppointmentRangeSlot(slotNum, currentSlotItemList, m_weekStartDay);
+        currentSlotItemList.clear();
         slotNum++;
     }
 
@@ -401,7 +399,7 @@ void CalendarScene::setAppointmentsForMonth(const QVector<Event> &list)
     for(DayInMonthItem* d : m_daysInMonthItems)
     {
         d->setAppointments(allDayList);
-        d->setAppointments(dayList);
+        d->setAppointments(dayItemList);
     }
 }
 

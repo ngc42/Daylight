@@ -33,7 +33,6 @@ void EventPool::addAppointment( Appointment* inApp )
     if( m_appointmentsRead.contains( inApp->m_uid ) )
         return;
 
-
     m_appointments.append( inApp );
     m_appointmentsRead.insert( inApp->m_uid  );
 
@@ -159,25 +158,14 @@ QVector<Event> EventPool::eventsByYearMonth( const int inYear, const int inMonth
     if( events.isEmpty() )
         return events;
     QVector<Event> events_month;
+
+    QDate firstOfMonth = QDate( inYear, inMonth, 1 );
+    QDate lastOfMonth = QDate( inYear, inMonth, firstOfMonth.daysInMonth() );
+
     for( const Event e : events )
     {
-        if( e.m_startDt.date().month() <= inMonth and e.m_endDt.date().month() >= inMonth )
-        {
+        if( e.m_endDt.date() >= firstOfMonth and e.m_startDt.date() <= lastOfMonth )
             events_month.append( e );
-            continue;
-        }
-        // @fixme: merge next both rules
-        if( e.m_startDt.date().year() < inYear and e.m_endDt.date().year() > inYear )
-        {
-            events_month.append( e );
-            continue;
-        }
-        if( e.m_startDt.date().year() < inYear and e.m_endDt.date().year() == inYear and
-                e.m_endDt.date().month() >= inMonth )
-        {
-            events_month.append( e );
-            continue;
-        }
     }
     return events_month;
 }

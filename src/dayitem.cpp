@@ -339,7 +339,6 @@ void DayInYearItem::adjustSubitemPositions()
     qreal apiHeight_slot = height - 1.0f;
     qreal apiHeight_day = 0.5f * height;
 
-
     for(EventItem* itm : m_appointmentSlotsRange)
     {
         itm->resize(apiWidth, apiHeight_slot);
