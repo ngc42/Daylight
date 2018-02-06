@@ -303,50 +303,49 @@ void CalendarScene::setAppointmentsForYear( const QVector<Event> &list )
         d->removeEvents();
     if(list.isEmpty())
         return;
-    QVector<Event> currentList;
-    QVector<Event> nextList;
-    QVector<Event> dayList;
+    QVector<Event> rangeItemList;
+    QVector<Event> dayItemList;
 
     // dispatch all appointments to a day and a range list
     for(Event e : list)
     {
         if( e.sameDay() )
-        {
-            dayList.append(e);
-        }
+            dayItemList.append(e);
         else
-            nextList.append(e);
+            rangeItemList.append(e);
     }
 
     // day items to the day
-    if(! dayList.isEmpty())
+    if(! dayItemList.isEmpty())
         for(DayInYearItem* d : m_daysInYearItems)
-            d->setAppointmentDaySlots(dayList);
+            d->setAppointmentDaySlots(dayItemList);
 
     // range items
+    QVector<Event> currentSlotItemList; // list for current slot number
     int slotNum = 0;
     QDate endDate;
-    while( ! nextList.isEmpty())
+    while( ! rangeItemList.isEmpty())
     {
-        currentList.append(nextList[0]);
-        endDate = nextList[0].m_endDt.date();
-        nextList.removeAt(0);
+        currentSlotItemList.append(rangeItemList[0]);
+        endDate = rangeItemList[0].m_endDt.date();
+        rangeItemList.removeAt(0);
 
-        for(const Event e : nextList)
+        // find out the items, which could match into the same slot
+        // they must not overlap
+        for(const Event e : rangeItemList)
         {
             if(e.m_startDt.date() > endDate)
             {
-                currentList.append(e);
+                currentSlotItemList.append(e);
                 endDate = e.m_endDt.date();
-                nextList.removeOne(e);
+                rangeItemList.removeOne(e);
             }
         }
 
+        // send days the events with a given slot
         for(DayInYearItem* d : m_daysInYearItems)
-        {
-            d->setAppointmentRangeSlot(slotNum, currentList);
-        }
-        currentList.clear();
+            d->setAppointmentRangeSlot(slotNum, currentSlotItemList);
+        currentSlotItemList.clear();
         slotNum++;
     }
 }

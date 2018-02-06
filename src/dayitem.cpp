@@ -334,14 +334,16 @@ void DayInYearItem::adjustSubitemPositions()
     qreal width = mySize.width();
 
     // Appointment items
-    qreal apiWidth = 2.0f;
+    qreal apiWidth = 3.0f;
     qreal x = width / 3.0f;
-    qreal apiHeight = height - 2.0f;
+    qreal apiHeight_slot = height - 1.0f;
+    qreal apiHeight_day = 0.5f * height;
+
 
     for(EventItem* itm : m_appointmentSlotsRange)
     {
-        itm->resize(apiWidth, apiHeight);
-        itm->setPos(x, 1.0f);
+        itm->resize(apiWidth, apiHeight_slot);
+        itm->setPos(x, 0.5f);
         if(x + apiWidth > width)
         {
             m_tooManyItems->show();
@@ -354,8 +356,8 @@ void DayInYearItem::adjustSubitemPositions()
 
     for(EventItem* itm : m_appointmentSlotsDay)
     {
-        itm->resize(apiWidth, apiHeight);
-        itm->setPos(x, 1.0f);
+        itm->resize(apiWidth, apiHeight_day );
+        itm->setPos(x, apiHeight_day / 3.0f);
         if(x + apiWidth > width)
         {
             m_tooManyItems->show();
@@ -446,6 +448,8 @@ void DayInYearItem::setAppointmentDaySlots(const QVector<Event> &list)
 
 void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event> &list)
 {
+    qDebug() << "DayInYearItem::setAppointmentRangeSlot";
+
     if( ! date().isValid() ) return;
     for(Event e : list)
     {
