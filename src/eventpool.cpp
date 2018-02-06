@@ -195,48 +195,39 @@ QVector<Event> EventPool::eventsBy3Weeks( const QDate date )
 }
 
 
-QVector<Event> EventPool::eventsByYearMonthDay( const int inYear, const int inMonth, const int inDay ) const
+QVector<Event> EventPool::eventsByWeek( const QDate date )
 {
-    QVector<Event> events = m_eventMap.value( inYear );
-    if( events.isEmpty() )
-        return events;
-    QVector<Event> events_day;
-    QDate targetDate(inYear, inMonth, inDay );
+    QDate firstOfRange = date;
+    // @fixme: explicit week start
+    firstOfRange = firstOfRange.addDays( 1 - firstOfRange.dayOfWeek() );
+    QDate lastOfRange = firstOfRange.addDays( 6 );
+
+    QVector<Event> events = m_eventMap.value( date.year() );
+    // load other years, if we overlap a year-boundary
+    if( firstOfRange.year() < date.year() )
+        events.append( m_eventMap.value( firstOfRange.year() ) );
+    if( lastOfRange.year() > date.year() )
+        events.append( m_eventMap.value( lastOfRange.year() ) );
+
+    QVector<Event> eventsWeeks;
     for( const Event e : events )
     {
-        if( e.m_startDt.date() <= targetDate and e.m_endDt.date()  >= targetDate )
-            events_day.append( e );
+        if( e.m_endDt.date() >= firstOfRange and e.m_startDt.date() <= lastOfRange )
+            eventsWeeks.append( e );
     }
-    return events_day;
+    return eventsWeeks;
 }
 
 
-QVector<Event> EventPool::eventsByYearMonthDayRange( const int inYearS, const int inMonthS, const int inDayS,
-                                                     const int inYearE, const int inMonthE, const int inDayE) const
+QVector<Event> EventPool::eventsByDay( const QDate date )
 {
-
-    int diff = inYearE - inYearS;
-    if( diff != 0 or diff != 1 )
-        return QVector<Event>();
-
-    QVector<Event> events = m_eventMap.value( inYearS );
-    if( inYearS != inYearE )
-    {
-        events.append( m_eventMap.value( inYearE ) );
-    }
-    if( events.isEmpty() )
-        return events;
-    QVector<Event> events_range;
-
-    // start and end dates
-    QDate targetDateS(inYearS, inMonthS, inDayS );
-    QDate targetDateE(inYearE, inMonthE, inDayE );
+    QVector<Event> events = m_eventMap.value( date.year() );
+    QVector<Event> eventsDay;
 
     for( const Event e : events )
     {
-        if( e.m_startDt.date() <= targetDateE and e.m_endDt.date()  >= targetDateS )
-            events_range.append( e );
+        if( e.m_endDt.date() >= date and e.m_startDt.date() <= date )
+            eventsDay.append( e );
     }
-    return events_range;
+    return eventsDay;
 }
-

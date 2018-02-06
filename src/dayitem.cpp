@@ -447,8 +447,6 @@ void DayInYearItem::setAppointmentDaySlots(const QVector<Event> &list)
 
 void DayInYearItem::setAppointmentRangeSlot(const int slot, const QVector<Event> &list)
 {
-    qDebug() << "DayInYearItem::setAppointmentRangeSlot";
-
     if( ! date().isValid() ) return;
     for(Event e : list)
     {

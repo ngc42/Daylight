@@ -457,65 +457,61 @@ void CalendarScene::setEventsFor3Weeks(const QVector<Event> &list)
 }
 
 
-void CalendarScene::setAppointmentsForWeek(const QVector<Event> & list)
+void CalendarScene::setEventsForWeek(const QVector<Event> & list)
 {
     for(DayInWeekItem* d : m_daysInWeekItems)
         d->removeEvents();
     if(list.isEmpty())
         return;
-    QVector<Event> currentList;
-    QVector<Event> nextList;
-    QVector<Event> dayList;
-    QVector<Event> allDayList;
+
+    QVector<Event> rangeItemList;
+    QVector<Event> dayItemList;
+    QVector<Event> allDayItemList;
 
     // dispatch all appointments to day and a range lists
     for(Event e : list)
     {
-        /* @fixme: if(apm->sameDay())
-        {
-            if(apm->m_appointmentData.m_allDay)
-                allDayList.append(apm);
-            else
-                dayList.append(apm);
-        }
-        else*/
-            nextList.append(e);
+        if( e.sameDay() )
+            dayItemList.append( e );
+        else
+            rangeItemList.append( e );
     }
 
     // range items
+    QVector<Event> currentSlotItemList;
     int slotNum = 0;
     QDate endDate;
-    while( ! nextList.isEmpty())
+    while( ! rangeItemList.isEmpty())
     {
-        currentList.append(nextList[0]);
-        endDate = nextList[0].m_endDt.date();
-        nextList.removeAt(0);
+        currentSlotItemList.append(rangeItemList[0]);
+        endDate = rangeItemList[0].m_endDt.date();
+        rangeItemList.removeAt(0);
 
-        for(const Event e : nextList)
+        for(const Event e : rangeItemList)
         {
             if(e.m_startDt.date() > endDate)
             {
-                currentList.append(e);
+                currentSlotItemList.append(e);
                 endDate = e.m_endDt.date();
-                nextList.removeOne(e);
+                rangeItemList.removeOne(e);
             }
         }
         for(DayInWeekItem* d : m_daysInWeekItems)
-            d->setAppointmentRangeSlot(slotNum, currentList, m_weekStartDay);
-        currentList.clear();
+            d->setAppointmentRangeSlot(slotNum, currentSlotItemList, m_weekStartDay);
+        currentSlotItemList.clear();
         slotNum++;
     }
 
     // all-day and same-day items
     for(DayInWeekItem* d : m_daysInWeekItems)
     {
-        d->setAppointments(allDayList);
-        d->setAppointments(dayList);
+        d->setAppointments(allDayItemList);
+        d->setAppointments(dayItemList);
     }
 }
 
 
-void CalendarScene::setAppointmentsForDay(const QVector<Event> &list)
+void CalendarScene::setEventsForDay(const QVector<Event> &list)
 {
     m_dayInDayItem->removeEvents();
     if(list.isEmpty()) return;
@@ -528,8 +524,6 @@ void CalendarScene::setAppointmentsForDay(const QVector<Event> &list)
     {
         if(e.m_startDt.date() < m_currentBaseDate and e.m_endDt.date() > m_currentBaseDate)
             fullDayList.append(e);
-        /* @fixme: else if(apm->m_appointmentData.m_allDay)
-            fullDayList.append(apm);*/
         else
             partDayList.append(e);
     }

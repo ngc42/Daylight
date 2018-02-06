@@ -186,12 +186,10 @@ void MainWindow::showAppointments(const QDate &date)
     QVector<Event> eventsForYear = m_eventPool->eventsByYear( date.year() );
     QVector<Event> eventsForMonth= m_eventPool->eventsByYearMonth( date.year(), date.month() );
     QVector<Event> eventsFor3Weeks = m_eventPool->eventsBy3Weeks( date );
-
+    QVector<Event> eventsForWeek = m_eventPool->eventsByWeek( date );
+    QVector<Event> eventsForDay = m_eventPool->eventsByDay( date );
 
 #if XXX
-    QList<Appointment*> listWeek = m_appointmentPool->appointmentForWeek(date, weekStartDay);
-    QList<Appointment*> listDay = m_appointmentPool->appointmentForDay(date);
-
     // remove all items from listYear, listMonth, ... for which the calendar is disabled
     for(const UserCalendarInfo* uci : showHideItems)
     {
@@ -229,12 +227,8 @@ void MainWindow::showAppointments(const QDate &date)
     m_scene->setEventsForYear( eventsForYear );
     m_scene->setEventsForMonth( eventsForMonth );
     m_scene->setEventsFor3Weeks( eventsFor3Weeks );
-
-
-#ifdef xxx
-    m_scene->setAppointmentsForWeek(listWeek);
-    m_scene->setAppointmentsForDay(listDay);
-#endif
+    m_scene->setEventsForWeek( eventsForWeek );
+    m_scene->setEventsForDay( eventsForDay );
 }
 
 

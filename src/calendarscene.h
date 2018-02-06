@@ -51,9 +51,9 @@ public:
     void setEventsForYear(const QVector<Event> &list);
     void setEventsForMonth(const QVector<Event> &list);
     void setEventsFor3Weeks(const QVector<Event> &list);
+    void setEventsForWeek(const QVector<Event> &list);
+    void setEventsForDay(const QVector<Event> &list);
 
-    void setAppointmentsForWeek(const QVector<Event> &list);
-    void setAppointmentsForDay(const QVector<Event> &list);
     void removeAllEvents();
     void removeEventsById( const QString appointmentId );
     void setSettings(const SettingsData & settings);
