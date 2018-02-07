@@ -68,7 +68,7 @@ private slots:
     void slotTickEvent( const int id, int min, int current, int max );
     void slotTickVEvents( const int id, int min, int current, int max );
     void slotThreadFinished( const int id );
-    void slotWeDislikeIcalFile( const int threadId, const IcalImportThread::IcalDislikeReasonType reason );
+    void slotWeDislikeIcalFile( const int threadId, const int reason );
 };
 
 #endif // ICALIMPORTDIALOG_H

@@ -64,7 +64,7 @@ void IcalImportThread::run()
     // validate
     if( not vcal.validateIcal() )
     {
-        emit sigWeDislikeIcalFile( m_threadId, DOES_NOT_VALIDATE );
+        emit sigWeDislikeIcalFile( m_threadId, static_cast<int>(IcalDislikeReasonType::DOES_NOT_VALIDATE) );
         return;
     }
 

@@ -2,7 +2,6 @@
 
 
 == Aktuell ==
-* Eventliste erzeugen
 * Eventliste unter Berücksichtigung von Alarm erzeugen
 * "Daily"-Eventliste erzeugen ist sooooooo langsam!
 
@@ -13,10 +12,7 @@
 
 * RDATE in icalinterpreter noch nicht eingebunden. Es fehlen Beispiele.
 
-* QSet statt QMap oder QMultiMap?
-
 == TESTEN ==
 * Property RDATE nirgends eingebunden
-
-* have_count und have_until für recurrence rules testen: Es kann nur einen geben! :-)
-
+* UNTIL hat keine eigene TimeZone, entweder lokal, UTC oder selbe TZ wie DTSTART.
+* UNTIL ist selber Typ (Date/DateTime) wie DTSTART

@@ -95,7 +95,20 @@ bool VEventComponent::validate()
             count_dtend_duration++;
             continue;
         }
-
+        if( prop.m_type == Property::PT_RRULE )
+        {
+            int count_and_until = 0;        // MUST 0 or 1
+            for( const Parameter param : prop.m_parameters )
+            {
+                if( param.m_type == Parameter::RR_COUNT or param.m_type == Parameter::RR_UNTIL )
+                    count_and_until++;
+            }
+            if( count_and_until > 1 )
+            {
+                qDebug() << "VEventComponent::validate(): too many COUNT or UNTIL in RRULE";
+                return false;
+            }
+        }
     }
     if( count_uid == 0 )
     {

@@ -1,8 +1,14 @@
-
-
-- Parameter::IcalWeekDayType and AppointmentRecurrence::WeekDay should be the same.
-- AppointmentAlarm should be a QVector inside of Appointment, not a QList
+Fix:
+- Day calendar view: events are ugly
+- Events outside the day time-range (22h 'till 04h next day for example) are not
+  shown in day calendar view
 
 Missing:
 - exception dates (EXDATE)
 - fixed dates (RDATE)
+- test: WeekStart?
+- test: DTSTART/DTEND with different TZ
+
+UI:
+- WeekStart?
+- better error handling in import dialog

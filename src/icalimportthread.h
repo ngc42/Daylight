@@ -48,8 +48,8 @@ class IcalImportThread : public QThread
 
 public:
     // reasons to dislike the ical file
-    enum IcalDislikeReasonType {
-        DOES_NOT_VALIDATE
+    enum class IcalDislikeReasonType : int {
+        DOES_NOT_VALIDATE = 100
     };
 
     // constructor, reads ical file as content lines.
@@ -58,7 +58,7 @@ public:
     // fires up the thread generating Events
     void run() override;
 
-    // Thats wht we get: Appointments
+    // Thats what we get: Appointments
     QVector<Appointment*>   m_appointments;
 
 private:
@@ -76,7 +76,8 @@ signals:
     void sigThreadFinished( const int threadID );
 
     // something wrong with the ical
-    void sigWeDislikeIcalFile( const int threadId, const IcalImportThread::IcalDislikeReasonType reason );
+    // send one of IcalImportThread::IcalDislikeReasonType
+    void sigWeDislikeIcalFile( const int threadId, const int reason );
 
 public slots:
     void slotTickEvent( const int min, const int current, const int max );

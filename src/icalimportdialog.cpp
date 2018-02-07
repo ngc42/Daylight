@@ -102,8 +102,8 @@ void IcalImportDialog::parseIcalFile( const QString inFilename, QStringList &inC
              this, SLOT(slotTickVEvents(int,int,int,int)) );
     connect( t.thread, SIGNAL(sigThreadFinished(int)),
              this, SLOT(slotThreadFinished(int)) );
-    connect( t.thread, SIGNAL(sigWeDislikeIcalFile(int,IcalImportThread::IcalDislikeReasonType)),
-             this, SLOT(slotWeDislikeIcalFile(int,IcalImportThread::IcalDislikeReasonType)) );
+    connect( t.thread, SIGNAL(sigWeDislikeIcalFile(int,int)),
+             this, SLOT(slotWeDislikeIcalFile(int,int)) );
     t.thread->start();
 }
 
@@ -187,10 +187,10 @@ void IcalImportDialog::slotThreadFinished( const int threadId )
 }
 
 
-void IcalImportDialog::slotWeDislikeIcalFile( const int threadId, const IcalImportThread::IcalDislikeReasonType reason )
+void IcalImportDialog::slotWeDislikeIcalFile( const int threadId, const int reason )
 {
     m_threads[threadId].successful = false;
-    if( reason == IcalImportThread::DOES_NOT_VALIDATE )
+    if( static_cast<IcalImportThread::IcalDislikeReasonType>(reason) == IcalImportThread::IcalDislikeReasonType::DOES_NOT_VALIDATE )
         m_ui->teMessages->insertPlainText(
                     QString( "* ERR: %1 does not validate\n" )
                     .arg( m_threads[threadId].filename ) );
