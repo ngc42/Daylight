@@ -893,7 +893,8 @@ void DayInDayItem::adjustSubitemPositions()
 
     QSizeF mySize = boundingRect().size();
 
-    qreal apiWidth = mySize.width() - 2.0f;
+    qreal apiWidth_fullDay = mySize.width() - 2.0f;
+
     qreal apiHeight= 15.0f;
     qreal y = apiHeight;
 
@@ -901,7 +902,7 @@ void DayInDayItem::adjustSubitemPositions()
 
     for(EventItem* itm : m_appointmentFullDay)
     {
-        itm->resize(apiWidth, apiHeight);
+        itm->resize(apiWidth_fullDay, apiHeight);
         itm->setFontPixelSize(10);
         itm->setPos(1.0f, y);
         if(y + apiHeight > apmfdHeight)
@@ -914,7 +915,7 @@ void DayInDayItem::adjustSubitemPositions()
         y = y + apiHeight + 1.0f;
     }
 
-    apiWidth = apiWidth / (m_numberOfAppointmentOverlaps + 1) - 20 ;
+    qreal  apiWidth = mySize.width() / (m_numberOfAppointmentOverlaps + 2) - 20 ;
     /* Idea behind bookkeeping:
      * Every deltatime (appointment) gets an own slot and registeres its timedelta to timeSlotBookkeeper by just +1 to the timeSlotBookkeeper's hour index.
      * Every new appointment checks, wether there is already a timedelta and reserveres the next slot,
@@ -932,10 +933,10 @@ void DayInDayItem::adjustSubitemPositions()
         if(endH > m_activeHourEnd) timeSlotBookkeeper[25]++;
         for(int i = startH; i <= endH; i++) timeSlotBookkeeper[i]++;
 
-        itm->resize(apiWidth, hours * m_deltaPixelForHour);
+        itm->resize(apiWidth, hours * m_deltaPixelForHour - 2 );
         itm->setFontPixelSize(10);
 
-        // find out y-pos to set Appointment item
+        // find out y-pos to set event item
         int y = 0;
         if(startH < m_activeHourStart)
             y = m_markerList[0].ypos + 1;
@@ -944,7 +945,7 @@ void DayInDayItem::adjustSubitemPositions()
             y = m_markerList[0].ypos + 1 + (startH - m_activeHourStart + 1) * m_deltaPixelForHour;
         }
 
-        // x-position for appointment
+        // x-position for event
         int x = 20;
         int max = 0;
         for(int i = 0; i < 24; i++)
@@ -957,7 +958,7 @@ void DayInDayItem::adjustSubitemPositions()
             max = max > timeSlotBookkeeper[24] ? max : timeSlotBookkeeper[24];
         if(endH > m_activeHourEnd)
             max = max > timeSlotBookkeeper[25] ? max : timeSlotBookkeeper[25];
-        x += (max - 1) * apiWidth;
+        x += (max - 1) * (apiWidth + 5);
         itm->setPos(x, y);
     }
 

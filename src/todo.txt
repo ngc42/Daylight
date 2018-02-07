@@ -1,5 +1,4 @@
 Fix:
-- Day calendar view: events are ugly
 - Events outside the day time-range (22h 'till 04h next day for example) are not
   shown in day calendar view
 
