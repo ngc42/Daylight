@@ -91,7 +91,7 @@ public slots:
     // set date
     void slotShowHideNavigationDlg();
     void slotSetDate(int year, int month);      // need to set a new Date
-    void slotSetDate(const QDate & date);       // need to set a new Date
+    void slotSetDate(const QDate date);       // need to set a new Date
     void slotSetToday();
     void slotSetPreviousDate();
     void slotSetNextDate();

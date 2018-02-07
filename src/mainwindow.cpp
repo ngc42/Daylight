@@ -168,6 +168,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showAppointments(const QDate &date)
 {
+    qDebug() << date.toString( Qt::RFC2822Date );
     QVector<Appointment*> appointmentsThisYear;
     if( not m_eventPool->queryMarker( date.year()) )
     {
@@ -320,7 +321,7 @@ void MainWindow::slotSetDate(int year, int month)
 /* User clicks on a date in the small calendar or we receive a forward from
  * slotSetDate(int, int) from above.
  * in case of an invalid date, set the QDate::currentDate() for the calendar. */
-void MainWindow::slotSetDate(const QDate & date)
+void MainWindow::slotSetDate(const QDate date)
 {
     QDate dateTmp(date);
 
@@ -505,8 +506,8 @@ void MainWindow::slotSettingsDialog()
         if(dlg->dataModified())
         {
             m_settingsManager->setSettings(dlg->settings());
-            //m_scene->setSettings(m_settingsManager->currentSettings());
-            //slotSetDate(m_scene->date());  // update appointments and toolbar view, needed if SettingsData::m_weekStartDay was modified
+            m_scene->setSettings(m_settingsManager->currentSettings());
+            slotSetDate(m_scene->date());  // update appointments and toolbar view, needed if SettingsData::m_weekStartDay was modified
         }
     }
 }

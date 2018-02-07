@@ -80,7 +80,7 @@ void EventPool::removeAppointmentWithEventsById( const QString inUid )
         events.clear();
     }
 
-    for( Appointment* &app : m_appointments )
+    for( Appointment* app : m_appointments )
     {
         if( app->m_uid == inUid )
         {

@@ -69,7 +69,7 @@ public:
     bool validateSettings(const SettingsData data) const;
     const SettingsData currentSettings() const { return m_settings; }
     void setSettings(const SettingsData data);
-    void setSelectedDate(const QDate & date);
+    void setSelectedDate(const QDate date);
     void setSelectedView(const SettingStartWithView view);
     SettingStartWithView startView() const;
     const QDate startDate() const;

@@ -27,6 +27,9 @@
 SettingsManager::SettingsManager(QObject* parent) :
     QSettings(QSettings::IniFormat, QSettings::UserScope, "Free Software", "Daylight", parent)
 {
+
+    qDebug() << "read settings ";
+
     if(contains("COMMON/StartView"))        // if available
     {
         // ini file --> SettingsData
@@ -75,11 +78,15 @@ void SettingsManager::setSettings(const SettingsData data)
 }
 
 
-void SettingsManager::setSelectedDate(const QDate & date)
+void SettingsManager::setSelectedDate(const QDate date)
 {
+    qDebug() << "SettingsManager::setSelectedDate " << date.toString( Qt::RFC2822Date );
     QDate d(date);
     if(!d.isValid())
+    {
         d = QDate::currentDate();
+        qDebug() << "  --> invalid";
+    }
     m_settings.m_last_date_day = d.day();
     m_settings.m_last_date_month = d.month();
     m_settings.m_last_date_year = d.year();
