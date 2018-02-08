@@ -168,7 +168,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::showAppointments(const QDate date)
 {
-    qDebug() << date.toString( Qt::RFC2822Date );
     QVector<Appointment*> appointmentsThisYear;
     if( not m_eventPool->queryMarker( date.year()) )
     {
@@ -596,7 +595,6 @@ void MainWindow::slotAppointmentDlgStart(const QDate date)
  */
 void MainWindow::slotReconfigureAppointment( QString appointmentId )
 {
-    qDebug() << "MainWindow::slotReconfigureAppointment";
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
     m_appointmentDialog->setUserCalendarInfos( uciList );
 

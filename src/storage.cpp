@@ -32,8 +32,9 @@ void Storage::createDatabase()
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName("daylightdb.sqlite3");
-    bool ok = m_db.open();
-    qDebug() << "OPEN DATABASE --> " << ok;
+    if( not m_db.open() )
+        qDebug() << "ERR: Cannot open Database.";
+
 
     /* @fixme: test, if table version exists
      * select count(name) from sqlite_master where name ='version';

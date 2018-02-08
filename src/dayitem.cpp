@@ -928,23 +928,56 @@ void DayInDayItem::adjustSubitemPositions()
 
     for(EventItem* itm : m_appointmentPartDay)
     {
-        int startH = (itm->startDt().date() < date()) ? (m_activeHourStart > 0 ? m_activeHourStart - 1 : 0) : itm->startDt().time().hour();
-        int endH = (itm->endDt().date() > date()) ? (m_activeHourEnd < 24 ? m_activeHourEnd + 1 : 24) : itm->endDt().time().hour();
-        int hours =  startH > m_activeHourEnd ? 1 : endH - startH + 1;
+        // start hour with respect to active time interval
+        int startH = 0;
+        if( itm->startDt().date() < date() )
+        {
+            if( m_activeHourStart > 0 )
+                startH = m_activeHourStart - 1;
+            else
+                startH = 0;
+        }
+        else
+        {
+            int hour = itm->startDt().time().hour();
+            if( hour < m_activeHourStart )
+                startH = m_activeHourStart - 1;
+            else if( hour > m_activeHourEnd )
+                startH = m_activeHourEnd + 1;
+            else
+                startH = hour;
+        }
+        // endhour with respect to active time interval
+        int endH = 0;
+        if( itm->endDt().date() > date() )
+        {
+            if( m_activeHourEnd < 24 )
+                endH = m_activeHourEnd + 1;
+            else
+                endH = 24;
+        }
+        else
+        {
+            int hour = itm->endDt().time().hour();
+            if( hour < m_activeHourStart )
+                endH = m_activeHourStart - 1;
+            if( hour > m_activeHourEnd )
+                endH = m_activeHourEnd + 1;
+            else
+                endH = hour;
+        }
+        int hours =  endH - startH + 1;
+
         if(startH < m_activeHourStart) timeSlotBookkeeper[24]++;        // register ourselves to a slot.
         if(endH > m_activeHourEnd) timeSlotBookkeeper[25]++;
         for(int i = startH; i <= endH; i++) timeSlotBookkeeper[i]++;
 
         itm->resize(apiWidth, hours * m_deltaPixelForHour - 2 );
-        qDebug() << " hours: " << hours << startH << endH;
+
         itm->setFontPixelSize(10);
 
         // find out y-pos to set event item
-        int y = 0;
-        if(startH < m_activeHourStart)
-            y = m_markerList[0].ypos + 1;
-        else
-            y = m_markerList[0].ypos + 1 + ( startH - m_activeHourStart ) * m_deltaPixelForHour;
+        int y = m_markerList[0].ypos + 1 + ( startH - m_activeHourStart + 1) * m_deltaPixelForHour;
 
         // x-position for event
         int x = 20;
@@ -961,8 +994,6 @@ void DayInDayItem::adjustSubitemPositions()
             max = max > timeSlotBookkeeper[25] ? max : timeSlotBookkeeper[25];
         x += (max - 1) * (apiWidth + 5);
         itm->setPos(x, y);
-        qDebug() << " place item " << itm->appointmentId() << "  at " << x << y ;
-
     }
 
     // to many items - position

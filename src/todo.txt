@@ -1,7 +1,3 @@
-Fix:
-- Events outside the day time-range (22h 'till 04h next day for example) are not
-  shown in day calendar view
-
 Missing:
 - exception dates (EXDATE)
 - fixed dates (RDATE)

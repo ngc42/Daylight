@@ -27,9 +27,6 @@
 SettingsManager::SettingsManager(QObject* parent) :
     QSettings(QSettings::IniFormat, QSettings::UserScope, "Free Software", "Daylight", parent)
 {
-
-    qDebug() << "read settings ";
-
     if(contains("COMMON/StartView"))        // if available
     {
         // ini file --> SettingsData
@@ -43,7 +40,6 @@ SettingsManager::SettingsManager(QObject* parent) :
     }
     else
     {
-        qDebug() << " -> default";
         defaultSettings();
         settingsToGroups(); // write
     }
