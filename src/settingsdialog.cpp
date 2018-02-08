@@ -43,6 +43,7 @@ SettingsManager::SettingsManager(QObject* parent) :
     }
     else
     {
+        qDebug() << " -> default";
         defaultSettings();
         settingsToGroups(); // write
     }
@@ -66,9 +67,9 @@ bool SettingsManager::validateSettings(const SettingsData data) const
 
 /* new settings, possibly from dialog or somewhere else. Push them to the groups.
  * fixme: make sure, data makes sense */
-void SettingsManager::setSettings(const SettingsData data)
+void SettingsManager::setSettings( const SettingsData data )
 {
-    if(validateSettings(data))
+    if( validateSettings( data ) )
     {
         m_settings = data;
         settingsToGroups();
@@ -78,15 +79,11 @@ void SettingsManager::setSettings(const SettingsData data)
 }
 
 
-void SettingsManager::setSelectedDate(const QDate date)
+void SettingsManager::setSelectedDate( const QDate date )
 {
-    qDebug() << "SettingsManager::setSelectedDate " << date.toString( Qt::RFC2822Date );
-    QDate d(date);
-    if(!d.isValid())
-    {
+    QDate d( date );
+    if( not d.isValid() )
         d = QDate::currentDate();
-        qDebug() << "  --> invalid";
-    }
     m_settings.m_last_date_day = d.day();
     m_settings.m_last_date_month = d.month();
     m_settings.m_last_date_year = d.year();

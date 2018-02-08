@@ -166,7 +166,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::showAppointments(const QDate &date)
+void MainWindow::showAppointments(const QDate date)
 {
     qDebug() << date.toString( Qt::RFC2822Date );
     QVector<Appointment*> appointmentsThisYear;
@@ -579,7 +579,7 @@ void MainWindow::slotDeleteCalendar(const int calendarId)
  * - Note: The Appointmentdialog is non-modal, so it does not block. We just call
  * - show() and hide()
  * date parameter defaults to currentDate(), so this method is used as a menu slot too. */
-void MainWindow::slotAppointmentDlgStart(const QDate &date)
+void MainWindow::slotAppointmentDlgStart(const QDate date)
 {
     m_appointmentDialog->reset( date );
     QList<UserCalendarInfo*> uciList = m_userCalendarPool->calendarInfos();
@@ -666,7 +666,7 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
              m_appointmentDialog, SLOT(slotUpdateProgress(int, int, int)) );
 
     m_appointmentDialog->showHideProgressBar( true );
-    showAppointments( m_settingsManager->startDate() );
+    showAppointments(m_scene->date());
     m_appointmentDialog->hide();
 }
 
@@ -676,5 +676,5 @@ void MainWindow::slotDeleteAppointment( QString appointmentId )
     m_scene->removeEventsById( appointmentId );
     m_eventPool->removeAppointmentWithEventsById( appointmentId );
     m_storage->removeAppointment( appointmentId );
-    showAppointments( m_settingsManager->startDate() );
+    showAppointments(m_scene->date());
 }

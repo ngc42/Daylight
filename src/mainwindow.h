@@ -77,7 +77,7 @@ private:
     SettingsManager*    m_settingsManager;
     UserCalendarNew*    m_userCalendarNewDialog;    // Dialog to add a user calendar
 
-    void showAppointments(const QDate &date);   // update appointments
+    void showAppointments(const QDate date);   // update appointments
 
 protected:
     void resizeEvent(QResizeEvent*);
@@ -114,7 +114,7 @@ public slots:
     void slotDeleteCalendar(const int calendarId);
 
     // appointments
-    void slotAppointmentDlgStart(const QDate &date = QDate::currentDate());
+    void slotAppointmentDlgStart(const QDate date = QDate::currentDate());
     void slotReconfigureAppointment(QString appointmentId); // user clicks on an appointment, configure AppointmentDlg and start
     void slotAppointmentDlgFinished(int returncode);
     void slotDeleteAppointment( QString appointmentId );
