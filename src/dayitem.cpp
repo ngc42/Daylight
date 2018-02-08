@@ -173,12 +173,14 @@ void EventItem::slotPrepareReconfigureAppointment()
 
 void EventItem::slotPrepareDeleteAppointment()
 {
+    // dont't do too much here, because the user may
+    // reject deletition by a dialog: "Do you really want to delete..."
     if(m_appointmentId == "" or m_dummy)
         return;
-    disconnect(m_actionReconfigureAppointment, SIGNAL(triggered()), this, SLOT(slotPrepareReconfigureAppointment()));
-    disconnect(m_deleteThisAppointment, SIGNAL(triggered()), this, SLOT(slotPrepareDeleteAppointment()));
-    // this is fragile, as this causes the deletion of "this" during execution. Qt::QueuedConnection is fine.
+    // this is possibly fragile, as this causes the deletion of "this"
+    // during execution. Qt::QueuedConnection is fine.
     QMetaObject::invokeMethod(this, "signalDeleteAppointment", Qt::QueuedConnection, Q_ARG(QString, m_appointmentId) );
+
 }
 
 

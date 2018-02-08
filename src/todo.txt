@@ -11,4 +11,3 @@ Missing:
 UI:
 - WeekStart?
 - better error handling in import dialog
-- Warn on appointment delete (Settings, Mainwindow) must get connected

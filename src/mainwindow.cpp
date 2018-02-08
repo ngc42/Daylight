@@ -673,6 +673,16 @@ void MainWindow::slotAppointmentDlgFinished(int returncode)
 
 void MainWindow::slotDeleteAppointment( QString appointmentId )
 {
+    if( m_settingsManager->warnOnAppointmentDelete() )
+    {
+        QMessageBox reallyDeleteMsgBox( QMessageBox::Warning,
+                             "Delete Appointment?",
+                             "You are about to delete an appointment.",
+                             QMessageBox::Yes | QMessageBox::No );
+        if( reallyDeleteMsgBox.exec() != QMessageBox::Yes )
+            return;
+    }
+
     m_scene->removeEventsById( appointmentId );
     m_eventPool->removeAppointmentWithEventsById( appointmentId );
     m_storage->removeAppointment( appointmentId );
