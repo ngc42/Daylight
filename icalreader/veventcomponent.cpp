@@ -58,7 +58,13 @@ void VEventComponent::readContentLine( const QString inContent )
     {
         Property p = Property();
         if( p.readProperty( inContent ) )
-            m_properties.append( p );
+        {
+            // Put DT-START first, this makes it easier to test for DT_END or DURATION
+            if( p.m_type == Property::PT_DTSTART )
+                m_properties.prepend( p );
+            else
+                m_properties.append( p );
+        }
     }
     else
         m_vAlarmComponents.last().readContentLine( inContent );

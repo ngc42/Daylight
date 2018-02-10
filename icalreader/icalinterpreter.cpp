@@ -87,6 +87,11 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
             }
             continue;
         }
+        if( p.m_type == Property::PT_DURATION )
+        {
+            outAppBasics->m_dtEnd = outAppBasics->m_dtStart.addSecs( p.m_contentDuration.toSeconds() );
+            continue;
+        }
         if( p.m_type == Property::PT_RRULE )
         {
             if( not haveRecurrence )
@@ -122,7 +127,9 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
         }
         if( p.m_type == Property::PT_RDATE )
         {
+
             qDebug() << " FIXME: RDATE unsupported in Appointment";
+            qDebug() << p.contentToString();
             continue;
         }
         if( p.m_type == Property::PT_SEQUENCE )

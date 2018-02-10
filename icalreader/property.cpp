@@ -53,7 +53,7 @@ bool Duration::readDuration( QString inDurationText )
         return false;
     QString tmp( inDurationText );
     tmp = tmp.right( tmp.count() - index_P - 1 );
-    QStringList list = tmp.split( 'T', QString::SkipEmptyParts );
+    QStringList list = tmp.split( 'T' );
     if( list.count() == 0 )
         return false;
 
@@ -237,6 +237,8 @@ bool Property::readProperty( const QString inProp )
     QStringList parameterList;
     Property::splitParts( inProp, m_typeString, propertyArgument, parameterList );
     m_type = propertyType( m_typeString );
+    if( m_type == Property::PT_PROPERTY_UNKNOWN )
+        return false;
 
     // fill the parameters
     for( QString ps : parameterList )
