@@ -5,6 +5,11 @@
 * Eventliste unter Berücksichtigung von Alarm erzeugen
 * "Daily"-Eventliste erzeugen ist sooooooo langsam!
 
+* RDATE wird eingebunden:
+ - testen!!
+ - IntervalVector-Typ muss noch nach Appointment durchgereicht werden
+
+
 == ZUKUNFT ==
 * Es fehlt IANA-Component (bleibt auch so?)
 
@@ -13,6 +18,7 @@
 * RDATE in icalinterpreter noch nicht eingebunden. Es fehlen Beispiele.
 
 == TESTEN ==
-* Property RDATE nirgends eingebunden
 * UNTIL hat keine eigene TimeZone, entweder lokal, UTC oder selbe TZ wie DTSTART.
 * UNTIL ist selber Typ (Date/DateTime) wie DTSTART
+* TRIGGER kann Datetime oder Duration sein. Wird das berücksichtigt?
+* DURATION ok?

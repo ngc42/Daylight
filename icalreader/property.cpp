@@ -19,6 +19,130 @@
 #include <QRegularExpression>
 #include <QDebug>
 
+
+/***********************************************************
+********** Duration ****************************************
+***********************************************************/
+
+void Duration::setZero()
+{
+    setDuration( false, 0, 0, 0, 0, 0 );
+}
+
+
+void Duration::setDuration( bool _minus, int _weeks, int _days, int _hours, int _minutes, int _seconds)
+{
+    m_minus     = _minus;
+    m_weeks     = _weeks;
+    m_days      = _days;
+    m_hours     = _hours;
+    m_minutes   = _minutes;
+    m_seconds   = _seconds;
+}
+
+
+bool Duration::readDuration( QString inDurationText )
+{
+    int index_M = inDurationText.indexOf( '-' );
+    if( index_M > 0 )
+        return false;
+    m_minus = index_M > -1;
+
+    int index_P = inDurationText.indexOf( 'P' );
+    if( index_P < 0 )
+        return false;
+    QString tmp( inDurationText );
+    tmp = tmp.right( tmp.count() - index_P - 1 );
+    QStringList list = tmp.split( 'T', QString::SkipEmptyParts );
+    if( list.count() == 0 )
+        return false;
+
+    if( list.at( 0 ).contains( 'W' ) )
+    {
+        QRegularExpression re( "(\\d*)W" );
+        QRegularExpressionMatch match = re.match( list.at(0) );
+        QString vString = match.captured( 1 );
+        bool ok = false;
+        m_weeks = vString.toInt( &ok );
+        if( not (ok and m_weeks > 0 ) )
+            return false;
+        // According to standard, "dur-week" has no follow-ups
+        return true;
+    }
+
+    if( list.at( 0 ).contains( 'D' ) )
+    {
+        QRegularExpression re( "(\\d*)D" );
+        QRegularExpressionMatch match = re.match( list.at(0) );
+        QString vString = match.captured( 1 );
+        bool ok = false;
+        m_days = vString.toInt( &ok );
+        if( not (ok and m_days >= 0 ) )
+            return false;
+    }
+
+    if( list.count() == 2 ) // time follow-up?
+    {
+        if( list.at( 1 ).contains( 'H' ) )
+        {
+            QRegularExpression re( "(\\d*)H" );
+            QRegularExpressionMatch match = re.match( list.at(1) );
+            QString vString = match.captured( 1 );
+            bool ok = false;
+            m_hours = vString.toInt( &ok );
+            if( not (ok and m_hours >= 0 ) )
+                return false;
+        }
+        if( list.at( 1 ).contains( 'M' ) )
+        {
+            QRegularExpression re( "(\\d*)M" );
+            QRegularExpressionMatch match = re.match( list.at(1) );
+            QString vString = match.captured( 1 );
+            bool ok = false;
+            m_minutes = vString.toInt( &ok );
+            if( not (ok and m_minutes >= 0 ) )
+                return false;
+        }
+        if( list.at( 1 ).contains( 'S' ) )
+        {
+            QRegularExpression re( "(\\d*)S" );
+            QRegularExpressionMatch match = re.match( list.at(1) );
+            QString vString = match.captured( 1 );
+            bool ok = false;
+            m_seconds = vString.toInt( &ok );
+            if( not (ok and m_seconds >= 0 ) )
+                return false;
+        }
+    }
+
+    // something must be > 0:
+    return m_weeks > 0 or m_days > 0 or m_hours > 0 or m_minutes > 0 or m_seconds > 0;
+}
+
+
+qint64 Duration::toSeconds() const
+{
+    qint64 secs = m_weeks * 7 * 24 * 60 * 60;
+    secs += m_days * 24 * 60 * 60;
+    secs += m_hours * 60 * 60;
+    secs += m_minutes * 60;
+    secs += m_seconds;
+    return m_minus ? -secs : secs;
+}
+
+
+QString Duration::contentToString() const
+{
+    QString sign = m_minus ? "-" : "+";
+    QString s( "%1 W:%2 D:%3 H:%4 M:%5 S:%6 ");
+    return s.arg(sign).arg(m_weeks).arg(m_days).arg(m_hours).arg(m_minutes).arg(m_seconds);
+}
+
+
+/***********************************************************
+********** Property ****************************************
+***********************************************************/
+
 Property::Property()
     :
       m_hasErrors( false ),
@@ -62,16 +186,21 @@ QString Property::contentToString() const
         }
         break;
         case PST_DURATION:
+            s = s.append( m_contentDuration.contentToString() );
+        break;
+        case PST_INTERVALVECTOR:
         {
-            QString a;
-            a = a.append( "%1%2W%3DT%4H%5M%6S")
-                .arg( m_contentDuration.minus ? '-' : '+')
-                .arg( m_contentDuration.weeks )
-                .arg( m_contentDuration.days )
-                .arg( m_contentDuration.hours )
-                .arg( m_contentDuration.minutes )
-                .arg( m_contentDuration.seconds );
-            s = s.append( a );
+            for( const Interval interval : m_contentIntervalVector )
+            {
+                if( interval.m_hasDuration )
+                    s = s.append( interval.m_start.toString() )
+                        .append( "%%" )
+                        .append( interval.m_duration.contentToString() );
+                else
+                    s = s.append( interval.m_start.toString() )
+                        .append( "$$" )
+                        .append( interval.m_end.toString() );
+            }
         }
         break;
         case PST_STATUSCODE:
@@ -237,112 +366,17 @@ bool Property::readProperty( const QString inProp )
         return true;
     }
 
-    if( m_type == PT_DURATION or m_type == PT_TRIGGER )
+    if( m_type == PT_DURATION )
     {
         m_content = propertyArgument.toUpper();
-        int index_P = m_content.indexOf( 'P' );
-        if( m_type == PT_TRIGGER and index_P < 0 )
+        m_contentDuration.setZero();
+        if( m_contentDuration.readDuration( m_content ) )
         {
-            // trigger can also have a datetime :-/
-            m_storageType = Property::PST_STRING;
+            m_storageType = PST_DURATION;
             return true;
         }
-
-        int index_M = m_content.indexOf( '-' );
-        if( index_P < 0 )
-        {
-            m_hasErrors = true;
-            return false;
-        }
-        m_storageType = PST_DURATION;
-        m_contentDuration.minus = index_M > -1;
-        m_contentDuration.weeks = 0;
-        m_contentDuration.days = 0;
-        m_contentDuration.hours = 0;
-        m_contentDuration.minutes = 0;
-        m_contentDuration.seconds = 0;
-        QString tmp( m_content );
-        tmp = tmp.right( tmp.count() - index_P - 1 );
-
-        // test
-        QStringList list = propertyArgument.split( 'T', QString::SkipEmptyParts );
-        if( list.count() == 0 )
-        {
-
-            m_hasErrors = true;
-            return false;
-        }
-        if( list.at( 0 ).contains( 'W' ) )
-        {
-            QRegularExpression re( "(\\d*)W" );
-            QRegularExpressionMatch match = re.match( list.at(0) );
-            QString vString = match.captured( 1 );
-            bool ok = false;
-            m_contentDuration.weeks = vString.toInt( &ok );
-            if( not (ok and m_contentDuration.weeks > 0 ) )
-            {
-                m_hasErrors = true;
-                return false;
-            }
-            // According to standard, "dur-week" has no follow-ups
-            return true;
-        }
-        if( list.at( 0 ).contains( 'D' ) )
-        {
-            QRegularExpression re( "(\\d*)D" );
-            QRegularExpressionMatch match = re.match( list.at(0) );
-            QString vString = match.captured( 1 );
-            bool ok = false;
-            m_contentDuration.days = vString.toInt( &ok );
-            if( not (ok and m_contentDuration.days >= 0 ) )
-            {
-                m_hasErrors = true;
-                return false;
-            }
-        }
-        if( list.count() == 2 ) // time follow-up?
-        {
-            if( list.at( 1 ).contains( 'H' ) )
-            {
-                QRegularExpression re( "(\\d*)H" );
-                QRegularExpressionMatch match = re.match( list.at(1) );
-                QString vString = match.captured( 1 );
-                bool ok = false;
-                m_contentDuration.hours = vString.toInt( &ok );
-                if( not (ok and m_contentDuration.hours >= 0 ) )
-                {
-                    m_hasErrors = true;
-                    return false;
-                }
-            }
-            if( list.at( 1 ).contains( 'M' ) )
-            {
-                QRegularExpression re( "(\\d*)M" );
-                QRegularExpressionMatch match = re.match( list.at(1) );
-                QString vString = match.captured( 1 );
-                bool ok = false;
-                m_contentDuration.minutes = vString.toInt( &ok );
-                if( not (ok and m_contentDuration.minutes >= 0 ) )
-                {
-                    m_hasErrors = true;
-                    return false;
-                }
-            }
-            if( list.at( 1 ).contains( 'S' ) )
-            {
-                QRegularExpression re( "(\\d*)S" );
-                QRegularExpressionMatch match = re.match( list.at(1) );
-                QString vString = match.captured( 1 );
-                bool ok = false;
-                m_contentDuration.seconds = vString.toInt( &ok );
-                if( not (ok and m_contentDuration.seconds >= 0 ) )
-                {
-                    m_hasErrors = true;
-                    return false;
-                }
-            }
-        }
-        return true;
+        m_hasErrors = true;
+        return false;
     }
 
     if( m_type == PT_GEO )
@@ -388,6 +422,76 @@ bool Property::readProperty( const QString inProp )
         return true;
     }
 
+    if( m_type == PT_RDATE )
+    {
+        m_content = propertyArgument.toUpper();
+        QStringList list = m_content.split( ',', QString::SkipEmptyParts );
+
+        bool validateOnlyInterval = false;
+        bool validateOnlyElementOrList = false;
+
+        for( QString elem : list )
+        {
+            if( propertyArgument.contains( '/' ) )  // interval?
+            {
+                validateOnlyInterval = true;
+                Interval interval;
+                QStringList bounds = elem.split( '/', QString::SkipEmptyParts );
+                if( bounds.count() != 2 )   // multiple '/'?
+                {
+                    m_hasErrors = true;
+                    return false;
+                }
+                interval.m_start.readDateTime( bounds.first() );
+                if( bounds.last().contains( 'P' ) )
+                {
+                    interval.m_hasDuration = true;
+                    if( not interval.m_duration.readDuration( bounds.last() ) )
+                    {
+                        m_hasErrors = true;
+                        return false;
+                    }
+                }
+                else
+                {
+                    interval.m_hasDuration = false;
+                    interval.m_end.readDateTime( bounds.last() );
+                }
+                m_contentIntervalVector.append( interval );
+            }
+            else    // just a date or datetime
+            {
+                validateOnlyElementOrList = true;
+                DateTime dt;
+                dt.readDateTime( elem );
+                m_contentDateTimeVector.append( dt );
+            }
+        }
+
+        if( validateOnlyElementOrList and validateOnlyInterval )
+        {
+            // both are not allowed in the same statement
+            m_hasErrors = true;
+            return false;
+        }
+
+        if( validateOnlyElementOrList )
+        {
+            m_storageType = Property::PST_DATETIMEVECTOR;
+            return true;
+        }
+
+        if( validateOnlyInterval )
+        {
+            m_storageType = Property::PST_INTERVALVECTOR;
+            return true;
+        }
+
+        // none of above
+        m_hasErrors = true;
+        return false;
+    }
+
     if( m_type == PT_STATUS )
     {
         m_content = propertyArgument.toUpper();
@@ -422,6 +526,33 @@ bool Property::readProperty( const QString inProp )
         return true;
     }
 
+    if( m_type == PT_TRIGGER )
+    {
+        // datetime or duration
+        m_content = propertyArgument.toUpper();
+        int index_P = m_content.indexOf( 'P' );
+        if( index_P < 0 )
+        {
+            if( m_content.indexOf( 'T' ) > 0 and m_content.endsWith( 'Z' ) )
+            {
+                m_contentDateTime.readDateTime( m_content );
+                m_storageType = Property::PST_DATETIME;
+                return true;
+            }
+            // MUST be an UTC datetime
+            m_hasErrors = true;
+            return false;
+        }
+        m_contentDuration.setZero();
+        if( m_contentDuration.readDuration( m_content ) )
+        {
+            m_storageType = PST_DURATION;
+            return true;
+        }
+        m_hasErrors = true;
+        return false;
+    }
+
     if( m_type == PT_VERSION )
     {
         m_content = propertyArgument;
@@ -452,17 +583,6 @@ bool Property::getParameterByType(const Parameter::IcalParameterType inSearchTyp
             return true;
         }
     return false;
-}
-
-
-qint64 Property::durationToSeconds() const
-{
-    qint64 secs = m_contentDuration.weeks * 7 * 24 * 60 * 60;
-    secs += m_contentDuration.days * 24 * 60 * 60;
-    secs += m_contentDuration.hours * 60 * 60;
-    secs += m_contentDuration.minutes * 60;
-    secs += m_contentDuration.seconds;
-    return m_contentDuration.minus ? -secs : secs;
 }
 
 

@@ -160,13 +160,13 @@ void IcalInterpreter::readAlarm( const VAlarmComponent inVAlarmComponent,
         if( p.m_type == Property::PT_TRIGGER )
         {
             if( p.m_parameters.isEmpty() )
-                outAppAlarm->m_alarmSecs = p.durationToSeconds();
+                outAppAlarm->m_alarmSecs = p.m_contentDuration.toSeconds();
             else
             {
                 Parameter pp;
                 if( p.getParameterByType( Parameter::TRIGRELPARAM, pp ) )
                 {
-                    outAppAlarm->m_alarmSecs = p.durationToSeconds();
+                    outAppAlarm->m_alarmSecs = p.m_contentDuration.toSeconds();
                     if( pp.m_contentTriggerRelParam == Parameter::TRP_END )
                         outAppAlarm->m_alarmSecs +=
                                 inAppBasics->m_dtStart.secsTo( (inAppBasics->m_dtEnd ) );
@@ -183,7 +183,7 @@ void IcalInterpreter::readAlarm( const VAlarmComponent inVAlarmComponent,
                     }
                     if( pp.m_contentValueType == Parameter::VT_DURATION )
                     {
-                        outAppAlarm->m_alarmSecs = p.durationToSeconds();
+                        outAppAlarm->m_alarmSecs = p.m_contentDuration.toSeconds();
                     }
                 }
             }
@@ -192,7 +192,7 @@ void IcalInterpreter::readAlarm( const VAlarmComponent inVAlarmComponent,
         if( p.m_type == Property::PT_DURATION )
         {
             if( p.m_storageType == Property::PST_DURATION )
-                outAppAlarm->m_pauseSecs = p.durationToSeconds();
+                outAppAlarm->m_pauseSecs = p.m_contentDuration.toSeconds();
         }
     }
 }

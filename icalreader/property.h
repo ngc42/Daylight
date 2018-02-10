@@ -24,6 +24,42 @@
 #include "datetime.h"
 #include "parameter.h"
 
+struct Duration
+{
+    // init values
+    void setZero();
+
+    // set from values
+    // @fixme: useful method?
+    void setDuration( bool _minus, int _weeks, int _days, int _hours, int _minutes, int _seconds);
+
+    // read from string, true on success
+    bool readDuration( QString inDurationText );
+
+    // value as seconds
+    qint64 toSeconds() const;
+
+    // just for debugging
+    QString contentToString() const;
+
+    // === Data ===
+    bool    m_minus;
+    int     m_weeks;
+    int     m_days;
+    int     m_hours;
+    int     m_minutes;
+    int     m_seconds;
+};
+
+
+struct Interval
+{
+    bool        m_hasDuration;
+    DateTime    m_start;
+    DateTime    m_end;
+    Duration    m_duration;
+};
+
 
 struct Property
 {
@@ -37,6 +73,7 @@ struct Property
         PST_STRINGLIST, // ... a QStringList
         PST_DATETIMEVECTOR, // a vector of datetimes
         PST_DURATION,   // a duration
+        PST_INTERVALVECTOR,   // a vector of interval structs, for RDATE
         PST_STATUSCODE, // Status Codes for PT_STATUS
         PST_TRANSPARENCY,   // for PT_TRANSP
         PST_DOUBLETUPLE     // GEO
@@ -101,9 +138,6 @@ struct Property
     // get a parameter by typename, return the property. true if found.
     bool        getParameterByType( const Parameter::IcalParameterType inSearchType, Parameter &outParam ) const;
 
-    // convert duation to seconds
-    qint64      durationToSeconds() const;
-
     // Errors and Validation
     bool        m_hasErrors;   // true, if this property is not well formed
     bool        validate();
@@ -136,13 +170,8 @@ struct Property
     int                 m_contentInteger;       // as int
     QStringList         m_contentStringList;    // as a list of strings
     QVector<DateTime>   m_contentDateTimeVector;// a vector of DateTimes
-    struct {
-        bool minus;
-        int weeks;
-        int days;
-        int hours;
-        int minutes;
-        int seconds; }  m_contentDuration;      // as a duration
+    Duration            m_contentDuration;      // as a duration
+    QVector<Interval>   m_contentIntervalVector;// intervals, for RDATE
     IcalStatusCodeType  m_contentStatusCode;    // for PT_STATUS
     IcalTransparencyType m_contentTransparency; // for PT_TRANSP
     double              m_contentDoubleTuple[2]; // Tuple of float for GEO
