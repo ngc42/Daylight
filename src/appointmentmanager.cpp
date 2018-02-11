@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "appointmentmanager.h"
 
 #include <QDebug>
@@ -21,9 +22,51 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
+
+/* ***********************************************
+ * ******* RecurringFixedIntervals ***************
+ * **********************************************/
+
+void RecurringFixedIntervals::setInterval(const DateTime inStart, const DateTime inEnd )
+{
+    m_start = inStart;
+    m_end = inEnd;
+    m_end.setTimeZone( m_start.timeZone() );
+}
+
+
+bool RecurringFixedIntervals::readIntervalElementText( const QString inIntervalText )
+{
+    if( inIntervalText.isEmpty() or not ( inIntervalText.startsWith( '(' ) and inIntervalText.endsWith( ')' ) ) )
+        return false;   // string mismatch
+    QString unbracedText = inIntervalText.mid( 1, inIntervalText.count() - 2 );
+    QStringList parts = unbracedText.split( ',', QString::SkipEmptyParts );
+    if( parts.count() != 3 )
+        return false;   // wrong param count
+    QString zoneName = parts.at(0);
+    QTimeZone zone( zoneName.toUtf8() );
+    m_start.readDateTime( parts.at(1) );
+    m_start.setTimeZone( zone );
+    m_end.readDateTime( parts.at(2) );
+    m_end.setTimeZone( zone );
+    return zone.isValid() and m_start.isValid() and m_end.isValid();
+}
+
+
+QString RecurringFixedIntervals::toIntervalElementString() const
+{
+    QString zoneName = m_start.timeZone().id();
+    QString startText = m_start.toDtString();
+    QString endText = m_end.toDtString();
+    QString elemString( "(%1,%2,%3)" );
+    return elemString.arg( zoneName ).arg( startText ).arg( endText );
+}
+
+
 /* ***********************************************
  * ******* AppointmentBasics *********************
  * **********************************************/
+
 AppointmentBasics::AppointmentBasics()
     :
       m_uid(""),
@@ -133,7 +176,7 @@ void AppointmentRecurrence::getAPartialCopy( const AppointmentRecurrence &other)
     m_until = other.m_until;
     m_startWeekday = other.m_startWeekday;
     m_exceptionDates = other.m_exceptionDates;
-    m_fixedDates = other.m_fixedDates;
+    m_recurFixedIntervals = other.m_recurFixedIntervals;
     m_byMonthSet = other.m_byMonthSet;
     m_byWeekNumberSet = other.m_byWeekNumberSet;
     m_byYearDaySet = other.m_byYearDaySet;
@@ -156,7 +199,7 @@ bool AppointmentRecurrence::isPartiallyEqual( const AppointmentRecurrence &other
             m_until == other.m_until and
             m_startWeekday == other.m_startWeekday and
             m_exceptionDates == other.m_exceptionDates and
-            m_fixedDates == other.m_fixedDates and
+            m_recurFixedIntervals == other.m_recurFixedIntervals and
             m_byMonthSet == other.m_byMonthSet and
             m_byWeekNumberSet == other.m_byWeekNumberSet and
             m_byYearDaySet == other.m_byYearDaySet and
@@ -182,13 +225,13 @@ QString AppointmentRecurrence::contentToString() const
     }
 
     QString fd;
-    if( m_fixedDates.isEmpty() )
-        fd = "[fixdates:no]";
+    if( m_recurFixedIntervals.isEmpty() )
+        fd = "[fixedInterval:no]";
     else
     {
-        for( DateTime d : m_fixedDates )
-            fd = fd.append( QString( "(fd:%1)").arg(d.toString() ) );
-        fd = fd.prepend( "[fixdates:");
+        for( RecurringFixedIntervals interval : m_recurFixedIntervals )
+            fd = fd.append( QString( "(inter:%1)").arg( interval.toIntervalElementString() ) );
+        fd = fd.prepend( "[fixedInterval:");
         fd = fd.append( "]" );
     }
 
@@ -1459,6 +1502,25 @@ void Appointment::makeIntSet( const QString inElementsString, QSet<int> &outSet 
 }
 
 
+void Appointment::makeFixedIntervalVector( const QString inElementsString, QVector<RecurringFixedIntervals> &outVector )
+{
+    outVector.clear();
+    QStringList elements = inElementsString.split( ';', QString::SkipEmptyParts );
+    for( QString intervalText : elements )
+    {
+        RecurringFixedIntervals interval;
+        if( interval.readIntervalElementText( intervalText ) )
+        {
+            outVector.append( interval );
+        }
+        else
+        {
+            qDebug() << "ERR: Appointment::makeFixedIntervalVector() unknown problems with " << intervalText;
+        }
+    }
+}
+
+
 void Appointment::makeStringsFromDateVector( const QVector<DateTime> &inVector, QString &outDtString, QString &outTzString )
 {
     int count = inVector.count();
@@ -1540,6 +1602,15 @@ void Appointment::makeStringFromIntSet( const QSet<int> inIntSet, QString &outSt
         outString = outString.append(s);
     }
 }
+
+
+void Appointment::makeStringFromFixedIntervalVector( const QVector<RecurringFixedIntervals> &inVector, QString &outString )
+{
+    outString = "";
+    for( RecurringFixedIntervals interval : inVector )
+        outString = outString.append( interval.toIntervalElementString() ).append( ';' );
+}
+
 
 void Appointment::makeEvents()
 {

@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef APPOINTMENTMANAGER_H
 #define APPOINTMENTMANAGER_H
 
@@ -28,6 +29,31 @@
 #include <QString>
 #include <QTimeZone>
 #include <QVector>
+
+
+/* This is more or less the RDATE representation inside of an appointment.
+ * All the different ways to express RDATEs in ical files are just
+ *  intervals, on which events have to show up.
+ * There can be many RDATE entries in ical files and each of them may have
+ *  its own TimeZone.
+ * Both, m_start and m_end have the same timezone.
+ * Interval element strings are representations of the interval,
+ *   (TIMEZONE, START, END)
+ *   example: "(Europer/Berlin, 20180211T211002, 20180211T230002)"
+ */
+struct RecurringFixedIntervals
+{
+    DateTime m_start;
+    DateTime m_end;
+    void setInterval(const DateTime inStart, const DateTime inEnd );
+    bool readIntervalElementText( const QString inIntervalText );
+    QString toIntervalElementString() const;
+
+    bool operator==( const RecurringFixedIntervals &other ) const
+    {
+        return m_start == other.m_start and m_end == other.m_end;
+    }
+};
 
 
 /* AppointmentBasics is everything we need to show a single event in a calendar */
@@ -194,7 +220,7 @@ public:
     DateTime                    m_until;
     WeekDay                     m_startWeekday;
     QVector<DateTime>           m_exceptionDates;
-    QVector<DateTime>           m_fixedDates;
+    QVector<RecurringFixedIntervals>    m_recurFixedIntervals;
     QSet<int>                   m_byMonthSet;
     QSet<int>                   m_byWeekNumberSet;
     QSet<int>                   m_byYearDaySet;
@@ -281,10 +307,12 @@ public:
     static void makeDateVector( const QString inElementsString, const QString inTimeZone, QVector<DateTime> &outVector );
     static void makeDayset( const QString inElementsString, std::set<std::pair<AppointmentRecurrence::WeekDay, int>> &outSet );
     static void makeIntSet( const QString inElementsString, QSet<int> &outSet );
+    static void makeFixedIntervalVector( const QString inElementsString, QVector<RecurringFixedIntervals> &outVector );
 
     static void makeStringsFromDateVector( const QVector<DateTime> &inVector, QString &outDtString, QString &outTzString );
     static void makeStringFromDayset( const std::set<std::pair<AppointmentRecurrence::WeekDay, int>> inSet, QString &outString );
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
+    static void makeStringFromFixedIntervalVector( const QVector<RecurringFixedIntervals> &inVector, QString &outString );
 
     void makeEvents();
     void setEventColor( const QColor inEventColor );

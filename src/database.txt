@@ -33,8 +33,7 @@
 * start_wd INT
 * exdates VARCHAR
 * exdates_tz VARCHAR
-* fixeddates VARCHAR
-* fixeddates_tz VARCHAR
+* fixedintervals VARCHAR
 * bymonthlist VARCHAR
 * byweeknumberlist VARCHAR
 * byyeardaylist VARCHAR

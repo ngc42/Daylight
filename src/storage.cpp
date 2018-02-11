@@ -89,7 +89,7 @@ void Storage::createDatabase()
              "until DATETIME, until_tz VARCHAR,"
              "start_wd INT,"
              "exdates VARCHAR, exdates_tz VARCHAR,"
-             "fixeddates VARCHAR, fixeddates_tz VARCHAR,"
+             "fixedintervals VARCHAR"
              "bymonthlist VARCHAR, byweeknumberlist VARCHAR, byyeardaylist VARCHAR,"
              "bymonthdaylist VACHAR, bydaymap VARCHAR,"
              "byhourlist VARCHAR, byminutelist VARCHAR, bysecondlist VARCHAR,"
@@ -164,7 +164,7 @@ void Storage::storeAppointment(const Appointment* apmData )
     {
         QSqlQuery iRec(m_db);
         iRec.prepare("INSERT INTO recurrences VALUES(:uid, :frequency, :count, :interval, :until, :untiltz, "
-                     ":startwd, :exdates, :exdatestz, :fixeddates, :fixeddatestz, "
+                     ":startwd, :exdates, :exdatestz, :fixedintervals,"
                      ":bymonthlist, :bywnlist, :byydlist, :bymdlist, :bydmap,"
                      ":byhlist, :bymlist, :byslist, :bysetposlist)");
         iRec.bindValue(":uid", apmData->m_uid);
@@ -178,9 +178,9 @@ void Storage::storeAppointment(const Appointment* apmData )
         Appointment::makeStringsFromDateVector( apmData->m_appRecurrence->m_exceptionDates, dtString, tzString );
         iRec.bindValue(":exdates", dtString );
         iRec.bindValue(":exdatestz", tzString );
-        Appointment::makeStringsFromDateVector( apmData->m_appRecurrence->m_fixedDates, dtString, tzString );
-        iRec.bindValue(":fixeddates", dtString );
-        iRec.bindValue(":fixeddatestz", tzString );
+        QString fixedIntervalString;
+        Appointment::makeStringFromFixedIntervalVector( apmData->m_appRecurrence->m_recurFixedIntervals, fixedIntervalString );
+        iRec.bindValue(":fixedintervals", fixedIntervalString );
         QString listString;
         Appointment::makeStringFromIntSet( apmData->m_appRecurrence->m_byMonthSet, listString );
         iRec.bindValue(":bymonthlist", listString );
@@ -259,7 +259,7 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
     qApmRecurrence.prepare( "SELECT uid, frequency, count, interval,"
                             "until, until_tz,"
                             "start_wd, exdates, exdates_tz,"
-                            "fixeddates, fixeddates_tz,"
+                            "fixedintervals,"
                             "bymonthlist, byweeknumberlist, byyeardaylist,"
                             "bymonthdaylist, bydaymap, byhourlist, "
                             "byminutelist, bysecondlist, bysetposlist "
@@ -354,18 +354,17 @@ void Storage::loadAppointmentByYear(const int year, QVector<Appointment*>& outAp
                 Appointment::makeDateVector( qApmRecurrence.value(7).toString(),
                                                      qApmRecurrence.value(8).toString(),
                                                      apmRecurrence->m_exceptionDates );
-                Appointment::makeDateVector( qApmRecurrence.value(9).toString(),
-                                                     qApmRecurrence.value(10).toString(),
-                                                     apmRecurrence->m_fixedDates );
-                Appointment::makeIntSet( qApmRecurrence.value(11).toString(), apmRecurrence->m_byMonthSet );
-                Appointment::makeIntSet( qApmRecurrence.value(12).toString(), apmRecurrence->m_byWeekNumberSet );
-                Appointment::makeIntSet( qApmRecurrence.value(13).toString(), apmRecurrence->m_byYearDaySet );
-                Appointment::makeIntSet( qApmRecurrence.value(14).toString(), apmRecurrence->m_byMonthDaySet );
-                Appointment::makeDayset( qApmRecurrence.value(15).toString(), apmRecurrence->m_byDaySet );
-                Appointment::makeIntSet( qApmRecurrence.value(16).toString(), apmRecurrence->m_byHourSet );
-                Appointment::makeIntSet( qApmRecurrence.value(17).toString(), apmRecurrence->m_byMinuteSet );
-                Appointment::makeIntSet( qApmRecurrence.value(18).toString(), apmRecurrence->m_bySecondSet );
-                Appointment::makeIntSet( qApmRecurrence.value(19).toString(), apmRecurrence->m_bySetPosSet );
+                Appointment::makeFixedIntervalVector( qApmRecurrence.value(9).toString(),
+                                                     apmRecurrence->m_recurFixedIntervals );
+                Appointment::makeIntSet( qApmRecurrence.value(10).toString(), apmRecurrence->m_byMonthSet );
+                Appointment::makeIntSet( qApmRecurrence.value(11).toString(), apmRecurrence->m_byWeekNumberSet );
+                Appointment::makeIntSet( qApmRecurrence.value(12).toString(), apmRecurrence->m_byYearDaySet );
+                Appointment::makeIntSet( qApmRecurrence.value(13).toString(), apmRecurrence->m_byMonthDaySet );
+                Appointment::makeDayset( qApmRecurrence.value(14).toString(), apmRecurrence->m_byDaySet );
+                Appointment::makeIntSet( qApmRecurrence.value(15).toString(), apmRecurrence->m_byHourSet );
+                Appointment::makeIntSet( qApmRecurrence.value(16).toString(), apmRecurrence->m_byMinuteSet );
+                Appointment::makeIntSet( qApmRecurrence.value(17).toString(), apmRecurrence->m_bySecondSet );
+                Appointment::makeIntSet( qApmRecurrence.value(18).toString(), apmRecurrence->m_bySetPosSet );
                 apmData->m_appRecurrence = apmRecurrence;
             }
 
