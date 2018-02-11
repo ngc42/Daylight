@@ -1,9 +1,29 @@
-Missing:
-- exception dates (EXDATE)
-- fixed dates (RDATE)
-- test: WeekStart?
-- test: DTSTART/DTEND with different TZ
+Reading Events from File
+========================
+- stronger validation of user input (ical files)
+- IANA-components missing. This is by intention.
 
-UI:
+Generating Events
+=================
+- RDATE and EXDATE arrives in icalinterpreter, but not in recurrence calculation
+- no events generated for an Alarm
+- gen. DAILY-events is so slow
+- DT-START, DT-END with different timezones
+
+UI
+===
+- Alarm events (Edit tab für Alarms)
 - WeekStart?
 - better error handling in import dialog
+
+TESTS
+======
+* UNTIL has no own TimeZone, its local, UTC or same like DTSTART.
+* UNTIL is same type (Date/DateTime) like DTSTART
+* TRIGGER can be Datetime or Duration
+
+Documentation
+==============
+- https://tools.ietf.org/html/rfc5545
+- consistent naming
+- doxygen comments?

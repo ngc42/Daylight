@@ -438,6 +438,7 @@ bool Property::readProperty( const QString inProp )
             {
                 validateOnlyInterval = true;
                 Interval interval;
+                interval.m_duration.setZero();
                 QStringList bounds = elem.split( '/', QString::SkipEmptyParts );
                 if( bounds.count() != 2 )   // multiple '/'?
                 {

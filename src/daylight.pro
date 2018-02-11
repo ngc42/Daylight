@@ -83,5 +83,4 @@ RESOURCES += ../daylight.qrc \
 
 DISTFILES += \
     todo.txt \
-    database.txt \
-    ../icalreader/todo.text
+    database.txt
