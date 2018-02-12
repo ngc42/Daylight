@@ -164,10 +164,7 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
                 // might get overwritten duing readRecurrenceRRule()
                 outAppRecurrence->m_frequency = AppointmentRecurrence::RFT_FIXED_DATES;
             }
-
-            qDebug() << "IcalInterpreter::readEvent()";
-
-            readRecurrenceRDates( p, intervalSeconds, outAppRecurrence );
+            readRecurrenceRDates( p, intervalSeconds, outAppBasics->m_dtStart, outAppRecurrence );
         }
     }
 
@@ -232,17 +229,13 @@ void IcalInterpreter::readAlarm( const VAlarmComponent inVAlarmComponent,
 }
 
 
-void IcalInterpreter::readRecurrenceRDates( const Property inRecurrenceProperty,
-                                            const quint64 inIntervalSecondsToEndDate,
+void IcalInterpreter::readRecurrenceRDates(const Property inRecurrenceProperty,
+                const quint64 inIntervalSecondsToEndDate,
+                const DateTime inStartDateTime,
                 AppointmentRecurrence* &outAppRecurrence )
 {
-    qDebug() << "IcalInterpreter::readRecurrenceRDates()";
-    qDebug() << "  storage: datetimevector? " << (inRecurrenceProperty.m_storageType == Property::PST_DATETIMEVECTOR);
-    qDebug() << "  storage: intervalvector? " << (inRecurrenceProperty.m_storageType == Property::PST_INTERVALVECTOR);
-
-    for( Interval interval : inRecurrenceProperty.m_contentIntervalVector )
+   for( Interval interval : inRecurrenceProperty.m_contentIntervalVector )
     {
-        qDebug() << "  storage: intervalvector!";
         DateTime start;
         DateTime end;
         start = interval.m_start;
@@ -264,17 +257,24 @@ void IcalInterpreter::readRecurrenceRDates( const Property inRecurrenceProperty,
 
     for( DateTime startTime : inRecurrenceProperty.m_contentDateTimeVector )
     {
-        qDebug() << "  storage: datetimevector!";
+        DateTime newStartDate;
+        if( startTime.isDate() )
+        {
+            newStartDate = QDateTime( startTime.date(), inStartDateTime.time() );
+        }
+        else
+            newStartDate = startTime;
+
         DateTime endTime;
-        endTime = startTime.addSecs( inIntervalSecondsToEndDate );
+        endTime = newStartDate.addSecs( inIntervalSecondsToEndDate );
         Parameter timeZoneParam;
         if( inRecurrenceProperty.getParameterByType( Parameter::TZIDPARAM, timeZoneParam ) )
         {
             if( timeZoneParam.m_storageType == Parameter::PST_TIMEZONE )
-                startTime.setTimeZone( timeZoneParam.m_contentTimeZone );
+                newStartDate.setTimeZone( timeZoneParam.m_contentTimeZone );
         }
         RecurringFixedIntervals fixedInterval;
-        fixedInterval.setInterval( startTime, endTime );
+        fixedInterval.setInterval( newStartDate, endTime );
         outAppRecurrence->m_recurFixedIntervals.append( fixedInterval );
     }
 }

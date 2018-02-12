@@ -47,6 +47,7 @@ private:
 
     void readRecurrenceRDates( const Property inRecurrenceProperty,
                                const quint64 inIntervalSecondsToEndDate,
+                               const DateTime inStartDateTime,  // for dates, to complete them
                     AppointmentRecurrence* &outAppRecurrence );
 
     void readRecurrenceRRule( const Property inRecurrenceProperty,

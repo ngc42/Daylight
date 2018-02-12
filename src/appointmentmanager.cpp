@@ -1662,8 +1662,6 @@ void Appointment::makeEvents()
             m_minYear = interval.m_start.date().year() < m_minYear ? interval.m_start.date().year() : m_minYear;
             m_maxYear = interval.m_end.date().year() > m_maxYear ? interval.m_end.date().year() : m_maxYear;
         }
-        qDebug() << "Appointment::makeEvents() have_fixed_dates: " <<
-                    (m_appRecurrence->m_recurFixedIntervals.count() > 0);
         disconnect( m_appRecurrence, SIGNAL(signalTick(int,int,int)),
                  this, SIGNAL(sigTickEvent(int,int,int)) );
     }

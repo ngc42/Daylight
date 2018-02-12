@@ -5,9 +5,7 @@ Reading Events from File
 
 Generating Events
 =================
-- RDATE and EXDATE arrives in icalinterpreter,
-  but not in recurrence calculation. With 'struct RecurringFixedIntervals'
-  there is a starting point.
+- EXDATE arrives in icalinterpreter but not in recurrence calculation.
 - no events generated for an Alarm
 - gen. DAILY-events is so slow
 - DT-START, DT-END with different timezones

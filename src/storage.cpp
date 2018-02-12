@@ -89,7 +89,7 @@ void Storage::createDatabase()
              "until DATETIME, until_tz VARCHAR,"
              "start_wd INT,"
              "exdates VARCHAR, exdates_tz VARCHAR,"
-             "fixedintervals VARCHAR"
+             "fixedintervals VARCHAR,"
              "bymonthlist VARCHAR, byweeknumberlist VARCHAR, byyeardaylist VARCHAR,"
              "bymonthdaylist VACHAR, bydaymap VARCHAR,"
              "byhourlist VARCHAR, byminutelist VARCHAR, bysecondlist VARCHAR,"
