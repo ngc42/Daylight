@@ -1623,26 +1623,47 @@ void Appointment::makeEvents()
         qint64 seconds = m_appBasics->m_dtStart.secsTo( m_appBasics->m_dtEnd );
         QVector<DateTime> list = m_appRecurrence->recurrenceStartDates( m_appBasics->m_dtStart );
 
-        m_minYear = list.constLast().date().year();
-        m_maxYear = list.constFirst().date().year();
+        // RRULE
+        if( not list.isEmpty() )
+        {
+            m_minYear = list.constLast().date().year();
+            m_maxYear = list.constFirst().date().year();
 
-        for( const DateTime dt : list )
+            for( const DateTime dt : list )
+            {
+                Event e;
+                e.m_uid = m_appBasics->m_uid;
+                e.m_displayText = m_appBasics->m_summary;
+                e.m_startDt = dt;
+                QDateTime qdt = dt.addSecs( seconds );
+                e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
+                e.m_isAlarmEvent = false;
+                e.m_userCalendarId = m_userCalendarId;
+                m_eventVector.append( e );
+                m_yearsInQuestion.insert( dt.date().year() );
+                m_yearsInQuestion.insert( qdt.date().year() );
+                m_minYear = dt.date().year() < m_minYear ? dt.date().year() : m_minYear;
+                m_maxYear = qdt.date().year() > m_maxYear ? qdt.date().year() : m_maxYear;
+            }
+        }
+        // RDATE
+        for( const RecurringFixedIntervals interval : m_appRecurrence->m_recurFixedIntervals )
         {
             Event e;
             e.m_uid = m_appBasics->m_uid;
             e.m_displayText = m_appBasics->m_summary;
-            e.m_startDt = dt;
-            QDateTime qdt = dt.addSecs( seconds );
-            e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
+            e.m_startDt = interval.m_start;
+            e.m_endDt = interval.m_end;
             e.m_isAlarmEvent = false;
             e.m_userCalendarId = m_userCalendarId;
             m_eventVector.append( e );
-            m_yearsInQuestion.insert( dt.date().year() );
-            m_yearsInQuestion.insert( qdt.date().year() );
-            m_minYear = dt.date().year() < m_minYear ? dt.date().year() : m_minYear;
-            m_maxYear = qdt.date().year() > m_maxYear ? qdt.date().year() : m_maxYear;
-
+            m_yearsInQuestion.insert( interval.m_start.date().year() );
+            m_yearsInQuestion.insert( interval.m_end.date().year() );
+            m_minYear = interval.m_start.date().year() < m_minYear ? interval.m_start.date().year() : m_minYear;
+            m_maxYear = interval.m_end.date().year() > m_maxYear ? interval.m_end.date().year() : m_maxYear;
         }
+        qDebug() << "Appointment::makeEvents() have_fixed_dates: " <<
+                    (m_appRecurrence->m_recurFixedIntervals.count() > 0);
         disconnect( m_appRecurrence, SIGNAL(signalTick(int,int,int)),
                  this, SIGNAL(sigTickEvent(int,int,int)) );
     }

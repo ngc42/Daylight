@@ -45,7 +45,11 @@ private:
                     const AppointmentBasics* inAppBasics,
                     AppointmentAlarm* &outAppAlarm );
 
-    void readRecurrence( const Property inRecurrenceProperty,
+    void readRecurrenceRDates( const Property inRecurrenceProperty,
+                               const quint64 inIntervalSecondsToEndDate,
+                    AppointmentRecurrence* &outAppRecurrence );
+
+    void readRecurrenceRRule( const Property inRecurrenceProperty,
                     AppointmentRecurrence* &outAppRecurrence );
 
     /* true, if inVEventComponent has NO RRULE,

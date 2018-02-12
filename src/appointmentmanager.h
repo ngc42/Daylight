@@ -128,7 +128,10 @@ public:
 
     // the simple_ const show an every YEAR,.. without BY_XXX rules.
     enum RecurrenceFrequencyType {
-        RFT_FIXED_DATES,                // list of fixed DateTimes
+        // list of fixed DateTimes.
+        // This one might become overwritten
+        //  if RDATE and RRULE occur in same VEVENT
+        RFT_FIXED_DATES,
         RFT_SIMPLE_YEARLY,              // like birthdays
         RFT_SIMPLE_MONTHLY,
         RFT_SIMPLE_WEEKLY,              // every tuesday: GNU/Linux User Group Meeting

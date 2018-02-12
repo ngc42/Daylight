@@ -57,6 +57,7 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
 {
     outAppBasics = new AppointmentBasics();
     bool haveRecurrence = false;
+    bool have_rdate = false;    // rdate is somewhat special, see below...
 
     for( const Property p : inVEventComponent.m_properties )
     {
@@ -92,6 +93,13 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
             outAppBasics->m_dtEnd = outAppBasics->m_dtStart.addSecs( p.m_contentDuration.toSeconds() );
             continue;
         }
+
+        if( p.m_type == Property::PT_RDATE )
+        {
+            have_rdate = true;
+            continue;
+        }
+
         if( p.m_type == Property::PT_RRULE )
         {
             if( not haveRecurrence )
@@ -99,7 +107,7 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
                 outAppRecurrence = new AppointmentRecurrence();
                 haveRecurrence = true;
             }
-            readRecurrence( p, outAppRecurrence );
+            readRecurrenceRRule( p, outAppRecurrence );
             continue;
         }
         if( p.m_type == Property::PT_SUMMARY )
@@ -125,13 +133,6 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
                 outAppRecurrence->m_exceptionDates.append( p.m_contentDateTimeVector );
             continue;
         }
-        if( p.m_type == Property::PT_RDATE )
-        {
-
-            qDebug() << " FIXME: RDATE unsupported in Appointment";
-            qDebug() << p.contentToString();
-            continue;
-        }
         if( p.m_type == Property::PT_SEQUENCE )
         {
             outAppBasics->m_sequence = p.m_contentInteger;
@@ -144,6 +145,32 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
             continue;
         }
     }
+
+    if( have_rdate )
+    {
+        // The reason, why we loop again over all the properties is, that
+        // the above finds out DT_START and DT_END. With this we can find out
+        // length of an interval. Here, we can apply this interval length.
+        quint64 intervalSeconds = outAppBasics->m_dtStart.secsTo( outAppBasics->m_dtEnd );
+        for( const Property p : inVEventComponent.m_properties )
+        {
+            if( p.m_type != Property::PT_RDATE )
+                continue;
+
+            if( not haveRecurrence )
+            {
+                outAppRecurrence = new AppointmentRecurrence();
+                haveRecurrence = true;
+                // might get overwritten duing readRecurrenceRRule()
+                outAppRecurrence->m_frequency = AppointmentRecurrence::RFT_FIXED_DATES;
+            }
+
+            qDebug() << "IcalInterpreter::readEvent()";
+
+            readRecurrenceRDates( p, intervalSeconds, outAppRecurrence );
+        }
+    }
+
     for( const VAlarmComponent alarm : inVEventComponent.m_vAlarmComponents )
     {
         AppointmentAlarm *appAlarm = new AppointmentAlarm();
@@ -205,7 +232,55 @@ void IcalInterpreter::readAlarm( const VAlarmComponent inVAlarmComponent,
 }
 
 
-void IcalInterpreter::readRecurrence(const Property inRecurrenceProperty,
+void IcalInterpreter::readRecurrenceRDates( const Property inRecurrenceProperty,
+                                            const quint64 inIntervalSecondsToEndDate,
+                AppointmentRecurrence* &outAppRecurrence )
+{
+    qDebug() << "IcalInterpreter::readRecurrenceRDates()";
+    qDebug() << "  storage: datetimevector? " << (inRecurrenceProperty.m_storageType == Property::PST_DATETIMEVECTOR);
+    qDebug() << "  storage: intervalvector? " << (inRecurrenceProperty.m_storageType == Property::PST_INTERVALVECTOR);
+
+    for( Interval interval : inRecurrenceProperty.m_contentIntervalVector )
+    {
+        qDebug() << "  storage: intervalvector!";
+        DateTime start;
+        DateTime end;
+        start = interval.m_start;
+        if( interval.m_hasDuration )
+            end = interval.m_start.addSecs( interval.m_duration.toSeconds() );
+        else
+            end = interval.m_end;
+
+        Parameter timeZoneParam;
+        if( inRecurrenceProperty.getParameterByType( Parameter::TZIDPARAM, timeZoneParam ) )
+        {
+            if( timeZoneParam.m_storageType == Parameter::PST_TIMEZONE )
+                start.setTimeZone( timeZoneParam.m_contentTimeZone );
+        }
+        RecurringFixedIntervals fixedInterval;
+        fixedInterval.setInterval( start, end );
+        outAppRecurrence->m_recurFixedIntervals.append( fixedInterval );
+    }
+
+    for( DateTime startTime : inRecurrenceProperty.m_contentDateTimeVector )
+    {
+        qDebug() << "  storage: datetimevector!";
+        DateTime endTime;
+        endTime = startTime.addSecs( inIntervalSecondsToEndDate );
+        Parameter timeZoneParam;
+        if( inRecurrenceProperty.getParameterByType( Parameter::TZIDPARAM, timeZoneParam ) )
+        {
+            if( timeZoneParam.m_storageType == Parameter::PST_TIMEZONE )
+                startTime.setTimeZone( timeZoneParam.m_contentTimeZone );
+        }
+        RecurringFixedIntervals fixedInterval;
+        fixedInterval.setInterval( startTime, endTime );
+        outAppRecurrence->m_recurFixedIntervals.append( fixedInterval );
+    }
+}
+
+
+void IcalInterpreter::readRecurrenceRRule(const Property inRecurrenceProperty,
                                       AppointmentRecurrence* &outAppRecurrence  )
 {
     int numberOfByRules = 0;

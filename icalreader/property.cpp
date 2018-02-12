@@ -481,12 +481,14 @@ bool Property::readProperty( const QString inProp )
         if( validateOnlyElementOrList )
         {
             m_storageType = Property::PST_DATETIMEVECTOR;
+            qDebug() << "Property::readProperty() Property::PST_DATETIMEVECTOR";
             return true;
         }
 
         if( validateOnlyInterval )
         {
             m_storageType = Property::PST_INTERVALVECTOR;
+            qDebug() << "Property::readProperty() Property::PST_INTERVALVECTOR";
             return true;
         }
 
