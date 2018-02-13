@@ -17,12 +17,13 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 
+#include "datetime.h"
+#include "parameter.h"
+
 #include <QString>
 #include <QStringList>
 #include <QVector>
 
-#include "datetime.h"
-#include "parameter.h"
 
 struct Duration
 {

@@ -20,10 +20,9 @@
 #include <QDebug>
 
 
-ICalBody::ICalBody()
-    :
-      m_activeComponent( IN_TOPLEVEL ),
-      m_currentComponentName( "" )
+ICalBody::ICalBody() :
+    m_activeComponent( IN_TOPLEVEL ),
+    m_currentComponentName( "" )
 {
 }
 

@@ -14,12 +14,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "parameter.h"
 
+#include <QDebug>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QStringList>
-#include <QDebug>
 
 
 Parameter::Parameter()

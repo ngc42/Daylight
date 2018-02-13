@@ -17,6 +17,8 @@
 
 #include "appointmentmanager.h"
 
+#include <algorithm>
+
 #include <QDebug>
 #include <QRandomGenerator>
 #include <QRegularExpression>
@@ -1341,57 +1343,7 @@ bool AppointmentRecurrence::validateDateTime( const DateTime inRefTime ) const
 
 void AppointmentRecurrence::sortDaytimeList(QVector<DateTime> &inoutSortVector )
 {
-    int count = inoutSortVector.count();
-    if( count < 2 )
-        return;
-    if( count == 2 )
-    {
-        if( inoutSortVector.at(0) > inoutSortVector.at(1) )
-        {
-            DateTime tmp = inoutSortVector.at(0);
-            inoutSortVector[0] = inoutSortVector.at(1);
-            inoutSortVector[1] = tmp;
-        }
-        return;
-    }
-    int index = 0;
-    int bindex = count / 2;
-    DateTime tmp;
-
-    // bigger distance
-    while( bindex < count )
-    {
-        if( inoutSortVector.at( index ) > inoutSortVector.at( bindex ) )
-        {
-            tmp = inoutSortVector.at( index );
-            inoutSortVector[ index ] = inoutSortVector[ bindex ];
-            inoutSortVector[ bindex ] = tmp;
-        }
-        index++;
-        bindex++;
-    }
-
-    bool swapped = true;
-
-    // bubblesort over short distance
-    while( swapped )
-    {
-        swapped = false;
-        index = 0;
-        bindex = 1;
-        while( bindex < count )
-        {
-            if( inoutSortVector.at( index ) > inoutSortVector.at( bindex ) )
-            {
-                swapped = true;
-                tmp = inoutSortVector.at( index );
-                inoutSortVector[ index ] = inoutSortVector[ bindex ];
-                inoutSortVector[ bindex ] = tmp;
-            }
-            index++;
-            bindex++;
-        }
-    }
+    std::sort( inoutSortVector.begin(), inoutSortVector.end() );
 }
 
 
@@ -1620,7 +1572,6 @@ void Appointment::makeEvents()
         connect( m_appRecurrence, SIGNAL(signalTick(int,int,int)),
               this, SIGNAL(sigTickEvent(int,int,int)) );
 
-        qint64 seconds = m_appBasics->m_dtStart.secsTo( m_appBasics->m_dtEnd );
         QVector<DateTime> list = m_appRecurrence->recurrenceStartDates( m_appBasics->m_dtStart );
 
         // RRULE
@@ -1628,57 +1579,33 @@ void Appointment::makeEvents()
         {
             m_minYear = list.constLast().date().year();
             m_maxYear = list.constFirst().date().year();
+            qint64 seconds = m_appBasics->m_dtStart.secsTo( m_appBasics->m_dtEnd );
 
             for( const DateTime dt : list )
             {
-                Event e;
-                e.m_uid = m_appBasics->m_uid;
-                e.m_displayText = m_appBasics->m_summary;
-                e.m_startDt = dt;
-                QDateTime qdt = dt.addSecs( seconds );
-                e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
-                e.m_isAlarmEvent = false;
-                e.m_userCalendarId = m_userCalendarId;
-                m_eventVector.append( e );
-                m_yearsInQuestion.insert( dt.date().year() );
-                m_yearsInQuestion.insert( qdt.date().year() );
-                m_minYear = dt.date().year() < m_minYear ? dt.date().year() : m_minYear;
-                m_maxYear = qdt.date().year() > m_maxYear ? qdt.date().year() : m_maxYear;
+                makeRruleEvents( dt, seconds );
             }
         }
         // RDATE
         for( const RecurringFixedIntervals interval : m_appRecurrence->m_recurFixedIntervals )
         {
-            Event e;
-            e.m_uid = m_appBasics->m_uid;
-            e.m_displayText = m_appBasics->m_summary;
-            e.m_startDt = interval.m_start;
-            e.m_endDt = interval.m_end;
-            e.m_isAlarmEvent = false;
-            e.m_userCalendarId = m_userCalendarId;
-            m_eventVector.append( e );
-            m_yearsInQuestion.insert( interval.m_start.date().year() );
-            m_yearsInQuestion.insert( interval.m_end.date().year() );
-            m_minYear = interval.m_start.date().year() < m_minYear ? interval.m_start.date().year() : m_minYear;
-            m_maxYear = interval.m_end.date().year() > m_maxYear ? interval.m_end.date().year() : m_maxYear;
+            makeRDateEvents( interval );
         }
+        if( not m_appRecurrence->m_recurFixedIntervals.isEmpty() )
+        {
+            // for RDATEs, append the start date of the appointment.
+            if( not eventVectorContainsStartdate( m_appBasics->m_dtStart ) )
+                makeSingleEvent();
+        }
+
+        sortAndRemoveEventDuplicates();
+
         disconnect( m_appRecurrence, SIGNAL(signalTick(int,int,int)),
                  this, SIGNAL(sigTickEvent(int,int,int)) );
     }
     else
     {
-        Event e;
-        e.m_uid = m_appBasics->m_uid;
-        e.m_displayText = m_appBasics->m_summary;
-        e.m_startDt = m_appBasics->m_dtStart;
-        e.m_endDt = m_appBasics->m_dtEnd;
-        e.m_isAlarmEvent = false;
-        e.m_userCalendarId = m_userCalendarId;
-        m_eventVector.append( e );
-        m_yearsInQuestion.insert( e.m_startDt.date().year() );
-        m_yearsInQuestion.insert( e.m_endDt.date().year() );
-        m_minYear = e.m_startDt.date().year();
-        m_maxYear = e.m_endDt.date().year();
+        makeSingleEvent();
     }
 
 
@@ -1690,4 +1617,90 @@ void Appointment::setEventColor( const QColor inEventColor )
 {
     for( Event &e : m_eventVector )
         e.m_eventColor = inEventColor;
+}
+
+
+void Appointment::makeSingleEvent()
+{
+    Event e;
+    e.m_uid = m_appBasics->m_uid;
+    e.m_displayText = m_appBasics->m_summary;
+    e.m_startDt = m_appBasics->m_dtStart;
+    e.m_endDt = m_appBasics->m_dtEnd;
+    e.m_isAlarmEvent = false;
+    e.m_userCalendarId = m_userCalendarId;
+    m_eventVector.append( e );
+    m_yearsInQuestion.insert( e.m_startDt.date().year() );
+    m_yearsInQuestion.insert( e.m_endDt.date().year() );
+    m_minYear = e.m_startDt.date().year();
+    m_maxYear = e.m_endDt.date().year();
+}
+
+
+void Appointment::makeRDateEvents( const RecurringFixedIntervals &inInterval )
+{
+    Event e;
+    e.m_uid = m_appBasics->m_uid;
+    e.m_displayText = m_appBasics->m_summary;
+    e.m_startDt = inInterval.m_start;
+    e.m_endDt = inInterval.m_end;
+    e.m_isAlarmEvent = false;
+    e.m_userCalendarId = m_userCalendarId;
+    m_eventVector.append( e );
+    m_yearsInQuestion.insert( inInterval.m_start.date().year() );
+    m_yearsInQuestion.insert( inInterval.m_end.date().year() );
+    m_minYear = inInterval.m_start.date().year() < m_minYear ? inInterval.m_start.date().year() : m_minYear;
+    m_maxYear = inInterval.m_end.date().year() > m_maxYear ? inInterval.m_end.date().year() : m_maxYear;
+}
+
+
+void Appointment::makeRruleEvents( const DateTime inStartDate , qint64 inDeltaSeconds )
+{
+    Event e;
+    e.m_uid = m_appBasics->m_uid;
+    e.m_displayText = m_appBasics->m_summary;
+    e.m_startDt = inStartDate;
+    QDateTime qdt = inStartDate.addSecs( inDeltaSeconds );
+    e.m_endDt = DateTime( qdt.date(), qdt.time(), qdt.timeZone(), e.m_startDt.isDate() );
+    e.m_isAlarmEvent = false;
+    e.m_userCalendarId = m_userCalendarId;
+    m_eventVector.append( e );
+    m_yearsInQuestion.insert( inStartDate.date().year() );
+    m_yearsInQuestion.insert( qdt.date().year() );
+    m_minYear = inStartDate.date().year() < m_minYear ? inStartDate.date().year() : m_minYear;
+    m_maxYear = qdt.date().year() > m_maxYear ? qdt.date().year() : m_maxYear;
+}
+
+
+bool Appointment::eventVectorContainsStartdate(const DateTime inStartDate ) const
+{
+    bool found = false;
+    for( const Event e : m_eventVector )
+    {
+        if( e.m_startDt == inStartDate )
+        {
+            found = true;
+            break;
+        }
+    }
+    return found;
+}
+
+
+void Appointment::sortAndRemoveEventDuplicates()
+{
+    if( m_eventVector.isEmpty() )
+        return;
+
+    std::sort( m_eventVector.begin(), m_eventVector.end() );
+
+    QVector<Event> newVector { m_eventVector.takeFirst() };
+
+    while ( not m_eventVector.isEmpty() )
+    {
+        Event e = m_eventVector.takeFirst();
+        if( not ( e == newVector.last() ) )
+            newVector.append( e );
+    }
+    m_eventVector = newVector;
 }

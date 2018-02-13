@@ -306,7 +306,7 @@ public:
     // creates a possible unique UID
     void generateUid();
 
-    // helper methods
+    // helper methods, used to make up things for database
     static void makeDateVector( const QString inElementsString, const QString inTimeZone, QVector<DateTime> &outVector );
     static void makeDayset( const QString inElementsString, std::set<std::pair<AppointmentRecurrence::WeekDay, int>> &outSet );
     static void makeIntSet( const QString inElementsString, QSet<int> &outSet );
@@ -317,7 +317,9 @@ public:
     static void makeStringFromIntSet( const QSet<int> inIntSet, QString &outString );
     static void makeStringFromFixedIntervalVector( const QVector<RecurringFixedIntervals> &inVector, QString &outString );
 
+    // generate events
     void makeEvents();
+
     void setEventColor( const QColor inEventColor );
 
     AppointmentBasics*          m_appBasics;
@@ -337,8 +339,16 @@ public:
     bool                        m_haveAlarm;
 
 private:
-    //Appointment( const Appointment & );
+    // helper for makeEvents()
+    void makeSingleEvent(); // no recurrences or RDATE
+    void makeRDateEvents( const RecurringFixedIntervals &inInterval ); // just RDATE
+    void makeRruleEvents( const DateTime inStartDate, qint64 inDeltaSeconds ); // for RRULE
 
+    // true, if we have an event in 'm_eventVector' which starts with 'inStartDate'
+    bool eventVectorContainsStartdate(const DateTime inStartDate ) const;
+
+    // sorts events, then removes duplicates
+    void sortAndRemoveEventDuplicates();
 
 signals:
     void sigTickEvent( const int min, const int current, const int max );

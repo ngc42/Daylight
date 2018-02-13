@@ -14,8 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef PARAMETER_H
 #define PARAMETER_H
+
+#include "datetime.h"
 
 #include <QSet>
 #include <QString>
@@ -25,7 +28,6 @@
 #include <set>
 #include <utility>
 
-#include "datetime.h"
 
 /* This class defindes property parameters as defined in
  * rfc5545#section-3.2

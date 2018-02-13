@@ -15,10 +15,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <QDebug>
-
 #include "icalinterpreter.h"
 #include "parameter.h"
+
+#include <QDebug>
 
 
 IcalInterpreter::IcalInterpreter( QObject *parent )
@@ -93,33 +93,6 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
             outAppBasics->m_dtEnd = outAppBasics->m_dtStart.addSecs( p.m_contentDuration.toSeconds() );
             continue;
         }
-
-        if( p.m_type == Property::PT_RDATE )
-        {
-            have_rdate = true;
-            continue;
-        }
-
-        if( p.m_type == Property::PT_RRULE )
-        {
-            if( not haveRecurrence )
-            {
-                outAppRecurrence = new AppointmentRecurrence();
-                haveRecurrence = true;
-            }
-            readRecurrenceRRule( p, outAppRecurrence );
-            continue;
-        }
-        if( p.m_type == Property::PT_SUMMARY )
-        {
-            outAppBasics->m_summary = p.m_content;
-            continue;
-        }
-        if( p.m_type == Property::PT_UID )
-        {
-            outAppBasics->m_uid = p.m_content;
-            continue;
-        }
         if( p.m_type == Property::PT_EXDATE )
         {
             if( not haveRecurrence )
@@ -133,15 +106,40 @@ void IcalInterpreter::readEvent(const VEventComponent inVEventComponent,
                 outAppRecurrence->m_exceptionDates.append( p.m_contentDateTimeVector );
             continue;
         }
+        if( p.m_type == Property::PT_RDATE )
+        {
+            have_rdate = true;
+            continue;
+        }
+        if( p.m_type == Property::PT_RRULE )
+        {
+            if( not haveRecurrence )
+            {
+                outAppRecurrence = new AppointmentRecurrence();
+                haveRecurrence = true;
+            }
+            readRecurrenceRRule( p, outAppRecurrence );
+            continue;
+        }
         if( p.m_type == Property::PT_SEQUENCE )
         {
             outAppBasics->m_sequence = p.m_contentInteger;
+            continue;
+        }
+        if( p.m_type == Property::PT_SUMMARY )
+        {
+            outAppBasics->m_summary = p.m_content;
             continue;
         }
         if( p.m_type == Property::PT_TRANSP )
         {
             outAppBasics->m_busyFree =  p.m_contentTransparency == Property::TT_TRANSPARENT ?
                                 AppointmentBasics::FREE : AppointmentBasics::BUSY;
+            continue;
+        }
+        if( p.m_type == Property::PT_UID )
+        {
+            outAppBasics->m_uid = p.m_content;
             continue;
         }
     }
@@ -234,7 +232,8 @@ void IcalInterpreter::readRecurrenceRDates(const Property inRecurrenceProperty,
                 const DateTime inStartDateTime,
                 AppointmentRecurrence* &outAppRecurrence )
 {
-   for( Interval interval : inRecurrenceProperty.m_contentIntervalVector )
+    // only one of both for-loops is executed
+    for( Interval interval : inRecurrenceProperty.m_contentIntervalVector )
     {
         DateTime start;
         DateTime end;
@@ -259,9 +258,7 @@ void IcalInterpreter::readRecurrenceRDates(const Property inRecurrenceProperty,
     {
         DateTime newStartDate;
         if( startTime.isDate() )
-        {
             newStartDate = QDateTime( startTime.date(), inStartDateTime.time() );
-        }
         else
             newStartDate = startTime;
 
@@ -430,6 +427,8 @@ void IcalInterpreter::readRecurrenceRRule(const Property inRecurrenceProperty,
             }
         }
     } // end for
+
+    // make it simple ;-)
     if( numberOfByRules == 0 )
     {
         // these are the simple cases
@@ -474,7 +473,7 @@ bool IcalInterpreter::eventHasUsableRRuleOrNone( const VEventComponent inVEventC
 }
 
 
-void IcalInterpreter::makeAppointment(AppointmentBasics* &inAppBasics,
+void IcalInterpreter::makeAppointment( AppointmentBasics* &inAppBasics,
                                        AppointmentRecurrence* &inAppRecurrence,
                                        QVector<AppointmentAlarm*> &inAppAlarmVector )
 {
@@ -485,9 +484,6 @@ void IcalInterpreter::makeAppointment(AppointmentBasics* &inAppBasics,
     t->m_appAlarms = inAppAlarmVector;
 
     // fill up appointment
-    t->m_minYear = 1000000;             // just a big number
-    t->m_maxYear = 0;                   // just a small number
-    t->m_userCalendarId = 0;            // here, we don't know
     t->m_uid = t->m_appBasics->m_uid;   // just forwarded
     t->m_haveAlarm = not inAppAlarmVector.isEmpty();
 

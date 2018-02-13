@@ -18,11 +18,9 @@
 #define ICALINTERPRETER_H
 
 #include "appointmentmanager.h"
+#include "datetime.h"
 #include "icalbody.h"
 #include "property.h"
-#include "datetime.h"
-
-#include <utility>
 
 #include <QVector>
 
@@ -47,11 +45,11 @@ private:
 
     void readRecurrenceRDates( const Property inRecurrenceProperty,
                                const quint64 inIntervalSecondsToEndDate,
-                               const DateTime inStartDateTime,  // for dates, to complete them
-                    AppointmentRecurrence* &outAppRecurrence );
+                               const DateTime inStartDateTime,  // for dates, to complete the interval
+                               AppointmentRecurrence* &outAppRecurrence );
 
     void readRecurrenceRRule( const Property inRecurrenceProperty,
-                    AppointmentRecurrence* &outAppRecurrence );
+                              AppointmentRecurrence* &outAppRecurrence );
 
     /* true, if inVEventComponent has NO RRULE,
      * true, if inVEventComponent has RRule with FREQ >= DAILY
@@ -60,13 +58,15 @@ private:
     bool eventHasUsableRRuleOrNone( const VEventComponent inVEventComponent );
 
     /* make an appointment and signal it to the outside world */
-    void makeAppointment(AppointmentBasics* &inAppBasics,
+    void makeAppointment( AppointmentBasics* &inAppBasics,
                           AppointmentRecurrence* &inAppRecurrence,
                           QVector<AppointmentAlarm*>& inAppAlarmVector );
 
 signals:
+    // each time, an event is generated, tell progress
     void sigTickEvent( const int min, const int current, const int max );
     void sigTickVEvents( const int min, const int current, const int max );
+    // appointment has generated all the events:
     void sigAppointmentReady( Appointment* app );
 
 public slots:

@@ -17,16 +17,17 @@
 #ifndef ICALBODY_H
 #define ICALBODY_H
 
-#include <QList>
-#include <QString>
-#include <QStringList>
-
 #include "property.h"
 #include "veventcomponent.h"
 #include "vfreebusycomponent.h"
 #include "vjournalcomponent.h"
-#include "vtodocomponent.h"
 #include "vtimezonecomponent.h"
+#include "vtodocomponent.h"
+
+#include <QList>
+#include <QString>
+#include <QStringList>
+
 
 struct ICalBody
 {
